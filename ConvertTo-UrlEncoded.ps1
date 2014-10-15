@@ -6,18 +6,18 @@ Function ConvertTo-UrlEncoded {
 	PARAM(
 	    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $false, Position=0)]
 	    [string]
-	    $Input
+	    $InputObject
 	)
 	BEGIN {
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Length '{0}'" -f $Input.Length) -fac 1;
+	Log-Debug -fn $fn -msg ("CALL. Length '{0}'" -f $InputObject.Length) -fac 1;
 	} # BEGIN
 	PROCESS {
 	$fReturn = $false;
 	$OutputParameter = $null;
 
-	$OutputParameter = [System.Web.HttpUtility]::UrlEncode($Input);
+	$OutputParameter = [System.Web.HttpUtility]::UrlEncode($InputObject);
 	return $OutputParameter;
 	} # PROCESS
 	END {

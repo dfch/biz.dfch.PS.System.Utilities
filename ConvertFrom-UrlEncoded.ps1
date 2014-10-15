@@ -6,7 +6,7 @@ Function ConvertFrom-UrlEncoded {
 	PARAM(
 	    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $false, Position=0)]
 	    [string]
-	    $Input
+	    $InputObject
 	)
 	BEGIN {
 	$datBegin = [datetime]::Now;
@@ -17,7 +17,7 @@ Function ConvertFrom-UrlEncoded {
 	$fReturn = $false;
 	$OutputParameter = $null;
 
-	$OutputParameter = [System.Web.HttpUtility]::UrlDecode($Input);
+	$OutputParameter = [System.Web.HttpUtility]::UrlDecode($InputObject);
 	return $OutputParameter;
 	} # PROCESS
 	END {

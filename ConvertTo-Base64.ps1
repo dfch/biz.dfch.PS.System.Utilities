@@ -7,7 +7,7 @@ Function ConvertTo-Base64 {
 	    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $false, Position=0)]
 	    [string]
 
-	    $InputString
+	    $InputObject
 	)
 	BEGIN {
 	$datBegin = [datetime]::Now;
@@ -18,7 +18,7 @@ Function ConvertTo-Base64 {
 	$fReturn = $false;
 	$OutputParameter = $null;
 
-	$bytes  = [System.Text.Encoding]::UTF8.GetBytes($InputString);
+	$bytes  = [System.Text.Encoding]::UTF8.GetBytes($InputObject);
 	$encoded = [System.Convert]::ToBase64String($bytes); 
 
 	$OutputParameter = $encoded;

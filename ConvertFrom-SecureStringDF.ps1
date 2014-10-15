@@ -6,7 +6,7 @@ function ConvertFrom-SecureStringDF {
 	PARAM(
 	    [Parameter(ValueFromPipeline = $true, Mandatory = $true, Position=0)]
 	    [System.Security.SecureString]
-	    $Input
+	    $InputObject
 	)
 	BEGIN {
 	$datBegin = [datetime]::Now;
@@ -15,10 +15,10 @@ function ConvertFrom-SecureStringDF {
 	} # BEGIN
 	PROCESS {
 	$marshal = [System.Runtime.InteropServices.Marshal];
-	$ptr = $marshal::SecureStringToBSTR( $Input );
+	$ptr = $marshal::SecureStringToBSTR( $InputObject );
 	$str = $marshal::PtrToStringBSTR( $ptr );
 	$marshal::ZeroFreeBSTR( $ptr );
-	return $Input;
+	return $InputObject;
 	} # PROCESS
 	END {
 	$datEnd = [datetime]::Now;
