@@ -23,6 +23,9 @@ Function ConvertFrom-CmdletHelp {
 	  if( ![string]::IsNullOrWhiteSpace($line) -and $line -ceq $line.ToUpper() ) {
 		$line = "{0}`r`n" -f $line; 
 	  } # if
+	  if($line -match '\-+\ (\w+)\ (\d+)\ \-+') {
+		$line = "{0}{1}`r`n" -f $Matches[1], $Matches[2]; 
+	  } # if
 	  $helpFormatted += $line; 
 	} # foreach
 
@@ -41,5 +44,6 @@ Function ConvertFrom-CmdletHelp {
 if($MyInvocation.PSScriptRoot) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
 <#
+2014-11-12; rrink; ADD: handling of EXAMPLE sections
 2014-11-10; rrink; ADD: ConvertFrom-CmdletHelp
 #>
