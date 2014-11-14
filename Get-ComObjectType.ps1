@@ -1,6 +1,6 @@
 function Get-ComObjectType {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/PS/System/Utilities/Get-ComObjectType/'
+		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Get-ComObjectType/'
     )]
 	PARAM(
 	    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $true, Position=0)]

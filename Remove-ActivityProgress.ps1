@@ -2,7 +2,7 @@ function Remove-ActivityProgress {
 [CmdletBinding(
     SupportsShouldProcess=$true,
     ConfirmImpact="Low",
-	HelpURI='http://dfch.biz/PS/System/Utilities/Remove-ActivityProgress/'
+	HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Remove-ActivityProgress/'
 )]
 Param (
 	[Parameter(Mandatory = $false)]

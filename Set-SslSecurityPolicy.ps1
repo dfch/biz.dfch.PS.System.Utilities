@@ -2,7 +2,7 @@ function Set-SslSecurityPolicy {
 	[CmdletBinding(
     SupportsShouldProcess=$true,
     ConfirmImpact="High",
-	HelpURI='http://dfch.biz/PS/System/Utilities/Set-SslSecurityPolicy/'
+	HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Set-SslSecurityPolicy/'
     )]
 Param(
 	[Parameter(Mandatory = $false, Position = 0)]

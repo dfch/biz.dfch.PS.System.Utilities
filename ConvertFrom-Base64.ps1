@@ -1,6 +1,6 @@
 Function ConvertFrom-Base64 {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/PS/System/Utilities/ConvertFrom-Base64/'
+		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/ConvertFrom-Base64/'
     )]
 	[OutputType([string])]
 	PARAM(

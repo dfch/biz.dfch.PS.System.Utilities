@@ -1,7 +1,7 @@
 # http://blogs.technet.com/b/jamesone/archive/2010/01/19/how-to-pretty-print-xml-from-powershell-and-output-utf-ansi-and-other-non-unicode-formats.aspx
 function Format-Xml {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/PS/System/Utilities/Format-Xml/'
+		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Format-Xml/'
     )]
 	[OutputType([string])]
 	PARAM (

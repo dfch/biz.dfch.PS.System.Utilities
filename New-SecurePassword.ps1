@@ -1,6 +1,6 @@
 Function New-SecurePassword {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/PS/System/Utilities/New-SecurePassword/'
+		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/New-SecurePassword/'
     )]
 	[OutputType([string])]
 	PARAM(

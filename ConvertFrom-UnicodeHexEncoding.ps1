@@ -1,6 +1,6 @@
 function ConvertFrom-UnicodeHexEncoding {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/PS/System/Utilities/ConvertFrom-UnicodeHexEncoding/'
+		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/ConvertFrom-UnicodeHexEncoding/'
     )]
 	[OutputType([string])]
 	PARAM (

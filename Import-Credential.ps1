@@ -2,7 +2,7 @@ function Import-Credential{
 	[CmdletBinding(
     SupportsShouldProcess=$true,
     ConfirmImpact="Low",
-	HelpURI='http://dfch.biz/PS/System/Utilities/Export-Credential/'
+	HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Export-Credential/'
     )]
 Param(
 	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 0)]

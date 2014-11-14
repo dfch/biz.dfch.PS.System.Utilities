@@ -1,6 +1,6 @@
 function ConvertFrom-SecureStringDF {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/PS/System/Utilities/ConvertFrom-SecureString/'
+		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/ConvertFrom-SecureString/'
     )]
 	[OutputType([string])]
 	PARAM(
