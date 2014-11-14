@@ -1,6 +1,6 @@
 function New-ActivityProgress {
 [CmdletBinding(
-	HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/New-ActivityProgress/'
+	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/New-ActivityProgress/'
 )]
 [OutputType([Int])]
 Param (

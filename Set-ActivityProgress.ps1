@@ -1,6 +1,6 @@
 function Set-ActivityProgress {
 [CmdletBinding(
-	HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Set-ActivityProgress/'
+	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/Set-ActivityProgress/'
 )]
 [OutputType([Boolean])]
 Param (

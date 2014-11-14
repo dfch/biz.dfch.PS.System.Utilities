@@ -71,7 +71,7 @@ New-CustomErrorRecord -UriPortal 'https://promo.ds01.swisscom.com' -Username 'Pe
 
 .LINK
 
-Online Version: http://dfch.biz/biz/dfch/PSSystem/Utilities/New-CustomErrorRecord/
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/New-CustomErrorRecord/
 
 
 
@@ -84,7 +84,7 @@ Requires module 'biz.dfch.PS.System.Logging'.
 #>
 	#This function is used to create a PowerShell ErrorRecord
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/New-CustomErrorRecord/'
+		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/New-CustomErrorRecord/'
     )]
 	[OutputType([System.Management.Automation.ErrorRecord])]
 	PARAM (

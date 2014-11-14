@@ -1,6 +1,6 @@
 Function ConvertFrom-CmdletHelp {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/ConvertFrom-CmdletHelp/'
+		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-CmdletHelp/'
     )]
 	PARAM (
 	$CommandName = $MyInvocation.MyCommand.Name

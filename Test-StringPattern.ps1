@@ -1,6 +1,6 @@
 function Test-StringPattern {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/Get-ComObjectType/'
+		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/Get-ComObjectType/'
     )]
 PARAM (
 	[Parameter(ValueFromPipeline=$true, Mandatory=$true, Position=0)]

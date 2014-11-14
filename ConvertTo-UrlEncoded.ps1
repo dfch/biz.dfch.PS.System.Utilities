@@ -1,6 +1,6 @@
 Function ConvertTo-UrlEncoded {
 	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PSSystem/Utilities/ConvertTo-UrlEncoded/'
+		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-UrlEncoded/'
     )]
 	[OutputType([string])]
 	PARAM(
