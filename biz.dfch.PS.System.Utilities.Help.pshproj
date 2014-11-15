@@ -1,0 +1,1313 @@
+<?xml version="1.0"?>
+<ModuleObject xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fVersion="1.1" type="Script" mclass="Module" useSupports="false">
+  <Name>biz.dfch.PS.System.Utilities</Name>
+  <Version>1.0.0.20141115</Version>
+  <Description />
+  <HasManifest>true</HasManifest>
+  <OverridePostCount>false</OverridePostCount>
+  <FetchPostCount xsi:nil="true" />
+  <Cmdlets>
+    <CmdletObject verb="ConvertFrom" noun="Base64">
+      <Name>ConvertFrom-Base64</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertFrom-Base64 [[-InputObject] &lt;String&gt;]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="true" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="ConvertFrom" noun="CmdletHelp">
+      <Name>ConvertFrom-CmdletHelp</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="CommandName As ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="CommandName As Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertFrom-CmdletHelp [[-CommandName] &lt;Object&gt;] [[-As] &lt;String&gt; {default | json | json-pretty | xml | xml-pretty | markdown | gridview} ]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="Object" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>CommandName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>As</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>ReturnFormat</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="ConvertFrom" noun="SecureStringDF">
+      <Name>ConvertFrom-SecureStringDF</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertFrom-SecureStringDF [-InputObject] &lt;SecureString&gt;</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="SecureString" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="ConvertFrom" noun="UnicodeHexEncoding">
+      <Name>ConvertFrom-UnicodeHexEncoding</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="string ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="string Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertFrom-UnicodeHexEncoding [-string] &lt;String&gt;</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="true" isPos="true" pos="0" globbing="false">
+          <Name>string</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="ConvertFrom" noun="UrlEncoded">
+      <Name>ConvertFrom-UrlEncoded</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertFrom-UrlEncoded [[-InputObject] &lt;String&gt;]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="true" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="ConvertTo" noun="Base64">
+      <Name>ConvertTo-Base64</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertTo-Base64 [[-InputObject] &lt;String&gt;]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="true" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="ConvertTo" noun="UrlEncoded">
+      <Name>ConvertTo-UrlEncoded</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>ConvertTo-UrlEncoded [[-InputObject] &lt;String&gt;]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="true" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Expand" noun="CompressedItem">
+      <Name>Expand-CompressedItem</Name>
+      <GeneralHelp>
+        <Synopsis>Expands a compressed archive or container.</Synopsis>
+        <Description>Expands a compressed archive or container.
+
+Currently only ZIP files are supported. Per default the contents of the ZIP 
+is expanded in the current directory. If an item already exists, you will 
+be visually prompted to overwrite it, skip it, or to have a second copy of 
+the item exanded. This is due to the mechanism how this is implemented (via 
+Shell.Application).</Description>
+        <Notes>See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/</Notes>
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription>InputObject can either be a full path to an archive or a FileInfo object. In 
+addition it can also be an array of these objects.
+
+Path expects a directory or a DirectoryInfo object.</InputTypeDescription>
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription>This Cmdlet has no return value.</ReturnTypeDescription>
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Path Format ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Path Format Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+      </ParamSets>
+      <Syntax>
+        <string>Expand-CompressedItem [-InputObject] &lt;Object&gt; [[-Path] &lt;DirectoryInfo&gt;] [-Format &lt;String&gt; {default | ZIP} ] [-WhatIf] [-Confirm]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateScriptAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>Specifies the archive to expand. You can either pass this parameter as a 
+path and name to the archive or as a FileInfo object. You can also pass an 
+array of archives to the parameter. In addition you can pipe a single archive 
+or an array of archives to this parameter as well.</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="DirectoryInfo" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>Path</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateScriptAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>Specifies the destination path where to expand the archive. By default this 
+is the current directory.</Description>
+          <DefaultValue>$PWD.Path</DefaultValue>
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Format</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>WhatIf</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>wi</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Confirm</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>cf</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Expands an archive 'mydata.zip' to the current directory.
+
+Expand-CompressedItem mydata.zip</Cmd>
+          <Description />
+        </Example>
+        <Example>
+          <Name>Example 2</Name>
+          <Cmd>Expands an archive 'mydata.zip' to the current directory and prompts for 
+every item to be extracted.
+
+Expand-CompressedItem mydata.zip -Confirm</Cmd>
+          <Description />
+        </Example>
+        <Example>
+          <Name>Example 3</Name>
+          <Cmd>Get-ChildItem Y:\Source\*.zip | Expand-CompressedItem -Path Z:\Destination -Format ZIP -Confirm
+
+You can also pipe archives to the Cmdlet.
+Enumerate all ZIP files in 'Y:\Source' and pass them to the Cmdlet. Each item 
+to be extracted must be confirmed.</Cmd>
+          <Description />
+        </Example>
+        <Example>
+          <Name>Example 4</Name>
+          <Cmd>Expands archives 'data1.zip' and 'data2.zip' to the current directory.
+
+Expand-CompressedItem "Y:\Source\data1.zip","Y:\Source\data2.zip"</Cmd>
+          <Description />
+        </Example>
+        <Example>
+          <Name>Example 5</Name>
+          <Cmd>Expands archives 'data1.zip' and 'data2.zip' to the current directory.
+
+@("Y:\Source\data1.zip","Y:\Source\data2.zip") | Expand-CompressedItem</Cmd>
+          <Description />
+        </Example>
+      </Examples>
+      <RelatedLinks>
+        <RelatedLink>
+          <LinkText>Online Version</LinkText>
+          <LinkUrl>http://dfch.biz/biz/dfch/PS/System/Utilities/Expand-CompressedItem/</LinkUrl>
+        </RelatedLink>
+      </RelatedLinks>
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Export" noun="Credential">
+      <Name>Export-Credential</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Path InputObject KeyPhrase ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Path InputObject KeyPhrase Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+      </ParamSets>
+      <Syntax>
+        <string>Export-Credential [-Path] &lt;String&gt; [-InputObject] &lt;PSCredential&gt; [[-KeyPhrase] &lt;String&gt;] [-WhatIf] [-Confirm]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Path</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="PSCredential" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>Credential</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>KeyPhrase</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>WhatIf</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>wi</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Confirm</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>cf</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Format" noun="Xml">
+      <Name>Format-Xml</Name>
+      <GeneralHelp>
+        <Synopsis>Formats a File or a string containing XML in pretty-printed (indented) format.</Synopsis>
+        <Description>Formats a File or a string containing XML in pretty-printed (indented) format.
+
+This Cmdlet takes a string or a file object and converts the input to an XML indented output. The input remains unmodified.</Description>
+        <Notes>See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/</Notes>
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription>The Cmdlet returns a string containing the XML pretty-printed output.</ReturnTypeDescription>
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="file" Params="File ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="string" Params="String ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="file" Params="File Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="string" Params="String Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>Format-Xml [-File] &lt;Object&gt;</string>
+        <string>Format-Xml [-String] &lt;Object&gt;</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>File</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>Specifies an path to a file containing XML.</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>String</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>Specifies an XML string.</Description>
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>[xml] $xml = "&lt;xmlroot&gt;&lt;node id='1'&gt;Node 1&lt;/node&gt;&lt;node id='2'&gt;Node 2&lt;/node&gt;&lt;/xmlroot&gt;"
+Format-Xml $xml.OuterXml</Cmd>
+          <Description>Formats a XML object from a string input</Description>
+        </Example>
+        <Example>
+          <Name>Example 2</Name>
+          <Cmd>[xml] $xml = "&lt;xmlroot&gt;&lt;node id='1'&gt;Node 1&lt;/node&gt;&lt;node id='2'&gt;Node 2&lt;/node&gt;&lt;/xmlroot&gt;"
+$xml.OuterXml | Out-File Y:\data\data.xml
+Format-Xml -File Y:\data\xml.xml</Cmd>
+          <Description>Formats an XML file.</Description>
+        </Example>
+      </Examples>
+      <RelatedLinks>
+        <RelatedLink>
+          <LinkText>Online Version</LinkText>
+          <LinkUrl>http://dfch.biz/biz/dfch/PS/System/Utilities/Format-Xml/</LinkUrl>
+        </RelatedLink>
+      </RelatedLinks>
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Get" noun="ComObjectType">
+      <Name>Get-ComObjectType</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="InputObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>Get-ComObjectType [-InputObject] &lt;PSReference&gt;</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="PSReference" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="true" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Get" noun="Constructor">
+      <Name>Get-Constructor</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="type FullName" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="type FullName" />
+      </ParamSets>
+      <Syntax>
+        <string>Get-Constructor [[-type] &lt;Type&gt;] [-FullName]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="Type" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>type</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>FullName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Import" noun="Credential">
+      <Name>Import-Credential</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Path KeyPhrase ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Path KeyPhrase Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+      </ParamSets>
+      <Syntax>
+        <string>Import-Credential [-Path] &lt;String&gt; [[-KeyPhrase] &lt;String&gt;] [-WhatIf] [-Confirm]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Path</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>KeyPhrase</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>WhatIf</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>wi</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Confirm</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>cf</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="New" noun="ActivityProgress">
+      <Name>New-ActivityProgress</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Activity Status CurrentOperation CurrentItem MaxItems ParentID Begin ShowTimeRemaining Show AutoRemove ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Activity Status CurrentOperation CurrentItem MaxItems ParentID Begin ShowTimeRemaining Show AutoRemove Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>New-ActivityProgress [[-Activity] &lt;String&gt;] [[-Status] &lt;String&gt;] [[-CurrentOperation] &lt;String&gt;] [[-CurrentItem] &lt;Int64&gt;] [[-MaxItems] &lt;Int64&gt;] [-ParentID &lt;Int32&gt;] [-Begin &lt;DateTime&gt;] [-ShowTimeRemaining] [-Show] [-AutoRemove]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Activity</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>Status</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>CurrentOperation</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int64" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
+          <Name>CurrentItem</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateRangeAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int64" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="4" globbing="false">
+          <Name>MaxItems</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>Items</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ParentID</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateRangeAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="DateTime" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Begin</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ShowTimeRemaining</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Show</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>AutoRemove</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="New" noun="CustomErrorRecord">
+      <Name>New-CustomErrorRecord</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ExceptionString idError ErrorCategory TargetObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ExceptionString idError ErrorCategory TargetObject Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>New-CustomErrorRecord [[-ExceptionString] &lt;String&gt;] [[-idError] &lt;String&gt;] [[-ErrorCategory] &lt;ErrorCategory&gt;] [[-TargetObject] &lt;PSObject&gt;]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>ExceptionString</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>m</string>
+            <string>msg</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>idError</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>id</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="ErrorCategory" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>ErrorCategory</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>c</string>
+            <string>cat</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="PSObject" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
+          <Name>TargetObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>o</string>
+            <string>obj</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="New" noun="SecurePassword">
+      <Name>New-SecurePassword</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Length NonAlpha ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Length NonAlpha Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>New-SecurePassword [[-Length] &lt;Int32&gt;] [[-NonAlpha] &lt;Int32&gt;]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Length</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>NonAlpha</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Remove" noun="ActivityProgress">
+      <Name>Remove-ActivityProgress</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ReturnDetails ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ReturnDetails Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+      </ParamSets>
+      <Syntax>
+        <string>Remove-ActivityProgress [-ReturnDetails] [-WhatIf] [-Confirm]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ReturnDetails</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>WhatIf</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>wi</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Confirm</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>cf</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Set" noun="ActivityProgress">
+      <Name>Set-ActivityProgress</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Activity Status CurrentOperation CurrentItem MaxItems ShowTimeRemaining ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Activity Status CurrentOperation CurrentItem MaxItems ShowTimeRemaining Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>Set-ActivityProgress [[-Activity] &lt;String&gt;] [[-Status] &lt;String&gt;] [[-CurrentOperation] &lt;String&gt;] [[-CurrentItem] &lt;Int64&gt;] [[-MaxItems] &lt;Int64&gt;] [-ShowTimeRemaining]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Activity</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>Status</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>CurrentOperation</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int64" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
+          <Name>CurrentItem</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateRangeAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int64" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="4" globbing="false">
+          <Name>MaxItems</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>Items</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ShowTimeRemaining</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Set" noun="SslSecurityPolicy">
+      <Name>Set-SslSecurityPolicy</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="TrustAllCertificates CheckCertificateRevocationList ServerCertificateValidationCallback ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="TrustAllCertificates CheckCertificateRevocationList ServerCertificateValidationCallback Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer WhatIf Confirm" />
+      </ParamSets>
+      <Syntax>
+        <string>Set-SslSecurityPolicy [[-TrustAllCertificates] &lt;SwitchParameter&gt;] [[-CheckCertificateRevocationList] &lt;SwitchParameter&gt;] [[-ServerCertificateValidationCallback] &lt;SwitchParameter&gt;] [-WhatIf] [-Confirm]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>TrustAllCertificates</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>CheckCertificateRevocationList</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>ServerCertificateValidationCallback</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>WhatIf</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>wi</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Confirm</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
+          </Attributes>
+          <Aliases>
+            <string>cf</string>
+          </Aliases>
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Test" noun="StringPattern">
+      <Name>Test-StringPattern</Name>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="guid" Params="InputObject Guid Extract ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="urn" Params="InputObject Urn Extract ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="type" Params="InputObject Type Extract ErrorAction Verbose Debug WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="guid" Params="InputObject Guid Extract Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="urn" Params="InputObject Urn Extract Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+        <CommandParameterSetInfo2 Name="type" Params="InputObject Type Extract Verbose Debug ErrorAction WarningAction ErrorVariable WarningVariable OutVariable OutBuffer" />
+      </ParamSets>
+      <Syntax>
+        <string>Test-StringPattern [-InputObject] &lt;Object&gt; [-Guid] [-Extract]</string>
+        <string>Test-StringPattern [-InputObject] &lt;Object&gt; [-Urn] [-Extract]</string>
+        <string>Test-StringPattern [-InputObject] &lt;Object&gt; [-Type &lt;String&gt; {guid | urn | hp | hp4345 | hp3027 | lx544 | scan} ] [-Extract]</string>
+      </Syntax>
+      <Parameters>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>InputObject</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Guid</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Extract</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Urn</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Type</Name>
+          <Attributes>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+  </Cmdlets>
+</ModuleObject>

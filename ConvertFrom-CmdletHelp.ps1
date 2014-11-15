@@ -41,7 +41,7 @@ Function ConvertFrom-CmdletHelp {
 	$fReturn = $true;
 	return $OutputParameter
 } # ConvertFrom-CmdletHelp
-if($MyInvocation.PSScriptRoot) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
 <#
 2014-11-12; rrink; ADD: handling of EXAMPLE sections
