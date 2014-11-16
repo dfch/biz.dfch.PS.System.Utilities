@@ -73,7 +73,7 @@ At C:\PSModules\biz.dfch.PS.System.Utilities\ConvertFrom-Base64.ps1:45 char:3
     + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
     + FullyQualifiedErrorId : FormatException
 
-PS C:\data\NuGetDestination> $r
+$r
 This is an encoded string.
 This is an another encoded string.
 
