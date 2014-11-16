@@ -93,9 +93,6 @@ Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-Base64/
 See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 
-.HELPURI
-
-
 #>
 
 [CmdletBinding(
@@ -108,12 +105,14 @@ PARAM
 	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
 	$InputObject
 )
+
 BEGIN 
 {
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}'" -f $InputObject.Count) -fac 1;
 }
+
 PROCESS 
 {
 	foreach($Object in $InputObject) 
@@ -126,6 +125,7 @@ PROCESS
 	}
 	$fReturn = $true;
 }
+
 END 
 {
 	$datEnd = [datetime]::Now;
