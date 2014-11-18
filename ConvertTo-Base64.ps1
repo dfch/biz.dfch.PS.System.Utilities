@@ -1,4 +1,79 @@
 Function ConvertTo-Base64 {
+<#
+.SYNOPSIS
+
+Encodes a BASE64 encoded string.
+
+.DESCRIPTION
+
+Encodes a BASE64 encoded string.
+
+Input can be either a positional or named parameters of type string or an 
+array of strings. The Cmdlet accepts pipeline input.
+
+.EXAMPLE
+
+ConvertTo-Base64 "This is an encoded string."
+VGhpcyBpcyBhbiBlbmNvZGVkIHN0cmluZy4=
+
+String is passed as a positional parameter to the Cmdlet.
+
+
+.EXAMPLE
+
+ConvertTo-Base64 -InputObject "This is an encoded string."
+VGhpcyBpcyBhbiBlbmNvZGVkIHN0cmluZy4=
+
+String is passed as a named parameter to the Cmdlet.
+
+
+.EXAMPLE
+
+ConvertTo-Base64 -InputObject "string1","string2"
+c3RyaW5nMQ==
+c3RyaW5nMg==
+
+Strings are passed as an implicit array to the Cmdlet.
+
+
+.EXAMPLE
+
+ConvertTo-Base64 -InputObject @("string1", "string2")
+c3RyaW5nMQ==
+c3RyaW5nMg==
+
+Strings are passed as an explicit array to the Cmdlet.
+
+
+.EXAMPLE
+
+@("string1", "string2") | ConvertTo-Base64
+c3RyaW5nMQ==
+c3RyaW5nMg==
+
+Strings are piped as an explicit array to the Cmdlet.
+
+
+.EXAMPLE
+
+"This is an another encoded string." | ConvertTo-Base64
+VGhpcyBpcyBhbiBhbm90aGVyIGVuY29kZWQgc3RyaW5nLg==
+
+String is piped to the Cmdlet.
+
+
+.LINK
+
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-Base64/
+
+
+
+.NOTES
+
+See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
 	[CmdletBinding(
 		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-Base64/'
     )]
@@ -31,6 +106,9 @@ Function ConvertTo-Base64 {
 } # ConvertTo-Base64
 Export-ModuleMember -Function ConvertTo-Base64;
 
+<#
+2014-11-18; rrink; ADD: examples
+#>
 
 # SIG # Begin signature block
 # MIIcVwYJKoZIhvcNAQcCoIIcSDCCHEQCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
