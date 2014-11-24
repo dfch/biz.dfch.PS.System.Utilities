@@ -1,49 +1,156 @@
 Function ConvertFrom-CmdletHelp {
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-CmdletHelp/'
-    )]
-	PARAM (
-	$CommandName = $MyInvocation.MyCommand.Name
-	,
-	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty', 'markdown', 'gridview')]
-	[Parameter(Mandatory = $false)]
-	[alias("ReturnFormat")]
-	[string] $As = 'default'
-	)
+<#
+.SYNOPSIS
 
+Converts the inline help of a Cmdlet to a Markdown compatible output.
+
+
+.DESCRIPTION
+
+Converts the inline help of a Cmdlet to a Markdown compatible output.
+
+With this Cmdlet you can publish the inline help of your Cmdlets to markdown 
+compatible repositories or wikis like Github, Bitbucket etc.
+
+
+.EXAMPLE
+
+ConvertFrom-CmdletHelp Get-Help -As GridView
+
+This will convert the inline help of the 'Get-Help' Cmdlet to markdown and 
+display it in a GridView that will be opened in a separate window.
+
+
+.EXAMPLE
+
+ConvertFrom-CmdletHelp Get-Help
+
+This will convert the inline help of the 'Get-Help' Cmdlet to markdown and 
+display the output on the console.
+
+
+.EXAMPLE
+
+ConvertFrom-CmdletHelp Get-Help, Get-Command -As file
+
+This will convert the inline help of the 'Get-Help' and 'Get-Command' to 
+markdown and write it to a file named 'Cmdlet.md' in the current directory.
+
+
+.EXAMPLE
+
+ConvertFrom-CmdletHelp Get-Help, Get-Command -As file -Path C:\data
+
+This will convert the inline help of the 'Get-Help' and 'Get-Command' to 
+markdown and write it to a file named 'Cmdlet.md' in 'C:\data'.
+
+
+.LINK
+
+Online Version http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-CmdletHelp/
+
+
+.NOTES
+
+See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
+
+[CmdletBinding(
+	SupportsShouldProcess = $true
+	,
+	ConfirmImpact = 'Low'
+	,
+	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-CmdletHelp/'
+)]
+
+PARAM 
+(
+	[ValidateScript( { Get-Command($_); } )]
+	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+	[ValidateNotNullOrEmpty()]
+	[Alias("CommandName")]
+	$InputObject = $MyInvocation.MyCommand.Name
+	,
+	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty', 'markdown', 'gridview', 'file')]
+	[Parameter(Mandatory = $false)]
+	[Alias("ReturnFormat")]
+	[string] $As = 'default'
+	,
+	[ValidateScript( { Test-Path -Path $_ -PathType Container; } )]
+	[Parameter(Mandatory = $false)]
+	[string] $Path = $PWD
+)
+
+BEGIN
+{
 	# Default test variable for checking function response codes.
 	[Boolean] $fReturn = $false;
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = $null;
 	
 	[string] $fn = $MyInvocation.MyCommand.Name;
+	
+	if($As -eq 'file' -And [string]::IsNullOrEmpty($Path))
+	{
+		$e = New-CustomErrorRecord -m ("You must supply a 'Path' name when using 'file' as return format. Aborting ...") -cat InvalidArgument -o $null;
+		Log-Error $fn $e.Exception.Message;
+		$PSCmdlet.ThrowTerminatingError($e);
+	}
+	if($As -ne 'file' -And $PSBoundParameters.ContainsKey('Path'))
+	{
+		Write-Warning ("'Path' parameter will be ignored when return format is not 'file'.")
+	}
+}
+PROCESS
+{
+	foreach($Object in $InputObject)
+	{
+		if($PSCmdlet.ShouldProcess($Object))
+		{
+			$helpFormatted = @();
+			foreach($line in ((help $Object -Full))) 
+			{ 
+				if( ![string]::IsNullOrWhiteSpace($line) -and $line -ceq $line.ToUpper() ) 
+				{
+					$line = "{0}`r`n" -f $line; 
+				}
+				if($line -match '\-+\ (\w+)\ (\d+)\ \-+') 
+				{
+					$line = "{0}{1}`r`n" -f $Matches[1], $Matches[2]; 
+				}
+				$helpFormatted += $line; 
+			}
 
-	$helpFormatted = @();
-	foreach($line in ((help $CommandName -Full))) { 
-	  if( ![string]::IsNullOrWhiteSpace($line) -and $line -ceq $line.ToUpper() ) {
-		$line = "{0}`r`n" -f $line; 
-	  } # if
-	  if($line -match '\-+\ (\w+)\ (\d+)\ \-+') {
-		$line = "{0}{1}`r`n" -f $Matches[1], $Matches[2]; 
-	  } # if
-	  $helpFormatted += $line; 
-	} # foreach
-
-	$r = $helpFormatted;
-	switch($As) {
-	'xml' { $OutputParameter = (ConvertTo-Xml -InputObject $r).OuterXml; }
-	'xml-pretty' { $OutputParameter = Format-Xml -String (ConvertTo-Xml -InputObject $r).OuterXml; }
-	'json' { $OutputParameter = ConvertTo-Json -InputObject $r -Compress; }
-	'json-pretty' { $OutputParameter = ConvertTo-Json -InputObject $r; }
-	'gridview' { $r | Out-GridView -Title $CommandName; }
-	Default { $OutputParameter = $r; }
-	} # switch
-	$fReturn = $true;
-	return $OutputParameter
-} # ConvertFrom-CmdletHelp
+			$r = $helpFormatted;
+			switch($As) 
+			{
+				'xml' { $OutputParameter = (ConvertTo-Xml -InputObject $r).OuterXml; }
+				'xml-pretty' { $OutputParameter = Format-Xml -String (ConvertTo-Xml -InputObject $r).OuterXml; }
+				'json' { $OutputParameter = ConvertTo-Json -InputObject $r -Compress; }
+				'json-pretty' { $OutputParameter = ConvertTo-Json -InputObject $r; }
+				'gridview' { $OutputParameter = $null; $r | Out-GridView -Title $Object; }
+				'file' { $OutputParameter = $null; $r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object)) -Encoding Default; }
+				Default { $OutputParameter = $r; }
+			}
+			$fReturn = $true;
+			$OutputParameter
+		}
+	}
+}
+END
+{
+}
+} # function
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
 <#
+2014-11-24; rrink; ADD: input validation of command names
+2014-11-24; rrink; ADD: SupportsShouldProcess/ConfirmImpact
+2014-11-24; rrink; ADD: file output return format
+2014-11-24; rrink; ADD: pipeline input for multiple commands
+2014-11-24; rrink; ADD: examples and inline help
 2014-11-12; rrink; ADD: handling of EXAMPLE sections
 2014-11-10; rrink; ADD: ConvertFrom-CmdletHelp
 #>
@@ -51,8 +158,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # SIG # Begin signature block
 # MIIcVwYJKoZIhvcNAQcCoIIcSDCCHEQCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUkeRc9uouwGzuolFMJ49/fX8B
-# AAagghcbMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcMmC3KLpIGXjHLaZFUhGPVfw
+# NtWgghcbMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -179,26 +286,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # FwYDVQQKExBHbG9iYWxTaWduIG52LXNhMScwJQYDVQQDEx5HbG9iYWxTaWduIENv
 # ZGVTaWduaW5nIENBIC0gRzICEhEhYHff2l3ILeBbQgbbK6elMjAJBgUrDgMCGgUA
 # oHAwEAYKKwYBBAGCNwIBDDECMAAwGQYJKoZIhvcNAQkDMQwGCisGAQQBgjcCAQQw
-# HAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFB4q
-# UoIyZlAn59IR56uEqZK5cSN1MA0GCSqGSIb3DQEBAQUABIIBACiIcwWAaB8bj0Cb
-# E5Rq0E6SsydR1yJGEr1JL2cqXV4zSN8eeoYPRTVaig2UI3GBWnHqXC0PE9BHsfFW
-# VJpy5OlKw4qnriIkghz0/vjeai4mOHlTrphNMH72pzjpbR6J4Z1WS5JDOU6RjeOf
-# jTrCeceiRNa9trhyrGnCWFynT0lpfluqjz060JvR6Zv0bf4MBm8ZwozEseP/X8Xs
-# sjEkTcWSKi08xf0J0U3Fwkza+L7IzpOjeJGCmm2J2+Q9qf6PMGLPrWUzIZtvQnCl
-# 1bdU/EiEFbBEa26VmDcapnuHQiMvlSCw8qNzJ0cmNT/LJtoaJ0O5qaP/I80beNB4
-# 4EFm622hggKiMIICngYJKoZIhvcNAQkGMYICjzCCAosCAQEwaDBSMQswCQYDVQQG
+# HAYKKwYBBAGCNwIBCzEOMAwGCisGAQQBgjcCARUwIwYJKoZIhvcNAQkEMRYEFLZ5
+# bf2F5Uw2oXBuHcJAoKtmZtRCMA0GCSqGSIb3DQEBAQUABIIBAHwGh4ktqQAL3ZQP
+# x0dGnIZK3ITRvoFWQx5phwy/612LHSSFcGpqQa4yU5IQVno6cok+mmq6mF7Qjjup
+# ZtWfWAtbpvpiXXfmyh4C8mxuPeBoaoDRr322ZR75CBdtoZ2XSIWevAxcHQuk+ATq
+# 1VuV8qA5VDf+lLTuhgJShx5i/sF152v7SJXiV4TKGdBepNK+b17F1ObsdFJ/0v1F
+# iPKR2jRqnFAEkM+QG/w08Jk6iqHEl5O2XoLx/xKiWV71i9qmczX8C6ityBe8toP5
+# n9sU223ZkIFI2DX/qWgQbWjvarGGqW7pvGUMBKsi1f+t7o0wV3KAaWc28F8vcjLT
+# 3QSie2yhggKiMIICngYJKoZIhvcNAQkGMYICjzCCAosCAQEwaDBSMQswCQYDVQQG
 # EwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEoMCYGA1UEAxMfR2xvYmFs
 # U2lnbiBUaW1lc3RhbXBpbmcgQ0EgLSBHMgISESFAXB8O0liIK+VNhoa6EepFMAkG
 # BSsOAwIaBQCggf0wGAYJKoZIhvcNAQkDMQsGCSqGSIb3DQEHATAcBgkqhkiG9w0B
-# CQUxDxcNMTQxMTE2MDgwMjM0WjAjBgkqhkiG9w0BCQQxFgQUvoNq/8X8QIwdoOr7
-# IoLEP+9sdYswgZ0GCyqGSIb3DQEJEAIMMYGNMIGKMIGHMIGEBBSM5p9QEuHRqPs5
+# CQUxDxcNMTQxMTI0MDczMDU0WjAjBgkqhkiG9w0BCQQxFgQUI77TUZ7gkNvdFpUk
+# 7dac88pc/yIwgZ0GCyqGSIb3DQEJEAIMMYGNMIGKMIGHMIGEBBSM5p9QEuHRqPs5
 # Xi4x4rQr3js0OzBsMFakVDBSMQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFs
 # U2lnbiBudi1zYTEoMCYGA1UEAxMfR2xvYmFsU2lnbiBUaW1lc3RhbXBpbmcgQ0Eg
-# LSBHMgISESFAXB8O0liIK+VNhoa6EepFMA0GCSqGSIb3DQEBAQUABIIBAA0vxnzp
-# /bSOjRZp7rIbZoF3PVlKzIoi8Q2+2VYyOMcoGQwvlxRLRjt8zOA73uVOnBu0rI1U
-# scWYxifnoQtKjoKPdJBbKtIRCO3VIULXLuIyiskqsYgy9RZoYbZfktu1/vPbuaIz
-# lJGKONv5VZV9WN3qQOlotOS/tpOO/+V4gcg6nAvv4MU/IavJg4EglnN2Fb1kmUgI
-# PfiOEoiYl2gbX/DSSnFJxqXi1tb6u6J4A9q09pY2kakO1blYCLSipz/NB2lwIyYK
-# KRypmMinmBbwAIUIrIOeTXCgdca8lNUz/C1J7WOSBPCfjp85jIskwO4zBNGr04Fj
-# 3awzKe/fKKLVnU8=
+# LSBHMgISESFAXB8O0liIK+VNhoa6EepFMA0GCSqGSIb3DQEBAQUABIIBACui74Pd
+# 3FsEzRvgoOq/4IdNjs68P2Gz0vkxkH2IMLYxqFZb0l3rQF35DkcM7WBmOI3hF5fD
+# zxcIGOaDODIXEyb4d2ZKKWEkGkO8bS2KFlCf6zVzPJybTQoesfhKwCSkEYAMN55n
+# tBWHYRR8fgl3nLwdo/FvCe7eX4vdTNZmK7YCw4FOWjABLGOuUWBm1zQuLoWjunSR
+# sp++4KNZhOrHceONLnJ/ViEm+ZpOvWbNgSP6clyBfoHj901Jz3O2Bo7EZTAqyR7A
+# vo4myOX+CgmnugTGRAlE36RFJQd8u1354/Mqsvg1mWuWWqHkbtovvXgngLVmSis/
+# UB/ouMSbHlLmvOs=
 # SIG # End signature block
