@@ -86,6 +86,10 @@ PARAM
 	[ValidateScript( { Test-Path -Path $_ -PathType Container; } )]
 	[Parameter(Mandatory = $false)]
 	[string] $Path = $PWD
+	,
+	[Parameter(Mandatory = $false, ParameterSetName = 'module')]
+	[Alias("Exclude")]
+	[switch] $ExcludeDefaultCommandPrefix = $true
 )
 
 BEGIN
@@ -111,8 +115,39 @@ BEGIN
 	if($PSCmdlet.ParameterSetName -eq 'module')
 	{
 		$InputObject = Get-Command -Module $ModuleName;
+		if($ExcludeDefaultCommandPrefix)
+		{
+			foreach($PSModulePath in $ENV:PSModulePath.Split(';')) 
+			{ 
+				$PSModulePathFull = Join-Path -Path $PSModulePath -ChildPath $ModuleName;
+				if( !(Test-Path -Path ($PSModulePathFull)) ) 
+				{ 
+					continue;
+				}
+				$Manifest = Join-Path -Path $PSModulePathFull -ChildPath ('{0}.psd1' -f $ModuleName);
+				if( Test-Path -Path ($Manifest) ) 
+				{ 
+					try
+					{
+						$DefaultCommandPrefix =  ( (Get-Content (Get-Item $Manifest) -Raw) | iex ).DefaultCommandPrefix;
+					}
+					catch
+					{
+						# N/A
+					}
+					if(!$DefaultCommandPrefix)
+					{
+						Write-Warning ("No 'DefaultCommandPrefix' found in Manifest '{0}'." -f $Manifest);
+					}
+					break;
+				}
+			}
+			$PSModulePathFull = $null;
+			$Manifest = $null;
+		}
 	}
 }
+
 PROCESS
 {
 	foreach($Object in $InputObject)
@@ -141,7 +176,25 @@ PROCESS
 				'json' { $OutputParameter = ConvertTo-Json -InputObject $r -Compress; }
 				'json-pretty' { $OutputParameter = ConvertTo-Json -InputObject $r; }
 				'gridview' { $OutputParameter = $null; $r | Out-GridView -Title $Object; }
-				'file' { $OutputParameter = $null; $r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object)) -Encoding Default; }
+				'file' 
+				{ 
+					if(0 -ge $r.Count)
+					{
+						Write-Warning ("Cmdlet '{0}' has no content [{1}]. Skipping ..." -f $Object.Name, $r.Count);
+					}
+					else 
+					{
+						$OutputParameter = $null; 
+						if($ExcludeDefaultCommandPrefix)
+						{
+							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object.Name.Replace($DefaultCommandPrefix, $null))) -Encoding Default; 
+						}
+						else
+						{
+							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object.Name)) -Encoding Default; 
+						}
+					}
+				}
 				Default { $OutputParameter = $r; }
 			}
 			$fReturn = $true;
@@ -149,13 +202,17 @@ PROCESS
 		}
 	}
 }
+
 END
 {
+	# N/A
 }
+
 } # function
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
 <#
+2014-11-25; rrink; ADD: ExcludeDefaultCommandPrefix parameter
 2014-11-24; rrink; ADD: input validation of command names
 2014-11-24; rrink; ADD: SupportsShouldProcess/ConfirmImpact
 2014-11-24; rrink; ADD: file output return format
@@ -168,8 +225,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # SIG # Begin signature block
 # MIILewYJKoZIhvcNAQcCoIILbDCCC2gCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU87HOn2QIn5ESYCrglLeLbSCs
-# IjGgggjdMIIEKDCCAxCgAwIBAgILBAAAAAABL07hNVwwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9y2hzp/51/PKQgR312RnLQ2U
+# mlWgggjdMIIEKDCCAxCgAwIBAgILBAAAAAABL07hNVwwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0xOTA0MTMxMDAwMDBaMFExCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -221,11 +278,11 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # Q29kZVNpZ25pbmcgQ0EgLSBHMgISESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIa
 # BQCgeDAYBgorBgEEAYI3AgEMMQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgor
 # BgEEAYI3AgEEMBwGCisGAQQBgjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3
-# DQEJBDEWBBSSHJQsOrKLGp5iePBG54uIGpQgHzANBgkqhkiG9w0BAQEFAASCAQAK
-# dSmsTTPBYHTu1+X/ztVJjbrIqV2z/Ha28iZBgqM2efC+O4QMowXNOM+GlCdEB1oj
-# c0Bbt7wHSixqy01rg1Q/cZqc+Q6R1zzD5PhAAIp0z8oxKIJdISbpsGdMMcVxgSK/
-# AK5pma+P3sm0mpRjqWamb2O31stQJIHUCnO0MGh6PcREaclMByNO/GtIVWrwMMXg
-# RFQOI/UHZ00U+YizGcApCFZ73c1RDmkmsz/yt9uwlSX5flbdZQatX9fY8SMHsN1v
-# nOs0tbR8RJ14FJaOzvji5uY5ZzkqQzHVMjE+b2HtAHMckUcgLYHKkjf9SjHGg/76
-# 81GU0FgwohZU1qpwDyOo
+# DQEJBDEWBBSECDoOogZJ6ApjauZD7hvCBKtvnjANBgkqhkiG9w0BAQEFAASCAQCa
+# KboeOkf9yQq/KVHislJd1hYsSxQHlAaXb8c9AbFigxsKHxHTj1oE5CL8ytUlOkBu
+# IFLzoapaGOXi/IB2Hd10yGPFBCsSWJFLKJLOAtUVxs/Lqnd5GnXYL/iTNu0/nuiO
+# DlsdE9XMK0p++8D6rh2gQEQgsTk0t6QgGOchFqqfvwTOgH4PcJe8S7KeGOZUu+yf
+# r7CwuZ7OW+7ChNxrDLCe4ArF0z4wBk+JPcmP3on6HoqT0w0tIL8pLT7GtAzCuUbr
+# O9mJi2PZdnLK2OvPEmGMwzxzWwIQGLndzPpu0V1ST/WUBA+o897RcQcwjYZtszWb
+# fsvmWLJ16f4TQgBNvDY7
 # SIG # End signature block
