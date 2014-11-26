@@ -20,6 +20,21 @@ if($true -ne (Test-Path variable:$($mvar))) {
 } # if()
 Export-ModuleMember -Variable $mvar;
 
+[string] $ManifestFile = '{0}.psd1' -f (Get-Item $PSCommandPath).BaseName;
+$ManifestPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ManifestFile;
+if( Test-Path -Path $ManifestPathAndFile)
+{
+	$Manifest = (Get-Content -raw $ManifestPathAndFile) | iex;
+	foreach( $ScriptToProcess in $Manifest.ScriptsToProcess) 
+	{ 
+		$ModuleToRemove = (Get-Item (Join-Path -Path $PSScriptRoot -ChildPath $ScriptToProcess)).BaseName;
+		if(Get-Module $ModuleToRemove)
+		{ 
+			Remove-Module $ModuleToRemove -ErrorAction:SilentlyContinue;
+		}
+	}
+}
+
 <#
  # ########################################
  # Version history
@@ -42,8 +57,8 @@ Export-ModuleMember -Variable $mvar;
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDksoPuX7VvDpDD5ZbH8RVmoX
-# jsqgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKj/CtobAeADu5+YEoPK+l1C1
+# cuugghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -141,25 +156,25 @@ Export-ModuleMember -Variable $mvar;
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSJLidCdYaUW7OA+5Ee
-# gFgLr5T3pTANBgkqhkiG9w0BAQEFAASCAQCR9NXutIbpTHo6PGor806WLh5eCBcz
-# 4hnWN1PwQ9I2XBaxxm4y7wbkIVnI6bP5NKQChEEjQBOyGsWXP166NBHQtdD7mbZ0
-# t6UDXR4C+utJODzQQlWUt6oEyEhQo3s817JTdK1v+8wc/+Omr2uSeuI7ORNr+6zZ
-# dafobVUBVyH6NW6RGiuMSdw3SIGdAS1W6cUh94NsgHlMAjH/vmJmVz6XcTl0b+SC
-# XI8v/c2H78xtGUT39au6VPdbpiBv+p8oDyDzkp1K1kvKpOVQWCN/l3upC4OpwFbi
-# dId6T3bEoYBiNMW0IQdsU7i0PRCyzSI2rsNoQt4AMs6ZJUJfbHY+3QbpoYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQUjwv2YSZTlNg9OiPf
+# x1GN25HLPjANBgkqhkiG9w0BAQEFAASCAQB/+vKGwSEGPona6fcww6qMZRc8jH0S
+# MzhHte3z9N3PxyzR+b2pvV5uspscJsVZLypLamt3u5q9SaqZ/sBcXoaXfgpHsONY
+# hdbWDhDFgICm8vDT/tTwYh/LMbq5NGMO94IjtBWr3zm5xzoG/Ur2lt+6QmaCSSa7
+# HOdpgLzaBKwAHZqrRIoFJM/13EG5HfWnFxWCftTpo3L9w7pOmjaKCW1VkLfr0EST
+# nwj0GOuITz2daqgJqEXM2WyOz0M7fuXr2RE5z7ZeeUesXa5YEVZPE5F4/lHdcMNj
+# VAx9vSEDstA4f5vnFLQc9W8OonBJWtigvKj/gCwrGunPaFgRw8OVFiqnoYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
 # MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# NTE2MjYyMlowIwYJKoZIhvcNAQkEMRYEFETEVX9jiN0hTbsPGGU5/M6xMtFXMIGd
+# NjA3Mzg1NFowIwYJKoZIhvcNAQkEMRYEFDqEiTReQHRugHcIuAPmvYUCjx/aMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQArwMcbwpsM+T0ASHyUeZAy
-# SrS5NKQHcjeaP+/y1vLZEnZ58f+0eWOxXT/Px9W7a0iRY/krgGJiQm2JGGYXSbee
-# svd2lxYvKpyyRvgLVjBXORUzcEnRI3SL/fW5Yvo8ZTOpkWxi/f6c47B/cLdhA5fi
-# h8jOXzqtJ9w0HleDZYZQaBmpCuyx3zmS7X/BiLlT+J34VP6pTnfB49qNBWMIhvcv
-# hEBqCFqoup1h3u9ldUPdT6LCZOoeyX5X8T8EymmhRaVbDr/kLeDH65KSbyNDjvfQ
-# 2SxbaeqRm5xWStxKu+jQ9v1zyYrdG9ukKj4XjlGCCfD8NPIT0M4gszBy+KhaDJGm
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQAKPhZkkQjI58xg8YgoGrGQ
+# U1SzgdRAGcp12YvKV7HbX+Z2D1yY3IkxlUViyp+WENp+awaUd/VYx/Ek34GYq8kJ
+# uP0xQZr9gFSCqT/Veg7h+PdQ+0/0UhNEtIeaZVttkq8jl7/Q8UYSSoA5AG2Rmjl5
+# YsO5VcwIurnC/mWv6rTAij3uuA7RIctZiM2An2GoisiJB4ElTMrZh/xGBMiP2Gew
+# g4+ro9pwrfanI5feLn0KtKZUfUz6RVqu3cviCkv9qJGF2PfsOMfdwkY1E5kGutS8
+# fs2hz7miS/ZSLTdiNvCvsKKOtrPipldRA8GTblpe82zo/ufl+hPLMoHr42C+DVsM
 # SIG # End signature block
