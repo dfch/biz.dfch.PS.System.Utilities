@@ -98,11 +98,19 @@ PARAM
 	,
 	# Tests if the Cmdlet has defined at least the specified number of '.EXMAMPLE' sections
 	[Parameter(Mandatory = $false, ParameterSetName = 'param')]
-	[int] $Examples = 0
+	[switch] $Examples = 0
+	,
+	# Specifies the minimum number of examples the Cmdlet should supply
+	[Parameter(Mandatory = $false)]
+	[int] $ExamplesMinimum = 1
 	,
 	# Tests if the Cmdlet defined a description for all its parameters
 	[Parameter(Mandatory = $false, ParameterSetName = 'param')]
 	[switch] $Parameters
+	,
+	# Specifies the parameters to be excluded from the 'Parameters' check
+	[Parameter(Mandatory = $false)]
+	[string[]] $ParametersExclude = @("WhatIf", "Confirm", "Verbose")
 	,
 	# Tests if the Cmdlet defined a '.FUNCTIONALITY'
 	[Parameter(Mandatory = $false, ParameterSetName = 'param')]
@@ -147,7 +155,7 @@ PROCESS
 			$HelpUri = $true;
 			$SupportsShouldProcess = $true;
 			$DefaultParameterSetName = $true;
-			$Examples = 1;
+			$Examples = $true;
 			$Parameters = $true;
 			$Functionality = $true;
 		}
@@ -298,7 +306,7 @@ PROCESS
 		{
 			if( $h.Examples -And $h.Examples.Example )
 			{
-				if( $h.Examples.Example -is [Array] -And ($Examples -le $h.Examples.Example.Count))
+				if( $h.Examples.Example -is [Array] -And ($ExamplesMinimum -le $h.Examples.Example.Count))
 				{
 					$r.Examples = $true;
 				}
@@ -323,9 +331,9 @@ PROCESS
 				$params = @();
 				foreach($p in $h.Parameters.Parameter)
 				{
-					if(!$p.Description -And (("WhatIf", "Confirm", "Verbose") -notcontains $p.name) )
+					if(!$p.Description -And ($ParametersExclude -notcontains $p.name) )
 					{
-						$params = $p.Name
+						$params += $p.Name
 					}
 				}
 				if(!$params)
@@ -388,8 +396,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Test-CmdletDocument
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUc+x1lb/zqH0nPKExb3rPlKH4
-# q3WgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUh1+cXTcvUMGtTu4inJWlk6pc
+# MyugghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -487,25 +495,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Test-CmdletDocument
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTGMLvSUADC7vratsCH
-# i8VU10Nz7jANBgkqhkiG9w0BAQEFAASCAQAa9AktB3cymobhTO7fLJ+SRtUhn95t
-# GhUoGI1aWuX8JAcnMlt3Y+p7MWgF2yC4v9nsOdb60pY5m0mC9NUETmvNSgJ0dyUF
-# MfDUeeKmNk/ZXeNanLaUMy3/HvYqkhh1cBvkuHVn5bRBAbXZphc9Y1NB52WS7Y+8
-# cQHOtgiO/j+L4CVqif4DfLxYLcokPo6hyCDBZg+F23S9suZPD6+Dx5g0HR/cyicg
-# VXtdxaejcKFvBTgbvC8Oa2stKNgI5fIepAfWd1VmnmTdkkb/fhSJpA+t639LD3jc
-# cxdaWIOAnlZJH1htIwL+I1IOti46c57vjU8A7l/j1qGL15ORW3oi0MAToYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQpFsvFwZiD5C3BV+hO
+# B89KPfYORDANBgkqhkiG9w0BAQEFAASCAQAFwANJJBxTZoqEXmMjO/EGNZ817TLc
+# T7+3o8+yzF6Vcxtp4qCzuIOYm0nLQJL38uziJNCW2euU3Df414Op7I4bw4tKS1Cs
+# fHgmgwuBMUjjYyKOxoWff5YK+rwwTD8DP7N4C2M4HUSnktNyqDwu0fEKOHEsRWzh
+# Cevk4E6zC7seBzBt8N/fQztTRp7BHriFK2yuULsaemEBekjI7Zm77PbrAAixRWGl
+# N0XHIxBaYQA/ulp4yj4twACKI8rTaaqh4RWPOuJ5bXGc2FjluYIV0ykEfgGSzslT
+# oJLdilkO8GUeVQozRuayNxeptjJGOUnMx7DvEyWkvGhOaVsVMQ9+J/h3oYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
 # MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# OTE0MzExNVowIwYJKoZIhvcNAQkEMRYEFKJa7OPQo6XmbnyCxBSiPXdqMFdiMIGd
+# OTE0NTQ0MFowIwYJKoZIhvcNAQkEMRYEFEXLiTNWpRFXGM0LCn17+EN2y1jQMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQAdk0xKX6Ybhe0B0n0LDxN9
-# 4btjaBWy7UsMBp+Uyikb7Qp3umfZYj6iGTE5kXpN8PPyJ5wN/QbUJIOUh6uyidMX
-# Y4Po5fNc5wHYgtCbUyk0jegUYdaYxGlnkL98wfIEhtGAg+2wnGpsc4at89TgXi1g
-# vlu0+eUc29uZwKqA65m2eG+e8t9CgQ8gebob/QnRiABwTswjj+OLTurR07yC6XJI
-# EJSUgvAKlUis9NV3CvLoG002VpEusCdA7uyaMqUf9saUWANQbPhJmamPnz3dMC1r
-# iLwUMG8XxlPapDaiiIoaHShDwPjj0da7TBP39UTy6xohkTQgNNrbXhGlebYOwcYp
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQBF62+RCHSydKKkCjD7QovB
+# XVjd5TeoN4TWx+lNvVNWYhorKEWBwTc27gWX3CLPYKcIW27W6V8ZjEqb7HTuMQZ7
+# ogw0F+65Cm9x0Cde9Ol9cUcuthnXEGW5TiJIEGZ2m/oOPtpc6O2B8pFOQH/wlWuz
+# B6oOMDVHFsGb7Lf0ZXGt/9LRZI6+lf6IjlSPnxuZTEIX5/a8BtU+KGon4cO3pzUJ
+# XX+PTzlUplAVTyvqXgyV0pidc0xcpZQNTPmY18TFqlClp0bIP/cPhFuDMEqShK3h
+# fQUb/85RxOT6yuSpT5AjCX/bz5ZkrUWnvT0hnGdLELRooaVwKL8J1CoHgOyVThPf
 # SIG # End signature block
