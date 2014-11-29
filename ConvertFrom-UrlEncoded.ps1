@@ -103,7 +103,7 @@ BEGIN
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	$OutputParameter = $null;
-	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}" -f $InputObject.Count) -fac 1;
+	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}'" -f $InputObject.Count) -fac 1;
 }
 
 PROCESS 
