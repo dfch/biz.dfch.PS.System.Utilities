@@ -1,99 +1,58 @@
-Function ConvertFrom-UrlEncoded {
+function ConvertFrom-Hashtable {
 <#
 .SYNOPSIS
 
-Decodes a UrlEncoded string.
+Converts a hashtable to a PSCustomObject
 
 .DESCRIPTION
 
-Decodes a UrlEncoded string.
+Converts a hashtable to a PSCustomObject
 
-Input can be either a positional or named parameters of type string or an 
-array of strings. The Cmdlet accepts pipeline input.
-
-.EXAMPLE
-
-ConvertFrom-UrlEncoded 'http%3a%2f%2fwww.d-fens.ch'
-http://www.d-fens.ch
-
-Encoded string is passed as a positional parameter to the Cmdlet.
-
+Input can be either a positional or named parameters of type hashtable or an 
+array of hashtables. The Cmdlet accepts pipeline input.
 
 .EXAMPLE
 
-ConvertFrom-UrlEncoded -InputObject 'http%3a%2f%2fwww.d-fens.ch'
-http://www.d-fens.ch
+ConvertFrom-Hashtable @{ "key" = "value" }
+key
+---
+value
 
-Encoded string is passed as a named parameter to the Cmdlet.
+Hashtable is passed as a positional parameter to the Cmdlet.
 
 
 .EXAMPLE
 
-ConvertFrom-UrlEncoded -InputObject 'http%3a%2f%2fwww.d-fens.ch', 'http%3a%2f%2fwww.dfch.biz%2f'
-http://www.d-fens.ch
-http://www.dfch.biz/
+$ht = @{ "key" = "value" };
+$ht | ConvertFrom-Hashtable;
+key
+---
+value
 
-Encoded strings are passed as an implicit array to the Cmdlet.
-
-
-.EXAMPLE
-
-ConvertFrom-UrlEncoded -InputObject @("http%3a%2f%2fwww.d-fens.ch", "http%3a%2f%2fwww.dfch.biz%2f")
-http://www.d-fens.ch
-http://www.dfch.biz/
-
-Encoded strings are passed as an explicit array to the Cmdlet.
-
-
-.EXAMPLE
-
-@("http%3a%2f%2fwww.d-fens.ch", "http%3a%2f%2fwww.dfch.biz%2f") | ConvertFrom-UrlEncoded
-http://www.d-fens.ch
-http://www.dfch.biz/
-
-Encoded strings are piped as an explicit array to the Cmdlet.
-
-
-.EXAMPLE
-
-"http%3a%2f%2fwww.dfch.biz%2f" | ConvertFrom-UrlEncoded
-http://www.dfch.biz/
-
-Encoded string is piped to the Cmdlet.
-
-
-.EXAMPLE
-
-$r = @("http%3a%2f%2fwww.d-fens.ch", 0, "http%3a%2f%2fwww.dfch.biz%2f") | ConvertFrom-UrlEncoded
-$r
-http://www.d-fens.ch
-0
-http://www.dfch.biz/
-
-In case one of the passed strings is not a UrlEncoded encoded string, the  
-plain string is returned. The pipeline will continue to execute and all  
-strings are returned.
-
+Hashtable is piped to the Cmdlet.
 
 .LINK
 
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-UrlEncoded/
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-Hashtable/
 
 
 
 .NOTES
 
-See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 
 #>
+
 [CmdletBinding(
-	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-UrlEncoded/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-Hashtable/'
 )]
 [OutputType([string])]
 
 PARAM
 (
+	# Specifies a hashtable of array of hashtable to convert. Can also be piped to the Cmdlet.
 	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
 	$InputObject
 )
@@ -113,7 +72,20 @@ PROCESS
 		$fReturn = $false;
 		$OutputParameter = $null;
 
-		$OutputParameter = [System.Web.HttpUtility]::UrlDecode($InputObject);
+		if ($Object -isnot 'hashtable') 
+		{
+			$msg = "CurrentState: Converting object '{0}' FAILED. Aborting ..." -f $Object.ToString();
+			Log-Error $fn $msg;
+			$e = New-CustomErrorRecord -m $msg -cat InvalidData -o $Object;
+			$PSCmdlet.ThrowTerminatingError($e);
+		} 
+		$OutputParameter = New-Object -TypeName PSObject;
+		Add-Member -InputObject $OutputParameter -MemberType ScriptMethod -Name AddNote -Value { 
+			Add-Member -InputObject $this -MemberType NoteProperty -Name $args[0] -Value $args[1];
+		};
+		$Object.Keys | Sort-Object | % { 
+			$OutputParameter.AddNote($_, $Object.$_); 
+		}
 		$OutputParameter;
 	}
 	$fReturn = $true;
@@ -126,14 +98,17 @@ END
 }
 
 } # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-UrlEncoded; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-Hashtable; } 
 
+<#
+2014-11-29; rrink; ADD: initial version
+#>
 
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEH23TXwCX7wYAB/VuHMzHVAJ
-# ktOgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3lBho/DH0yMAg/OfHQI/Jvzw
+# YNegghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -231,25 +206,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-UrlEnco
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQGdHo+a7XHDiVCXpi8
-# O/1bTpsxujANBgkqhkiG9w0BAQEFAASCAQDLTuz+eZGtr7EYHsunzXSmU11EifqI
-# yaSPMlXOCT31e6Us+FN8SiDkPZlqH/9T2Od1pumqJSQJIIrGYkSkjsi5waKeFriT
-# EKcfyDdciS0LlqlhIt1OKzFYLh86NoG2d9EEPPrjhPtiQ/d3IZuzqIQz36HEwLDp
-# r6xp0ybNAzCqXbiYbPcfWAkGQZ3jtC/z6WcVfEy8k8Jj8BICjZVngKxmpSivhd5q
-# iO6CVbHgXjsQroVEFAUzquOsuypDNo95YOURvTX4XIOF26KVSfPiqcM1qyXCGFed
-# IDHQr1bDIwsG2kBY0Deeq54u+eFxEU4sdy6XD7mFAcmPy8P8J7QAE8xWoYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSp3Qnb3YAPF3G1iDTp
+# aVttx2CmszANBgkqhkiG9w0BAQEFAASCAQCyVn3OUcGdzBzyd847KUfiIOnaeLNL
+# hEUXUimTqzLDvdNvrS3g6QfHsuuvgsB1FooaGHdPYVIZ75i1MUmjEDqCOCQJnvN/
+# I0Glycn0sddjX5kpPX+y9WAZ5vNmAskgADp5KU17I9Z6QTH7Rdzo5MwRtK9WCRgv
+# EXM1S2rSMTrlAkcHXeHBOiPsEkXC7tCRw8+UMIPylfIpeN4zUGl7M4q1fmbGZqEE
+# cptzaF/fNGBFJ13IP7HKtRYyHbgo1L55biSlJvbi3vqKU0GMalGyhAl/GK2lOtP/
+# 9HAL2d/SrKPq59WizgBSP5KXN1j/veVhNLlsM4AumE5BGqM/cTUzUIk2oYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
 # MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# OTE0MzExNFowIwYJKoZIhvcNAQkEMRYEFMRS3Ucb1oLI51XDly4IYa9mUpsiMIGd
+# OTE0MzExMlowIwYJKoZIhvcNAQkEMRYEFFYR/JoyYGhmlASF7OYdouFgJwOXMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQBxHmX8TlLt8QUdyrvpF2rK
-# lC/qt5JBr7vbA7WchcAVK0XrtHpYj7JO4ILoBfOdFE/23GBMGj+Sxv+wGhF1OYjc
-# TYJjqB6OCXA22RNAINwnQMVepn+HE9OdDF2TYxXLuBmt3NRW/KjVqMN52Z+7tb1N
-# r8E5pStSQduhzRnYruWEVv6calx+a7O57GvgcM5vXtZB0Kizu/ZQq+HjeIC/Fu4K
-# WMoZSkarLwhvrIBZqu5wRfiXhxGQlkoNNeIZ+VHl/iNNHUGCcT6pdsaxGPnZJizH
-# +9b57IrDG1dcHtaXK0JLsjSUO8ySHODN3RCMzjph8VBWnHhtsMXdoyLfmTlSXhi+
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQCMt2d1/InUZHpnecs4OPEJ
+# yNAIydqR+BwmpZrOExZkGqRsYwtoj9Vszu/92fXYQvLTNfwefqMUJ8YO2r8+KcPE
+# vkmLnQCv5feJ/EMBiiA9plndwPI/le7HhDUC8h3A18WDszO8I81mgZ2JuWUW7ZYt
+# DItMwN/lTLgF7zwlTCxyUSzorCCZnWe7/hR7P8FEah2wU98spGXLclUx53Sd1oz8
+# efe1XJQyM5GerYDAwMbUqHOGIa3+XvC9uw8VQdSrux8DzofgSeCbiV1rqV0nRR8z
+# UgZNOm0n3jBgRk/iuobTBde6SQxnz3/oR/xdxkEh0XlGDWiGLHMr5tDumjURcUI9
 # SIG # End signature block

@@ -1,101 +1,67 @@
-Function ConvertFrom-UrlEncoded {
+function Assert-CmdletDocumentation {
 <#
 .SYNOPSIS
 
-Decodes a UrlEncoded string.
+Asserts the documentation of a Cmdlet.
 
 .DESCRIPTION
 
-Decodes a UrlEncoded string.
+Asserts the documentation of a Cmdlet.
 
-Input can be either a positional or named parameters of type string or an 
-array of strings. The Cmdlet accepts pipeline input.
-
-.EXAMPLE
-
-ConvertFrom-UrlEncoded 'http%3a%2f%2fwww.d-fens.ch'
-http://www.d-fens.ch
-
-Encoded string is passed as a positional parameter to the Cmdlet.
-
+This Cmdlet compares the output from Test-CmdletDocumentation against a 
+file and writes an error if the assertion fails. The asstion file is taken 
+from the specified path and derived from the Cmdlet name that was tested.
 
 .EXAMPLE
 
-ConvertFrom-UrlEncoded -InputObject 'http%3a%2f%2fwww.d-fens.ch'
-http://www.d-fens.ch
-
-Encoded string is passed as a named parameter to the Cmdlet.
-
-
-.EXAMPLE
-
-ConvertFrom-UrlEncoded -InputObject 'http%3a%2f%2fwww.d-fens.ch', 'http%3a%2f%2fwww.dfch.biz%2f'
-http://www.d-fens.ch
-http://www.dfch.biz/
-
-Encoded strings are passed as an implicit array to the Cmdlet.
-
-
-.EXAMPLE
-
-ConvertFrom-UrlEncoded -InputObject @("http%3a%2f%2fwww.d-fens.ch", "http%3a%2f%2fwww.dfch.biz%2f")
-http://www.d-fens.ch
-http://www.dfch.biz/
-
-Encoded strings are passed as an explicit array to the Cmdlet.
-
-
-.EXAMPLE
-
-@("http%3a%2f%2fwww.d-fens.ch", "http%3a%2f%2fwww.dfch.biz%2f") | ConvertFrom-UrlEncoded
-http://www.d-fens.ch
-http://www.dfch.biz/
-
-Encoded strings are piped as an explicit array to the Cmdlet.
-
-
-.EXAMPLE
-
-"http%3a%2f%2fwww.dfch.biz%2f" | ConvertFrom-UrlEncoded
-http://www.dfch.biz/
-
-Encoded string is piped to the Cmdlet.
-
-
-.EXAMPLE
-
-$r = @("http%3a%2f%2fwww.d-fens.ch", 0, "http%3a%2f%2fwww.dfch.biz%2f") | ConvertFrom-UrlEncoded
-$r
-http://www.d-fens.ch
-0
-http://www.dfch.biz/
-
-In case one of the passed strings is not a UrlEncoded encoded string, the  
-plain string is returned. The pipeline will continue to execute and all  
-strings are returned.
+Get-Command | Test-CmdletDocumentation | Assert-CmdletDocumentation -Path C:\assertions
+Performs all tests on the Cmdlet "Get-Command".
 
 
 .LINK
 
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-UrlEncoded/
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Assert-CmdletDocumentation/
 
 
 
 .NOTES
 
-See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 
 #>
+
 [CmdletBinding(
-	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-UrlEncoded/'
+	SupportsShouldProcess = $true
+	,
+	ConfirmImpact = 'Low'
+	,
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Assert-CmdletDocumentation/'
 )]
 [OutputType([string])]
 
 PARAM
 (
-	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+	# The result from Test-CmdletDocumentation
+	[Parameter(Mandatory = $true, ValueFromPipeline = $true)]
+	[ValidateNotNullOrEmpty()]
 	$InputObject
+	,
+	# Specifies a path to assertion files
+	[ValidateScript( { Test-Path($_); } )]
+	[Parameter(Mandatory = $false, Position = 0)]
+	$Path = $PWD
+	,
+	# Specifies the file name suffix of the assertion file
+	[Parameter(Mandatory = $false)]
+	[string] $Suffix = ".assert"
+	,
+	# Specifies the return format of the Cmdlet
+	[ValidateSet('default', 'json', 'json-pretty', 'xml', 'xml-pretty')]
+	[Parameter(Mandatory = $false)]
+	[Alias("ReturnFormat")]
+	[string] $As = 'default'
 )
 
 BEGIN 
@@ -105,6 +71,7 @@ BEGIN
 	$OutputParameter = $null;
 	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}'" -f $InputObject.Count) -fac 1;
 }
+# BEGIN
 
 PROCESS 
 {
@@ -112,28 +79,131 @@ PROCESS
 	{
 		$fReturn = $false;
 		$OutputParameter = $null;
+		
+		# Try to convert the input object if not already an object
+		if($Object -is [hashtable])
+		{
+			$CurrentState = $Object;
+			$CurrentState = ConvertFrom-Hashtable $CurrentState;
+		}
+		if(!$CurrentState)
+		{
+			try
+			{
+				$CurrentState = ConvertFrom-Json $Object;
+			}
+			catch
+			{
+				# N/A
+			}
+		}
+		if(!$CurrentState)
+		{
+			$msg = "CurrentState: Converting object '{0}' FAILED. Aborting ..." -f $Object.ToString();
+			Log-Error $fn $msg;
+			$e = New-CustomErrorRecord -m $msg -cat InvalidData -o $Object;
+			$PSCmdlet.ThrowTerminatingError($e);
+		}
+		$DesiredStatePathAndFile = Join-Path -Path $Path -ChildPath ("{0}{1}" -f $CurrentState.Name, $Suffix);
+		if(!(Test-Path($DesiredStatePathAndFile)))
+		{
+			$msg = "{0}: Assertion file '{1}' not found. Aborting ..." -f $CurrentState.Name, $DesiredStatePathAndFile;
+			Log-Error $fn $msg;
+			$e = New-CustomErrorRecord -m $msg -cat ObjectNotFound -o $DesiredStatePathAndFile;
+			$PSCmdlet.ThrowTerminatingError($e);
+		}
 
-		$OutputParameter = [System.Web.HttpUtility]::UrlDecode($InputObject);
+		if(!$PSCmdlet.ShouldProcess( $CurrentState.Name ))
+		{
+			continue;
+		}
+
+		# Load assertion object
+		$DesiredState = $null;
+		if(!$DesiredState)
+		{
+			try
+			{
+				Import-CliXml $DesiredStatePathAndFile;
+			}
+			catch
+			{
+				# N/A
+			}
+		}
+		if(!$DesiredState)
+		{
+			try
+			{
+				$DesiredState = Get-Content $DesiredStatePathAndFile -Raw | ConvertFrom-Json;
+			}
+			catch
+			{
+				# N/A
+			}
+		}
+		if(!$DesiredState)
+		{
+			$msg = "DesiredState: Converting object from '{0}' FAILED. Aborting ..." -f $DesiredStatePathAndFile;
+			Log-Error $fn $msg;
+			$e = New-CustomErrorRecord -m $msg -cat InvalidData -o $DesiredStatePathAndFile;
+			$PSCmdlet.ThrowTerminatingError($e);
+		}
+
+		$r = @()
+		foreach($propDesired in $DesiredState.PSObject.Properties) 
+		{ 
+			$propCurrent = $CurrentState.PsObject.Properties[$propDesired.Name];
+			if($propDesired.Value -cne $propCurrent.Value)
+			{
+				$r += $propDesired.Name;
+				Write-Verbose ("{0}: Values do not match. Desired '{1}' - Current '{2}'." -f $propDesired.Name, $propDesired.Value, $propCurrent.Value);
+			}
+		}
+		if(!$r)
+		{
+			$r = $null;
+		}
+		else 
+		{
+			$msg = "{0}: Assertion FAILED. CurrentState differs from DesiredState.{1}{2}" -f $CurrentState.Name, [System.Environment]::NewLine, ($r | Out-String);
+			Log-Error $fn $msg;
+			$e = New-CustomErrorRecord -m $msg -cat InvalidData -o $CurrentState.Name;
+			$PSCmdlet.ThrowTerminatingError($e);
+		}
+		switch($As) 
+		{
+			'xml' { $OutputParameter = (ConvertTo-Xml -InputObject $r).OuterXml; }
+			'xml-pretty' { $OutputParameter = Format-Xml -String (ConvertTo-Xml -InputObject $r).OuterXml; }
+			'json' { $OutputParameter = ConvertTo-Json -InputObject $r -Compress; }
+			'json-pretty' { $OutputParameter = ConvertTo-Json -InputObject $r; }
+			Default { $OutputParameter = $r; }
+		}
 		$OutputParameter;
 	}
 	$fReturn = $true;
 }
+# PROCESS
 
 END 
 {
 	$datEnd = [datetime]::Now;
 	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 }
+# END
 
 } # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-UrlEncoded; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Assert-CmdletDocumentation; } 
 
+<#
+2014-11-16; rrink; CHG: pipeline handling, Export-ModuleMember invocation only from module, coding style is now Allman
+#>
 
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEH23TXwCX7wYAB/VuHMzHVAJ
-# ktOgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1bQ06BrJzSW/hb0d2EoRN/4l
+# Xa+gghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -231,25 +301,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-UrlEnco
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQGdHo+a7XHDiVCXpi8
-# O/1bTpsxujANBgkqhkiG9w0BAQEFAASCAQDLTuz+eZGtr7EYHsunzXSmU11EifqI
-# yaSPMlXOCT31e6Us+FN8SiDkPZlqH/9T2Od1pumqJSQJIIrGYkSkjsi5waKeFriT
-# EKcfyDdciS0LlqlhIt1OKzFYLh86NoG2d9EEPPrjhPtiQ/d3IZuzqIQz36HEwLDp
-# r6xp0ybNAzCqXbiYbPcfWAkGQZ3jtC/z6WcVfEy8k8Jj8BICjZVngKxmpSivhd5q
-# iO6CVbHgXjsQroVEFAUzquOsuypDNo95YOURvTX4XIOF26KVSfPiqcM1qyXCGFed
-# IDHQr1bDIwsG2kBY0Deeq54u+eFxEU4sdy6XD7mFAcmPy8P8J7QAE8xWoYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQlAKdCFmHNSF/nczBT
+# np/J1yKiWTANBgkqhkiG9w0BAQEFAASCAQBHhVEfokUQTm6+KIHvE7FoxwhKfZ0X
+# HAstGric9dj7HMmTe9QHLKOo6EOrMcV+brjTrQTQ2upHlPPjP/r83NIaYbfzrXWb
+# pB5bfuiGKRS0D7sOznz+fHmPENHiO82UtfyzMhqQTnxT6b/okhBlJDRiXuPOxKbZ
+# zmNy2mqE4XAenu4BRWoPNmiljljg3Hnick5P8We4PyJfGuw8RqSc3hJLNggIER4N
+# SZz/puqnmd4cd8G8X/CyjEKVqPWOsRX6ChhNKdDyViTKA4/7gdysz9EcvU4sPiHm
+# 5M8yN6Khb2FW0tF9rWDufJr9MA2fjFF+MVrUH2/fXI/nRyTW4+hGPkAToYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
 # MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# OTE0MzExNFowIwYJKoZIhvcNAQkEMRYEFMRS3Ucb1oLI51XDly4IYa9mUpsiMIGd
+# OTE0MzExMFowIwYJKoZIhvcNAQkEMRYEFPbXjnccfY6uii3AKHAL270vQYf8MIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQBxHmX8TlLt8QUdyrvpF2rK
-# lC/qt5JBr7vbA7WchcAVK0XrtHpYj7JO4ILoBfOdFE/23GBMGj+Sxv+wGhF1OYjc
-# TYJjqB6OCXA22RNAINwnQMVepn+HE9OdDF2TYxXLuBmt3NRW/KjVqMN52Z+7tb1N
-# r8E5pStSQduhzRnYruWEVv6calx+a7O57GvgcM5vXtZB0Kizu/ZQq+HjeIC/Fu4K
-# WMoZSkarLwhvrIBZqu5wRfiXhxGQlkoNNeIZ+VHl/iNNHUGCcT6pdsaxGPnZJizH
-# +9b57IrDG1dcHtaXK0JLsjSUO8ySHODN3RCMzjph8VBWnHhtsMXdoyLfmTlSXhi+
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQAQ72O2ub1oTWoOzuRxvE4G
+# 0IoF9JWbccB+ofEEP65tu1NVzWlWRzVNUNpwXHYhKm5sd1ej+QHFF1guyBEToCgu
+# S+lTgv2A91gQh3zPrN+TeXW2+ifNHch1DVPGXRx2XSdI2CsGNnz3sOxlWUZrYaJi
+# JyQyvXaJD7BInTLwzKML6zzrwJ+BrkBI/fPG6LArnO+Z392n/wJ19qqFkA8Of4Lt
+# H5/GLIR8JT7H6T2QwmgdX6F0pgevHjtTeDXpSmL/szYQpPY5SbbDIDqil4IB+d7D
+# WmERXcL4AF2s6nggNnrxfo2ghinl5BBvOD4raRtk01njGRTaJ/okapyACsJHLhN2
 # SIG # End signature block
