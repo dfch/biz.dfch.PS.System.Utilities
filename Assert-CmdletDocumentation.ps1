@@ -14,8 +14,11 @@ from the specified path and derived from the Cmdlet name that was tested.
 
 .EXAMPLE
 
-Get-Command | Test-CmdletDocumentation | Assert-CmdletDocumentation -Path C:\assertions
-Performs all tests on the Cmdlet "Get-Command".
+"Get-Command" | Test-CmdletDocumentation | Assert-CmdletDocumentation -Path C:\assertions
+Performs all tests on the Cmdlet "Get-Command". The Cmdlet looks in the 
+specified path for the assertion file.
+You can generate the assertion file by saving the output from "Test-CmdletDocumentation" 
+to a file with the ".assert" extension.
 
 
 .LINK
@@ -202,8 +205,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Assert-CmdletDocume
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1bQ06BrJzSW/hb0d2EoRN/4l
-# Xa+gghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUyhOvCiJEVlyAPVYUD7Zbn570
+# 3sqgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -301,25 +304,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Assert-CmdletDocume
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQlAKdCFmHNSF/nczBT
-# np/J1yKiWTANBgkqhkiG9w0BAQEFAASCAQBHhVEfokUQTm6+KIHvE7FoxwhKfZ0X
-# HAstGric9dj7HMmTe9QHLKOo6EOrMcV+brjTrQTQ2upHlPPjP/r83NIaYbfzrXWb
-# pB5bfuiGKRS0D7sOznz+fHmPENHiO82UtfyzMhqQTnxT6b/okhBlJDRiXuPOxKbZ
-# zmNy2mqE4XAenu4BRWoPNmiljljg3Hnick5P8We4PyJfGuw8RqSc3hJLNggIER4N
-# SZz/puqnmd4cd8G8X/CyjEKVqPWOsRX6ChhNKdDyViTKA4/7gdysz9EcvU4sPiHm
-# 5M8yN6Khb2FW0tF9rWDufJr9MA2fjFF+MVrUH2/fXI/nRyTW4+hGPkAToYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRiRI0L4IS02aRH99yy
+# As1TUU1IcjANBgkqhkiG9w0BAQEFAASCAQBCIuIWexv1DS2s7PUmEpQYstrZR6va
+# xOw34NKAiMQDqdmKLUBYA5fGxKRmflBzGBY7Pg7HNGSmpUgHpQPtK40f+Er/I9b/
+# iHqM+MX2i/R/VjlzaYphuK0bCxdXLL1FQIqUw9X2HRxV6sTkFCVvJJeo64TFTeKy
+# 52O6MM/hLxXvhMjRTjUi1A3XcOzrRWTlRntzZAyZZOg2fUc1Ae1PmsgWGAdOx42f
+# Gpo4OUos0hsZ8Nz02ofkpMZRrUeBtIRUIGLWf7sHYE+ar3qV92qFBMZDSIQfsbKn
+# Y/uyx8AE+TVs4Uz9TgwPCfYZobrEXznqwaYwhdeUZBRhx13FhsW5aGqMoYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
 # MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# OTE0MzExMFowIwYJKoZIhvcNAQkEMRYEFPbXjnccfY6uii3AKHAL270vQYf8MIGd
+# OTE1MTIwNlowIwYJKoZIhvcNAQkEMRYEFOwxJj7sQXwCZjL7Ie+SD26SJpvHMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQAQ72O2ub1oTWoOzuRxvE4G
-# 0IoF9JWbccB+ofEEP65tu1NVzWlWRzVNUNpwXHYhKm5sd1ej+QHFF1guyBEToCgu
-# S+lTgv2A91gQh3zPrN+TeXW2+ifNHch1DVPGXRx2XSdI2CsGNnz3sOxlWUZrYaJi
-# JyQyvXaJD7BInTLwzKML6zzrwJ+BrkBI/fPG6LArnO+Z392n/wJ19qqFkA8Of4Lt
-# H5/GLIR8JT7H6T2QwmgdX6F0pgevHjtTeDXpSmL/szYQpPY5SbbDIDqil4IB+d7D
-# WmERXcL4AF2s6nggNnrxfo2ghinl5BBvOD4raRtk01njGRTaJ/okapyACsJHLhN2
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQCnQh3LPBchilYpyMXuTW0H
+# SB+iLhHxICTuv9zm0rt5g1hgy0ERZvByx3/AZc1ULTQrZvKHSTjCluEpHIjRAmKR
+# jFTL6XJO4OXfRkP/FGnohbCm/Kpx2zVGRXh/oHuzb3beSNIeBlOHQVr4QjHMPlA8
+# eYyfUNdUedTZ4PqC4hM5HlhOwcMltKOPHRRH/lDXT11Gix5COGpKqnVw3c5fHFrP
+# YCSzhqmUF4HpW0LUFkqtXZPBZej4ZKq8FImZ2S/eybdHUbvLQ2b5gLlN1QdpInVD
+# ap7Ist24zmN9etjWlc8hpmEdtc41CQJyV7Tso7TqlN0dXRNGRyuVdG3aCk84pjMU
 # SIG # End signature block
