@@ -1,4 +1,92 @@
 Function ConvertFrom-UrlEncoded {
+<#
+.SYNOPSIS
+
+Decodes a UrlEncoded string.
+
+.DESCRIPTION
+
+Decodes a UrlEncoded string.
+
+Input can be either a positional or named parameters of type string or an 
+array of strings. The Cmdlet accepts pipeline input.
+
+.EXAMPLE
+
+ConvertFrom-UrlEncoded 'http%3a%2f%2fwww.d-fens.ch'
+http://www.d-fens.ch
+
+Encoded string is passed as a positional parameter to the Cmdlet.
+
+
+.EXAMPLE
+
+ConvertFrom-UrlEncoded -InputObject 'http%3a%2f%2fwww.d-fens.ch'
+http://www.d-fens.ch
+
+Encoded string is passed as a named parameter to the Cmdlet.
+
+
+.EXAMPLE
+
+ConvertFrom-UrlEncoded -InputObject 'http%3a%2f%2fwww.d-fens.ch', 'http%3a%2f%2fwww.dfch.biz%2f'
+http://www.d-fens.ch
+http://www.dfch.biz/
+
+Encoded strings are passed as an implicit array to the Cmdlet.
+
+
+.EXAMPLE
+
+ConvertFrom-UrlEncoded -InputObject @("http%3a%2f%2fwww.d-fens.ch", "http%3a%2f%2fwww.dfch.biz%2f")
+http://www.d-fens.ch
+http://www.dfch.biz/
+
+Encoded strings are passed as an explicit array to the Cmdlet.
+
+
+.EXAMPLE
+
+@("http%3a%2f%2fwww.d-fens.ch", "http%3a%2f%2fwww.dfch.biz%2f") | ConvertFrom-UrlEncoded
+http://www.d-fens.ch
+http://www.dfch.biz/
+
+Encoded strings are piped as an explicit array to the Cmdlet.
+
+
+.EXAMPLE
+
+"http%3a%2f%2fwww.dfch.biz%2f" | ConvertFrom-UrlEncoded
+http://www.dfch.biz/
+
+Encoded string is piped to the Cmdlet.
+
+
+.EXAMPLE
+
+$r = @("http%3a%2f%2fwww.d-fens.ch", 0, "http%3a%2f%2fwww.dfch.biz%2f") | ConvertFrom-UrlEncoded
+$r
+http://www.d-fens.ch
+0
+http://www.dfch.biz/
+
+In case one of the passed strings is not a UrlEncoded encoded string, the  
+plain string is returned. The pipeline will continue to execute and all  
+strings are returned.
+
+
+.LINK
+
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-UrlEncoded/
+
+
+
+.NOTES
+
+See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
 [CmdletBinding(
 	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-UrlEncoded/'
 )]
@@ -15,7 +103,7 @@ BEGIN
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	$OutputParameter = $null;
-	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}'" -f $InputObject.Count) -fac 1;
+	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}" -f $InputObject.Count) -fac 1;
 }
 
 PROCESS 
