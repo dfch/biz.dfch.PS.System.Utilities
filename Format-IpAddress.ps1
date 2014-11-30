@@ -1,6 +1,58 @@
 function Format-IPAddress {
+<#
+.SYNOPSIS
+
+Formats a given string IPv4 address with either leading or non-leading zeros.
+
+
+.DESCRIPTION
+
+Formats a given string IPv4 address with either leading or non-leading zeros.
+Optionally the given address is validated.
+
+
+.INPUTS
+
+Either an IPv4 address in string format or an array of IPv4 addresses in string format.
+
+
+.OUTPUTS
+
+[string]
+Either an IPv4 address in string format or an array of IPv4 addresses in string format.
+
+
+.EXAMPLE
+
+Format-IPAddress "10.001.001.001"
+10.1.1.1
+
+Formats the specified address to RFC compliant address format.
+
+
+.EXAMPLE
+
+'1.1.1.1','2.2.2.2' | Format-IPAddress -ToLeadingZero
+001.001.001.001
+002.002.002.002
+
+Formats the specified addresses to zero-padded addresses.
+
+
+.LINK
+
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Format-IPAddress/
+
+
+.NOTES
+
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
 [CmdletBinding(
-    SupportsShouldProcess = $false
+    SupportsShouldProcess = $true
 	,
     ConfirmImpact = "Low"
 	,
@@ -8,61 +60,106 @@ function Format-IPAddress {
 	,
 	HelpURI='http://dfch.biz/PS/System/Utilities/Format-IPAddress/'
 )]
-Param (
-	[Parameter(Mandatory = $true, Position = 0)]
+Param 
+(
+	# Specifies the IPv4 address to convert
+	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+	[ValidateNotNullOrEmpty()]
 	[alias("ip")]
 	[alias("IPv4")]
-	[String] $IPAddress
+	[alias("IPAddress")]
+	$InputObject
 	,
+	# Specifies if the address should formatted with leading zeros, e.g. '010.001.001.001'
 	[Parameter(Mandatory = $false, ParameterSetName = 'zero')]
 	[alias("zero")]
 	[alias("WithLeadingZero")]
 	[switch] $ToLeadingZero = $true
 	,
+	# Specifies if the address should formatted without leading zeros, e.g. '10.1.1.1'
 	[Parameter(Mandatory = $false, ParameterSetName = 'short')]
 	[alias("short")]
 	[alias("NoLeadingZero")]
 	[switch] $ToRfcFormat = $true
 	,
+	# Specifies if the given address should be validated
 	[Parameter(Mandatory = $false)]
 	[switch] $Validate = $true
 )
 
-$fReturn = $IpAddress -match '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$';
-if(!$fReturn) {
-	$IpAddressShort = $null;
-} else {
-	$IpAddressShort = '{0}.{1}.{2}.{3}' -f ($Matches[1] -as [int]), ($Matches[2] -as [int]), ($Matches[3] -as [int]), ($Matches[4] -as [int]);
-} # if
+BEGIN 
+{
+	$datBegin = [datetime]::Now;
+	[string] $fn = $MyInvocation.MyCommand.Name;
+	$OutputParameter = $null;
+	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}'" -f $InputObject.Count) -fac 1;
+}
 
-if($PSCmdlet.ParameterSetName -eq 'short') { 
-	$OutputParameter = $IpAddressShort;
-} else {
-	$fReturn = $IpAddressShort -match '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$';
-	if(!$fReturn) {
-		$IpAddressZero = $null;
-	} else {
-		$IpAddressZero = '{0}.{1}.{2}.{3}' -f ($Matches[1] -as [int]).ToString('000'), ($Matches[2] -as [int]).ToString('000'), ($Matches[3] -as [int]).ToString('000'), ($Matches[4] -as [int]).ToString('000');
-	} # if
-	$OutputParameter = $IpAddressZero;
-} # if
+PROCESS
+{
+	foreach($Object in $InputObject)
+	{
+		if(!$PSCmdlet.ShouldProcess($Object))
+		{
+			continue;
+		}
+		$IpAddress = $Object;
+		$fReturn = $IpAddress -match '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$';
+		if(!$fReturn) 
+		{
+			$IpAddressShort = $null;
+		} 
+		else 
+		{
+			$IpAddressShort = '{0}.{1}.{2}.{3}' -f ($Matches[1] -as [int]), ($Matches[2] -as [int]), ($Matches[3] -as [int]), ($Matches[4] -as [int]);
+		} # if
 
-if($Validate) {
-	[IPAddress] $ip = $IpAddressShort;
-	if($ip.IPAddressToString -ne $IpAddressShort) {
-		$OutputParameter = $null;
-	} # if
-} # if
+		if($PSCmdlet.ParameterSetName -eq 'short') 
+		{ 
+			$OutputParameter = $IpAddressShort;
+		} 
+		else 
+		{
+			$fReturn = $IpAddressShort -match '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$';
+			if(!$fReturn) 
+			{
+				$IpAddressZero = $null;
+			} 
+			else 
+			{
+				$IpAddressZero = '{0}.{1}.{2}.{3}' -f ($Matches[1] -as [int]).ToString('000'), ($Matches[2] -as [int]).ToString('000'), ($Matches[3] -as [int]).ToString('000'), ($Matches[4] -as [int]).ToString('000');
+			} # if
+			$OutputParameter = $IpAddressZero;
+		} # if
 
-return $OutputParameter;
+		if($Validate) 
+		{
+			[IPAddress] $ip = $IpAddressShort;
+			if($ip.IPAddressToString -ne $IpAddressShort) 
+			{
+				$OutputParameter = $null;
+			} # if
+		} # if
+		$OutputParameter;
+	}
+}
+# PROCESS
+
+END
+{
+	$datEnd = [datetime]::Now;
+	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+}
+#END
+
 } # function
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Format-IPAddress; }
 
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUUgnvgvHrrDFNpjC9BHtbtaU+
-# VZygghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUirZSKhWgr+AmfMgJE/dUmEPI
+# C1OgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -160,25 +257,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Format-IPAddress; }
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRrwNTcGy//MEsmHImu
-# h/sL6vccjzANBgkqhkiG9w0BAQEFAASCAQDS9bmuIPLf1fbGqoEWIG124G5cAFg3
-# ELEZ+AO9vUWGOYN0Lzjq5nlKnlh5ilDEJm/ZBFc3FHtGusq1QRwLfOzFGDdiJq8Y
-# PFrQMyt4DNtUROQraS7XNlHYLXli67lp2FmS/SPz7+4J6P8jxkR98IuGVPAT3GqF
-# Zk4I5/YrboG+45gflCfH7cPxe9Wd9iILnDGg4l5EZWry+eJUA73uvd0uvjIK8ZJL
-# GOnK5PlEO/08RGH89ScAh0Cwot1t5D62dpfbYgka5Xy0XbZaEN0rT4Uut4X0KoQY
-# 2lbDSXEhbMMS5QPeRTilhbIJsdOwQ0qoZuvJtwWWHyInk7b/0jaxwypToYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQ1Z+19SUS7cZiqm1vp
+# WtjBEtZFujANBgkqhkiG9w0BAQEFAASCAQC9oaVn50kGo2ojyI3m+5EzO/1cuZHs
+# mshLTN9DUM+qljww6jekqfLSa967dehn5OpQWGCk6aIB2XUkA277ffdc244jhh8R
+# FuyZNTeHrvF7X39nTyteUqW71ey8IVEfYZN64aGmOe0UApq4/fzwILAZIU7dCEDM
+# hY4NP12/uq/wDN9ez2m6L4gvxXoZ2FMk1fp09SCyfhOwZEb4mhaUV3l01WMxIPcT
+# 3FpcFD4aY3jdLjY3ilKZFcMAO6X0csNE9Nacb429iJ8dM0oRdsyxrfq3Eutxvjyu
+# rOT3rUtrfmpuvz6q+yoKlmU4ZkrhpskCrIAzk2hzsQalFFQt7GX+xrX+oYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
-# MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# NTE2MjU1NVowIwYJKoZIhvcNAQkEMRYEFCxmGxujiZuMEZfgXDir+1LtnFdlMIGd
+# MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEz
+# MDE4MDQyMVowIwYJKoZIhvcNAQkEMRYEFMhxJ5LRWrRgzB8kBb8a3PFcHtHtMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQCdCjVTrzUXzywVYDdbzZFI
-# mun5BGHersP3l7DOhL6HB1igSAFodjPMGmtQeZR1hUKdol3M1t8CJ6CYVNGe878j
-# fG2GA9eVc4TOwzkaTAhF3UCaIv+05vnQmDonh00LXG5RjDhglsKnsUkEXnCcZMGo
-# BpCG2/R5ebBA8FxQ4+s0zlz8QIbfn+I9v3nLV+r9gUuq6cppqGjzai79hdlmfAFO
-# 4u4RaMuuKQ7JL5jPryP8ovVWhTn3IeUnLrLNi+nWvIaJdniqkhRK1CilQvKWruug
-# pzvbE5xR4+k7n4JW6xoQhUkISn1Rxl45dQAQdssqiFRhZvXrXxWfdL0hSTdRatOY
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQBhpQlp7BpnH+JNWkFquEq0
+# gFV0U/tmB6TXckB5k8JaVzidtrA9VnpK5VpEOLb3gl6XhINwhJ8GAthwjM2fyH0c
+# LqLcgQQvnLWez+XqGDfL5ILrAjItFFvUn70w8ITMHrl1Oqs9atUmCpavuhqkNpxm
+# zK4TFLbCEpgnCXhNwyy1qQPuOT9iKYk7ape52EXLolxE1ElxE1+XpjrnSbn+GeKL
+# JNEjAnQwKJ6yIQj2/33W4EVyF8oywR5c8KDePY5cc0Ie2LBZ1sXvURSfaAvETns8
+# reGR8wKbuW/wb1FcziSkpbf7hsifbe1XBMtytk6F6yyfxSifL3TpiaWeQ0y2i7EQ
 # SIG # End signature block

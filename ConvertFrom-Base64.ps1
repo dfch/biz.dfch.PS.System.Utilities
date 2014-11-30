@@ -89,12 +89,17 @@ Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-Base64/
 
 .NOTES
 
-See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 
 #>
 
 [CmdletBinding(
+    SupportsShouldProcess = $true
+	,
+    ConfirmImpact = "Low"
+	,
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertFrom-Base64/'
 )]
 [OutputType([string])]
@@ -117,6 +122,10 @@ PROCESS
 {
 	foreach($Object in $InputObject) 
 	{
+		if(!$PSCmdlet.ShouldProcess($Object))
+		{
+			continue;
+		}
 		$fReturn = $false;
 		$OutputParameter = $null;
 
@@ -142,8 +151,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-Base64;
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU8e8A8+WvqX+7JuAycol4zl0X
-# zsSgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUtixaT6If4qEe5S/x9EhKYO0q
+# uMWgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -241,25 +250,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-Base64;
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBThWy1C27BQtcWYmjiL
-# siRcaRYoFDANBgkqhkiG9w0BAQEFAASCAQDAa8DOE6Ydwl9yN0oZkWdPN/HzFCEo
-# efojEQkObLAhzYAtUVRx6zIw0BexKAq1xAkcKZTGAb5lBvZLjAw4dUZ8IyeaNwXc
-# 8U3q2AaupknwoJl3CFj+MtFURhXxgrsMZ5qO0N/f8r1xqgfPi+3oEROHDC5Nt8PW
-# 1GRkZa62Yk5XA8iWVnBNxIsHAtGoF3FBNGJgdbQvnIGjidjUkt69HybBWJ/2EO4z
-# +MF0Z6dv++cUmeTNzGy+T4gbdBHtL4JpqeZh8ygBIJdDyIJR0MzhMxMLAFHf7ja4
-# bn2Gf2/uPORPJWB82MRa32T0sBOdvWas9/yCFRrNy9Zp0eLUXCWj2oXEoYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQoHQbShZYEfHDh9zyT
+# UZzl8waJ4zANBgkqhkiG9w0BAQEFAASCAQBYEEDNp02XtyceVO/MkYwuOKCnycjG
+# 4sB+GUbrHv22VOYm36eq33FRhv2YJyOP0blp4U/xtbyOiyTiIzZLhfsxHCAV6MjK
+# 4Itk0TaAl7fyJx/2s6ndfCBSzRXB/Mn+09pin5+V+akFZUY6DTxewarkxV4cGFka
+# IIQY1IBXDmxNkEn24KJmaYa7eiU9dug16yuPalowafk50Rqzj8ogR+A0LRUB8/1E
+# /oSJtsRxg1CJAoFLBmGQkwXTb6JixOrAY+Jhig5m5A3J5z/jmw95HGWJjA/WbwZd
+# AzpeOJS7Grq47regwSiXolbIGYgTRn6c6x8BHrOnYHKZE2VDCMgab2snoYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
-# MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# OTE0MzExMlowIwYJKoZIhvcNAQkEMRYEFECj65Sd19Dpzd6+Si5/0PBzC8OYMIGd
+# MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEz
+# MDE4MDYwNVowIwYJKoZIhvcNAQkEMRYEFIn7siNbqp4g1YnxO756Uw1tjdlgMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQBsdJw4nvFFd9sN3Ah7JOA/
-# QJixodyI4d8AtwF9HfffRIlXTEXNglaC2bWczFdk9vR9zCICYd+ptaBu837IJbow
-# YG+v6OsmkbIJcrqGkEp51STPsM18B3Z1g2hRedwdjW1M9SilsG2KMZXkq2XU7s5B
-# mR7+RvGAVRAcOByPe3BI+CN5LZCMB7zq++q/e+6YgS79yU9S4ChHs4Hgs3njAVbQ
-# i2pnCxg4Y147sUJA5QPubIlZnjPuoZX2lBfopF6VbaCZiLr7JYxywJtxABEWnHUx
-# /CtOUqulLNIrzQ2ehKKDhtMTAZTIjs/2kaFsAZFkOOPjG3fhhwq/KxlX4qYGZ4O6
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQCUw/1eQs/ju9MD/EptsDzX
+# 2f3V1Il7aqy2G5rkJ9YR2vcev/PiOvHDCrkw10/tSf5ibsZfzGdWAuhV7YfM4Ao3
+# L0eFNsrv3gvMUFL275GwiD+9xFLulie9o8GmBYJNVtp/Nq8aY2ze818OCF700AGK
+# 0kqKaRh4IHuXG9gwr7WCG3P29HdWIZl2hEk4TRzkhbq5oQNRy0In0YNifXfkFlON
+# GsVFcZv9pg+zQTn854UpkBOUu6mKM1E6WeQ2YishbxYC14ot76A8jhviOfnSZKuF
+# 82j8NPj+IubbFbKG3dirc+P95l1PkS9Nhn0Vu2rDKKk4VpzKjU5M6/R+lpcwGktD
 # SIG # End signature block

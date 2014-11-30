@@ -4,12 +4,14 @@ function Test-CmdletDocumentation {
 
 Tests the documentation of a Cmdlet.
 
+
 .DESCRIPTION
 
 Tests the documentation of a Cmdlet.
 
 This Cmdlet lets you test for the existence working of inline help and 
 documentation of a Cmdlet or advanced function.
+
 
 .EXAMPLE
 
@@ -25,7 +27,7 @@ Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Test-CmdletDocument
 
 .NOTES
 
-See module manifest for required software versions and dependencies at: 
+See module manifest for required software versions and dependencies at:
 http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 
@@ -199,7 +201,7 @@ PROCESS
 		# Check for Link
 		if($Link) 
 		{
-			if( $h.relatedLinks -And $h.relatedLinks.navigationLink -And (0 -lt $h.relatedLinks.navigationLink.Count) )
+			if( $h.relatedLinks -And $h.relatedLinks.navigationLink )
 			{
 				$r.Link = $true;
 			}
@@ -302,7 +304,7 @@ PROCESS
 			}
 		}
 		# Check for Examples
-		if($PSBoundParameters.ContainsKey('Examples')) 
+		if($Examples) 
 		{
 			if( $h.Examples -And $h.Examples.Example )
 			{
@@ -324,7 +326,7 @@ PROCESS
 			}
 		}
 		# Check for Parameters
-		if($PSBoundParameters.ContainsKey('Parameters')) 
+		if($Parameters) 
 		{
 			if( $h.Parameters -And $h.Parameters.Parameter )
 			{
@@ -396,8 +398,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Test-CmdletDocument
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGayBWNbP1pms3TEgo1wbmd1J
-# NqKgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3l+KGXDkeDjtO1zV4WUK9QkO
+# E/WgghGYMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -495,25 +497,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Test-CmdletDocument
 # bnYtc2ExJzAlBgNVBAMTHkdsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBHMgIS
 # ESFgd9/aXcgt4FtCBtsrp6UyMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEMMQow
 # CKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQBgjcC
-# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTGElCHbUUjSgz5jnS6
-# ejNRZ+uHHDANBgkqhkiG9w0BAQEFAASCAQASxJTa+JVbBYur5EK/jPU2rOvWgXWl
-# 9fU+jVhpcsUgxhohLS1okqRAzNSl6ef8ydqNX2eztm0Hc5QDp8CsJkf0oF6v8Sb/
-# OKtDgscUl1EjdY3xwy9aBurc18XiEVnwKkaGQT0QvcE6Xy/gbTdV/dqGXnybfX4X
-# nJ0ezwG5L7jktg2G+1ZBsiyrOYLgWE3j1ytblXZhgCfssKyafzpSVJPsX3iC0FYr
-# Nm2KSFWK/pMRoSPYb2qBobqbuZCj0mVJmtjSMnlLSiABDNcyPuXc5yMIauUn5Zwg
-# z2LHywOt6ysuFwqrgLr6Wz39bQrHgF+vIau+mKLQx9MOEeuGzKyvlJVsoYICojCC
+# AQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRaxkIWg5Ue7b/UcMll
+# 1f3g0YCHtDANBgkqhkiG9w0BAQEFAASCAQAqQS0sQPTxXaojlkujTJjjSt561mRx
+# JI9yxqOwu5RAOD7hM7jocr97AZQlFgJimBqwdYAVJF/EfeJnP7b3TOHo8IP7LYjW
+# 1+tNu0RGzKkhrcPH+mZlrBgyGy9MNAxn7k//zv2C6JRWnVcdo1Fll8rc88JC6axl
+# 6ebF/2bnny8JLV2PylUJnNYMli+PsJbMcJww/G/slJGcfSU19BLcohTiURdYO6vR
+# JNjGtXnNXxaxM1bhTpS/rpBDLTlwUSq6jPGbfwHn4R/7Q0NfledJAjWEDI6VgKqQ
+# X5DM3UtglS0hBhq8jg2FGOhsr+WlRCiuymZ0cfWiERvLkAm9JNB9LgwZoYICojCC
 # Ap4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAXBgNV
 # BAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0
 # YW1waW5nIENBIC0gRzICEhEhQFwfDtJYiCvlTYaGuhHqRTAJBgUrDgMCGgUAoIH9
-# MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEy
-# OTE1MTI0NlowIwYJKoZIhvcNAQkEMRYEFGAjnYjaherlaU8mrIvwp0/vcwsgMIGd
+# MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE0MTEz
+# MDE4MDM0MlowIwYJKoZIhvcNAQkEMRYEFGLcSbfh+qU6eJi0qayEwS2eevGBMIGd
 # BgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUjOafUBLh0aj7OV4uMeK0K947NDsw
 # bDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2Ex
 # KDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEhQFwf
-# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQAa2I/nZb5WlXAfij874LN5
-# QUzMXtyHXTnvSBKXWudiJLK1xDNQ3GySg8WPy13o2UPLdXhU7trM3ku4znrW4u6/
-# SzBfs9AZ8xydYgncC33XwkXV5IZ+aWQ1PFTWwjP6GzF0enHykYId10YuH4fbhvBf
-# sVCN6cwhTWFF76mYSXot42VBPft/pMjny6O6BWk2icIp919tM9e+maUHDhm0QXwb
-# QgxqaPX2nJfRF+dXnipsnCOtLjQ3q+m50/dNCPsE+3HJQo7uO96FyFDovv5WG71a
-# YXATvpq0Tc34lBRX2woYSgOh1Hdokw2xE6OuQvgTX9OOtWkD59SeHBBdj++7+Dq8
+# DtJYiCvlTYaGuhHqRTANBgkqhkiG9w0BAQEFAASCAQAoPzmBXnIeyWau9dALMQZB
+# LBikavW0CYh08iFrhdyGkwmAc9OqkNXsgWTd4hOS/BL7q9kbp4u23/Q74pnsWZeq
+# zK13FVYqK6c07LCc/we/ctW/dUZlwRHqpzyO9dTjkIJVwi2yzPwNOgVF2Oa86ouA
+# u8aXvWSwtudoj6bKQ7TBq8MEsWRxX9bn7VVoYj8eaNe+BFHde1H0ElN3CQ/3bNgu
+# SL5j5aohlHbZfYYTGmFG0Y6z/MoqE53iqWb8KMCDLfW1ORNcHmaPw6iCgfUQNnzD
+# gxw0b+9qHKV7ybPorPbMCTt4U5bC749vvvjKl0ZkMngtx0eA7qOdpKCC7i4pl+/G
 # SIG # End signature block
