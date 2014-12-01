@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>biz.dfch.PS.System.Utilities</id>
+        <version>1.0.3</version>
+        <title>biz.dfch.PS.System.Utilities</title>
+        <authors>d-fens GmbH</authors>
+        <owners>Ronald Rink</owners>
+        <licenseUrl>https://github.com/dfch/biz.dfch.PS.System.Utilities/blob/master/LICENSE</licenseUrl>
+        <projectUrl>https://github.com/dfch/biz.dfch.PS.System.Utilities</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/dfch/fragments/master/logo-32x32.png</iconUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <description>biz.dfch.PS.System.Utilities
+============================
+
+Modules: biz.dfch.PS.System.Utilities
+
+d-fens GmbH, General-Guisan-Strasse 6, CH-6300 Zug, Switzerland
+
+This Microsoft PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.
+
+See http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utilities/</description>
+        <summary>This Microsoft PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.</summary>
+        <releaseNotes>Added new Cmdlets
+Test-CmdletDocumentation
+Assert-CmdletDocumentation
+ConvertFrom-Hashtable
+ConvertFrom-PSCustomObject</releaseNotes>
+        <copyright>(c) 2014 d-fens GmbH</copyright>
+        <language>en-US</language>
+        <tags>PowerShell dfch</tags>
+        <dependencies>
+            <dependency id="biz.dfch.PS.System.Logging" version="1.0.3" />
+        </dependencies>
+    </metadata>
+</package>
