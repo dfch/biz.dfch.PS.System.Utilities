@@ -12,7 +12,7 @@
 RootModule = 'biz.dfch.PS.System.Utilities.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.5.20150315'
+ModuleVersion = '1.0.6.20150315'
 
 # ID used to uniquely identify this module
 GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
@@ -24,7 +24,7 @@ Author = 'Ronald Rink'
 CompanyName = 'd-fens GmbH'
 
 # Copyright statement for this module
-Copyright = '(c) 2014 d-fens GmbH. Distributed under Apache 2.0 license.'
+Copyright = '(c) 2014-2015 d-fens GmbH. Distributed under Apache 2.0 license.'
 
 # Description of the functionality provided by this module
 # Description = ''
@@ -152,6 +152,8 @@ FileList = @(
 	,
 	'README.md'
 	,
+	'Import-Module.ps1'
+	,
 	'biz.dfch.PS.System.Utilities_aaab9f3e-e544-4827-9db8-44bade441fc5_en-US_HelpContent.cab'
 	,
 	'biz.dfch.PS.System.Utilities_aaab9f3e-e544-4827-9db8-44bade441fc5_HelpInfo.xml'
@@ -174,8 +176,8 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # SIG # Begin signature block
 # MIIaVQYJKoZIhvcNAQcCoIIaRjCCGkICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUU59SKyrkFXN7aJOWLic1xNEq
-# q3agghURMIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMq/LNAu39wiaRR18thQDwoX6
+# 9TigghURMIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5
 # MDExMjAwMDBaFw0yODAxMjgxMjAwMDBaMFcxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -292,25 +294,25 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # aWduIENvZGVTaWduaW5nIENBIC0gRzICEhEhYHff2l3ILeBbQgbbK6elMjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQUldo7zqtcvfZ8jREHXORJEeU0RbQwDQYJKoZIhvcNAQEBBQAE
-# ggEAb2lVyOtsMi84KfooZC9Kv5EUTBhUriG6cV/j8YjBQ1D9s7AmOsD5hBoKzLwC
-# J+ywXhrjDujEzGi/3tjkyZHCpdBtuGCMCTaX2B5k9Edx4VQbIkW3fZUWUROU0YLq
-# TWcoO1/muh0YrDnvaCqHthOTw7CTnD4LhuWLji/ExNFkcvJ05hfKr1Oowh1EErk2
-# zu9hFRyX8KsDr2uABayFMQMvTNTNjVvC75m5aRy7Q0L9/kJT2Z9brqlReYUwOKaH
-# PoGjnjrcHV/3v5JHHWEYYBNFq7GT/93ZKwN25TGvs1tHm5jZs+EstAjgyikIgISJ
-# I3DiS4cNUOdNcDPs67f8hrnrZqGCAqIwggKeBgkqhkiG9w0BCQYxggKPMIICiwIB
+# hkiG9w0BCQQxFgQUXMGUGy47fh7+Jhd25WmoaTHcmkUwDQYJKoZIhvcNAQEBBQAE
+# ggEArrSRWBbKDwoVxTEJG//3LAkeeLnIv9x/k53u5Jv07EjyW/1qWW0PFz/0/jPg
+# kKfu2G2vMZ0KlMM1FkK2W6wWxEPoEjkG7mb2Sx687P9zwKwJLPxvZnSJuhvY214h
+# +NLQyS4EZbBNDigqqf2IoOh9qtcIYPoVyyp/umCfZuRf2JJPYw3cJN3XltIoZDaM
+# /U148eYUn+GDKmZlnvwhPG07FI7QPakdWgRDST2XVJswcN7rmr34Bd3NGQI2YYY/
+# 8914Xf21O0AVEo7m+jpOEM3g972ptzQT2Ir9yKt3R3S2HCZ5KRONeEv5zoopskNS
+# TCeyqVso7sHDBGrzH+84pQUc76GCAqIwggKeBgkqhkiG9w0BCQYxggKPMIICiwIB
 # ATBoMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSgw
 # JgYDVQQDEx9HbG9iYWxTaWduIFRpbWVzdGFtcGluZyBDQSAtIEcyAhIRIQaggdM/
 # 2HrlgkzBa1IJTgMwCQYFKw4DAhoFAKCB/TAYBgkqhkiG9w0BCQMxCwYJKoZIhvcN
-# AQcBMBwGCSqGSIb3DQEJBTEPFw0xNTAzMTUxMTMwMDdaMCMGCSqGSIb3DQEJBDEW
-# BBQknK2z/8T1grAHpJ5AxEHFpGJMPTCBnQYLKoZIhvcNAQkQAgwxgY0wgYowgYcw
+# AQcBMBwGCSqGSIb3DQEJBTEPFw0xNTAzMTUxMzQ0NTNaMCMGCSqGSIb3DQEJBDEW
+# BBQ2CsIDRU/JA2+jhULs4CCAKX9T8jCBnQYLKoZIhvcNAQkQAgwxgY0wgYowgYcw
 # gYQEFLNjCLTUze1Pz71muVX647+xLCnmMGwwVqRUMFIxCzAJBgNVBAYTAkJFMRkw
 # FwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSgwJgYDVQQDEx9HbG9iYWxTaWduIFRp
 # bWVzdGFtcGluZyBDQSAtIEcyAhIRIQaggdM/2HrlgkzBa1IJTgMwDQYJKoZIhvcN
-# AQEBBQAEggEAK9VcQMNQV+wCD9og3hzXCKTgFaQonASV8ODGIKszRbmoAuPdp2ee
-# 2t89YmYpe8l+DfTIvrUc/11KqUR2ZGjbSuVcm8y1sJuQL1RKtPFVWgQNV3PLEDOX
-# c8XSA4NTewg7TKi+2a4lpGdaymNxdwu/g/nmss0ljqPH9uSaKR/0uqOL0KHcL7NH
-# 1E4wyGb2sEsghBwZtxjwvacbAnVGN13XBnQHi7+kB8ics6GBZ/ZdR6mziPSR69je
-# x6CfvACTn747sD8gSXb4uQ+a90sRLh5AA0dsWpZLho2P/lt79n9db2tqm/UBm1pF
-# y/N18XbyHMmbmAbQdYwANvtyextQmBheEg==
+# AQEBBQAEggEAlzFcHtDyznUwVyRO7abqrv/QJvnrcmKmCLt1r8XAzyLqUpMn7LEQ
+# rGIzXSA+n9p9KWayVBZ/9L2m5rjyUdrNfqBGdMz6NT82JABS5fyK2ic3UmC0Jw/X
+# OXaLb2drah6blqlwIfvvDDFDxvGLSl8t4qxsGz0Zv5m8Sp/1E8aQ37eC9OORlK55
+# zXSsmc6pO1A12IbgpbZj9Nct4Wi2AbxPVDvAJMl/JNTUi0iJCeWJVqAa3UjQiBOK
+# jNScSzTlS0lQJSUcvwY9A1n6bMU4YZFXRPPSxhDrO/wiROYvTr7krjLNlROrXFOs
+# n0m5M+JSceGc837hJqQHia17EJHviuDtng==
 # SIG # End signature block
