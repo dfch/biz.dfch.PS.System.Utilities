@@ -46,14 +46,18 @@ http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Export-Credential/'
 )]
 Param (
+	# Specifies the  full path and file name of the encrypted credential object
 	[Parameter(Mandatory = $true, Position = 0)]
 	[string] $Path
 	,
+	# Specifies the credential object to encrypt
 	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 1)]
 	[Alias('Credential')]
 	[PSCredential] $InputObject
 	,
+	# Specifies a keyphrase of the encrypted credential object
 	[Parameter(Mandatory = $false, Position = 2)]
+	[Alias('Password')]
 	[string] $KeyPhrase = [NullString]::Value
 )
 
@@ -154,8 +158,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; 
 # SIG # Begin signature block
 # MIIaVQYJKoZIhvcNAQcCoIIaRjCCGkICAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMjXsHLWE8s2+EUxPAuDNtfkn
-# d5mgghURMIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1tq7O++pUep7jhIGQEpkep6X
+# Bi+gghURMIIDdTCCAl2gAwIBAgILBAAAAAABFUtaw5QwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw05ODA5
 # MDExMjAwMDBaFw0yODAxMjgxMjAwMDBaMFcxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -272,25 +276,25 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; 
 # aWduIENvZGVTaWduaW5nIENBIC0gRzICEhEhYHff2l3ILeBbQgbbK6elMjAJBgUr
 # DgMCGgUAoHgwGAYKKwYBBAGCNwIBDDEKMAigAoAAoQKAADAZBgkqhkiG9w0BCQMx
 # DAYKKwYBBAGCNwIBBDAcBgorBgEEAYI3AgELMQ4wDAYKKwYBBAGCNwIBFTAjBgkq
-# hkiG9w0BCQQxFgQUJkJ25QV5/HesTJ9cYf3WoFNtvsYwDQYJKoZIhvcNAQEBBQAE
-# ggEAc1e9ftib1Poch5uENDBNuYmHJ1pIPoIPHoW8nS/pWFqzfpl7CCqy0+ncz7QE
-# hpRE1tSYGJu/udicr/pJRapHDx46GtMYiU6wC2/gLr1aGtt10uPPd1EJ9SbqrxLN
-# k9BV0ywZ6WBSgY9y2gwx2wbox7SvnjJoofruhlfOB5t1+/NAZ+v+FAkgeAB2a4Lv
-# lSH6mTS6QFlaFzwABmJYzIm2tv+E1Io5Qn/Tqda7xO3JH9yAE6eHi3L3yrFqOTmX
-# gXGS4zwWQm3XstBKiZi5MTNa4iH/fbfjXhV79/rgdHwBLL1WlY2ExTt6TQexPcKi
-# sWRdt33Iwa01grKK3mDcaf+kdKGCAqIwggKeBgkqhkiG9w0BCQYxggKPMIICiwIB
+# hkiG9w0BCQQxFgQUzCAjyJ0xCI8agz05Uvu/Mt75n7QwDQYJKoZIhvcNAQEBBQAE
+# ggEA0Mc5MIli+8pqe44C5oxdfLCd4foBa3vSXbL+Ey67Sz75kTEjyxGeNXvOU5Ym
+# 8DBCHgxZef1XEFexkaOSdbQ6dNrzJm5or+utsm+fye8dL1U2ZcI1XyoPZkzqCLY2
+# anKSeBL8u82yQscrwqxaEIx2iuHhdCeTGhtEusQU3m7I9QNbQFjy/jLEY4GK5AtU
+# UVzJeO5uGfZAgwOp7snyooKohuRQdxKPZ5CKTswcMOYfNjxpbCvHhzYxV5gvNoq8
+# ZQYDYPPZm7c0gxIV9vJaFxoxY7frMkXDE0XzFekdrEvr1OwIalmK72RgR1+IQ+Pp
+# 5VxevLg0q+yREmtQE/+RHJXNw6GCAqIwggKeBgkqhkiG9w0BCQYxggKPMIICiwIB
 # ATBoMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSgw
 # JgYDVQQDEx9HbG9iYWxTaWduIFRpbWVzdGFtcGluZyBDQSAtIEcyAhIRIQaggdM/
 # 2HrlgkzBa1IJTgMwCQYFKw4DAhoFAKCB/TAYBgkqhkiG9w0BCQMxCwYJKoZIhvcN
-# AQcBMBwGCSqGSIb3DQEJBTEPFw0xNTAzMTUxMjE4MDlaMCMGCSqGSIb3DQEJBDEW
-# BBTbTxyPIWB6WsjXuaSoVRKEG7femDCBnQYLKoZIhvcNAQkQAgwxgY0wgYowgYcw
+# AQcBMBwGCSqGSIb3DQEJBTEPFw0xNTAzMTUxMjMzMjZaMCMGCSqGSIb3DQEJBDEW
+# BBTHb5MlRexJdCVeA0TQmmxt7SnhXzCBnQYLKoZIhvcNAQkQAgwxgY0wgYowgYcw
 # gYQEFLNjCLTUze1Pz71muVX647+xLCnmMGwwVqRUMFIxCzAJBgNVBAYTAkJFMRkw
 # FwYDVQQKExBHbG9iYWxTaWduIG52LXNhMSgwJgYDVQQDEx9HbG9iYWxTaWduIFRp
 # bWVzdGFtcGluZyBDQSAtIEcyAhIRIQaggdM/2HrlgkzBa1IJTgMwDQYJKoZIhvcN
-# AQEBBQAEggEAijBtkrE1i7NwlRQ0zx2xHdt1pack9K9fJ66Jo0TscH3iRBp/Jmaq
-# Rtp5MTImwpW+kdK2BmThTehzmkB3iqGazOVhMC0bRdaDe+JYqVR1V3LI5/fLeLot
-# j5NdoKA6LqnM5wdcIeqoN8og6QvnFD5gOelNM4+Y211zp2kfQZ4+IHbZr12fIngt
-# bjJCcxZ2bTQJRgQYl8WKIfv7FnNMud1NZALO6YWwQmheBfPNXA6Xm9ZNKmVAM7/+
-# 4gSZPApm9mq/gfFqm1ungihk3SOTPR8ZDhabysZ2/yBAcDEiB32cFGBc7Tg2Lkoa
-# NhJeZ0dMtpTqGHdbtb4j4ei8eB5blSKB7w==
+# AQEBBQAEggEAPBRG8jbEa7JiZHZgW+YkvCTSss/3WeqR6SGf1d4Usw4ZAWvHrDhP
+# pwb/oZnlbqtaraAEwbyb1yk/IczGrGOrRopaYi86YdwOnPo4CIHzKXzOKJFwMP89
+# EWMfxKW5/rJIMI1zNRmRLbF0E0FlAi8alefr12/susdF+eG+6j9n7fxPjp6DHFZw
+# H03rWSdaeVQwTGIOrKa3eZxTBD8dXkQFUXCVx7KjiMdBo0C4u3erCYcOVdnGhDlP
+# Z6DjOQQoxCpGMimSt0BSumc1QWd2KFqjONQxLSiHhaneT18t12IwtFD9NeoQ9JMk
+# PNzlUzTVJvTk5YFSoBhOYfHZpgIchOzDtw==
 # SIG # End signature block
