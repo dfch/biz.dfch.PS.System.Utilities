@@ -74,23 +74,29 @@ See module manifest for required software versions and dependencies at: http://d
 
 
 #>
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-Base64/'
-    )]
-	[OutputType([string])]
-	PARAM(
-	    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $false, Position=0)]
-	    [string]
+[CmdletBinding(
+	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-Base64/'
+)]
+[OutputType([string])]
 
-	    $InputObject
-	)
-	BEGIN {
-	$datBegin = [datetime]::Now;
+PARAM
+(
+	# Specifies the string to convert to BASE64
+	[Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false, Position = 0)]
+	[string]
+	$InputObject
+)
+
+BEGIN 
+{
+	# $datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Length: '{0}'; NonAlpha: '{1}'" -f $Length, $NonAlpha) -fac 1;
-	} # BEGIN
-	PROCESS {
-	$fReturn = $false;
+	# Log-Debug -fn $fn -msg ("CALL. Length: '{0}'; NonAlpha: '{1}'" -f $Length, $NonAlpha) -fac 1;
+}
+
+PROCESS 
+{
+	# $fReturn = $false;
 	$OutputParameter = $null;
 
 	$bytes  = [System.Text.Encoding]::UTF8.GetBytes($InputObject);
@@ -98,17 +104,36 @@ See module manifest for required software versions and dependencies at: http://d
 
 	$OutputParameter = $encoded;
 	return $OutputParameter;
-	} # PROCESS
-	END {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	} # END
-} # ConvertTo-Base64
-Export-ModuleMember -Function ConvertTo-Base64;
+}
 
-<#
-2014-11-18; rrink; ADD: examples
-#>
+END 
+{
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+}
+
+}
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertTo-Base64; } 
+
+##
+ #
+ #
+ # Copyright 2013-2015 Ronald Rink, d-fens GmbH
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ # http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ #
+ #
+
 
 # SIG # Begin signature block
 # MIIW3AYJKoZIhvcNAQcCoIIWzTCCFskCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
