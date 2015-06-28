@@ -238,6 +238,9 @@ PROCESS
 		{
 			# Clickatell specific basic number normalisation
 			$Object = $Object.ToString().Replace('+', '').Replace('-','').Replace(' ','');
+			# escape new line etc
+			$Object = $Object.Replace("`n", '\r\n\r\n');
+			
 			if($PSCmdlet.ShouldProcess( (("{0}: {1}" -f $Object, $Message)) ))
 			{
 				# The 'to' parameter MUST be set as an array, even if only one recipient is specified.
@@ -252,7 +255,9 @@ PROCESS
 				{
 					# In PS 3.0 we cannot set an 'Accept' header, it is sufficient to only set 'Content-Type'.
 					# See https://connect.microsoft.com/PowerShell/feedback/details/757249/invoke-restmethod-accept-header
-					$r = Invoke-RestMethod -Method POST -Uri $Uri -ContentType 'application/json' -Headers $headers -Body ($Body | ConvertTo-Json -Compress);
+					$BodyJson = ($Body | ConvertTo-Json -Compress);
+					$BodyJson = $BodyJson.Replace('\\n', '');
+					$r = Invoke-RestMethod -Method POST -Uri $Uri -ContentType 'application/json' -Headers $headers -Body $BodyJson;
 					$ApiResponse = $r.data.message;
 					$r2 = @{};
 					$r2.accepted = $ApiResponse.accepted;
