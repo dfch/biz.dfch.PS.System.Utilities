@@ -16,9 +16,9 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 
 	Context "Test-Send-ShortMessage" {
 	
-		It "Should-ContainCorrectHeaders" {
+		It "ShouldBe-CorrectRestRequest" {
 
-			$Script:HeadersMocked = "NOT-INITIALISED";
+			$Script:PSBoundParametersMocked = "NOT-INITIALISED";
 			function Invoke-RestMethod(
 				[String] $Method
 				,
@@ -32,14 +32,39 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 				)
 			{
 
-				$Script:HeadersMocked = $Headers.Clone();
+				$Script:PSBoundParametersMocked = $PSBoundParameters;
+				throw;
 			}
 
-			'27999112345' | Send-ShortMessage -Message 'hello, world!' -Credential e2c479178dd741aabe4d05c25db9b9b3;
+			$BearerToken = 'e2c479178dd741aabe4d05c25db9b9b3';
+			$PhoneNumber = '27999112345';
+			$Message = 'hello, world!';
+
+			$Method = 'POST';
+			$XVersionValue = '1';
+			$ContentType = 'application/json';
+			[Uri] $Uri = 'https://api.clickatell.com/rest/message';
+
+			$PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 			
-			$Script:HeadersMocked.Authorization -match '^Bearer\ \w+$' | Should Be $true;
-			$Script:HeadersMocked.'X-Version' | Should Be '1';
+			$Script:PSBoundParametersMocked.Headers.Authorization -match ('^Bearer\ {0}$' -f $BearerToken) | Should Be $true;
+			$Script:PSBoundParametersMocked.Headers.'X-Version' | Should Be $XVersionValue;
+			
+			$Body = ($Script:PSBoundParametersMocked.Body | ConvertFrom-Json);
+			$Body.text -is [String] | Should Be $true;
+			$Body.text | Should Be $true;
+			$Body.to -is [array] | Should Be $true;
+			$Body.to.Count | Should Be 1;
+			$Body.to[0] | Should Be $PhoneNumber;
+			
+			$Script:PSBoundParametersMocked.Method | Should Be $Method;
+			
+			$Script:PSBoundParametersMocked.Uri -is [Uri] | Should Be $true;
+			$Script:PSBoundParametersMocked.Uri.AbsoluteUri | Should Be $Uri.AbsoluteUri;
+			
+			$Script:PSBoundParametersMocked.ContentType | Should Be $ContentType;
 		}
+
 	}
 }
 
