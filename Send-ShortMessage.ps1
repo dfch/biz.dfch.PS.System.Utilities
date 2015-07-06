@@ -180,6 +180,7 @@ BEGIN
 	[Boolean] $fReturn = $false;
 	# Return values are always and only returned via OutputParameter.
 	$OutputParameter = @();
+	$OutputParameterPrepare = New-Object System.Collections.ArrayList;
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
 	Log-Debug $fn ("CALL. Message[length: {0}] to '{1}' via '{2}'" -f $Message.Length, ((Out-String -InputObject $InputObject).Replace([environment]::NewLine, ',').TrimEnd(',')), $Provider);
@@ -258,12 +259,26 @@ PROCESS
 					$BodyJson = ($Body | ConvertTo-Json -Compress);
 					$BodyJson = $BodyJson.Replace('\\n', '');
 					$r = Invoke-RestMethod -Method POST -Uri $Uri -ContentType 'application/json' -Headers $headers -Body $BodyJson;
-					$ApiResponse = $r.data.message;
-					$r2 = @{};
-					$r2.accepted = $ApiResponse.accepted;
-					$r2.to = $ApiResponse.to;
-					$r2.apiMessageId = $ApiResponse.apiMessageId;
-					$OutputParameter += $r2;
+					if($r.error)
+					{
+						$ApiResponse = $r.error;
+						$r2 = @{};
+						$r2.accepted = $false;
+						$r2.code = $ApiResponse.code;
+						$r2.to = [String]::Empty;
+						$r2.apiMessageId = [String]::Empty;
+						$r2.description = $ApiResponse.description;
+						$null = $OutputParameterPrepare.Add($r2);
+					}
+					else
+					{
+						$ApiResponse = $r.data.message;
+						$r2 = @{};
+						$r2.accepted = $ApiResponse.accepted;
+						$r2.to = $ApiResponse.to;
+						$r2.apiMessageId = $ApiResponse.apiMessageId;
+						$null = $OutputParameterPrepare.Add($r2);
+					}
 				}
 				catch [System.Net.WebException]
 				{
@@ -280,7 +295,7 @@ PROCESS
 					$r2.apiMessageId = $ApiResponse.apiMessageId;
 					$r2.code = $ApiResponse.error.code;
 					$r2.description = $ApiResponse.error.description;
-					$OutputParameter += $r2;
+					$null = $OutputParameterPrepare.Add($r2);
 					Log-Error $fn ($r2 | Out-String);
 				}
 			}
@@ -295,27 +310,42 @@ PROCESS
 	{
 		# N/A
 	}
-	return $OutputParameter;
 }
 END
 {
 	# $datEnd = [datetime]::Now;
 	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	$OutputParameter = $OutputParameterPrepare.ToArray();
+	return $OutputParameter;
 }
 
 } # function
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Send-ShortMessage; } 
 
-<#
-2015-03-15; rrink; CHG: #3, #4 - documentation and structure
-2015-02-16; rrink; ADD: initial version
-#>
+##
+ #
+ #
+ # Copyright 2015 Ronald Rink, d-fens GmbH
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ # http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ #
+ #
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPPFSgGHpP9Sj8yMIJ6oGALU5
-# ybygghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbdzi3eLFek/vijnfW57AIG4P
+# xxWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -414,26 +444,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Send-ShortMessage; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS8yRAa59mms1TM
-# YakmjP+L2x5T4TANBgkqhkiG9w0BAQEFAASCAQALO0pOTU5TA4UGJeKrZ12PW77e
-# 0SsN2JEcPQA/P+G0B+JIRxbX3qPwYECuavENiERONhKHXpDeLYBIXgNB193iLYs6
-# yMOVUYHHQ4TAmSwOiKCQsSXWi9gQw6dPCTJ+PGn4wqbFi2iefQjSxUl8DNcEeLAj
-# Q9zIYVGD8gG2kK76xXpTNJ4aGN9iSz+7WbsgreEGAvtT11aR9e1UXgnG3cRiQYxZ
-# Nf84jz0coHS00tKPDhN9GA7V5X9pr+byEJYyaC9YzkyNHsIdW/LYW9tIkUbBtcrN
-# wphu+rPaJBObLr37XvfTWCIZ8IkfSolAZKmyOU7R3ZUDZTN40sKqEc0zuHKAoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTa3qIpZdiyF5DA
+# JzrwtiQfLSD7YTANBgkqhkiG9w0BAQEFAASCAQAnPYlv0hB6KN0BErueuHatnksy
+# 6AvJaZo87Q+YumF3vJB3Q4x+CIDgUERM1M3OyqMWFgNlP4g6CWmh5ctlp/ztXwu8
+# Ek8bsrkCpge18Wr6H3yjSCLfjj1Wbg8UN933d3kZSy3QEu4fAFS7+Z2KOkVkXtsM
+# M70Jipo9tP+zfELb8CtXgAeQaXy6mx6WLK2xsGYRRti7a8rF6gDAfjSGkxDarBNR
+# pIy/dfcaTVnUmAdkWaV6y+YpMHubf+mh3fAZ7MfDK6qbGm5HAg0myw0AI0QTWo5i
+# n+m81caL8V0M19jLU2TAAqKorwiZdXZLJ+a+bkqV+rJ7HG2vjrI6U3x09IvroYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDYyMDA5MjE0MVowIwYJKoZIhvcNAQkEMRYEFMzqJUq5xIQFRQq/EOXr69pu1Swv
+# MDcwNjA0MzQwMVowIwYJKoZIhvcNAQkEMRYEFLwP5oFTYgRCbNMDrfM09Q246lVa
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBI7CyWTvoIw0DF2//t
-# P2ioWQxz+6pfhN2CRsu6A55hZwTKsES4EwGyu9IVb7A9sq628suPebHxcYGmAYA6
-# ygKg1ID68H+4MNagVqXSF4vEcFM2DCiOMqBqFuQj/UbTH7Bw6RaN+sxUj7lqvA9e
-# 4XSWTpk8l9szquUL/kNcMqcH+xWwVo5dXVmbZZSSvKzRaUFO3VCBI703itmNWt1l
-# +2qWk/bSVlbP26WOMYtX8KuIrLqlZFIgTaUZnCEzadqpYX/sQFnfq/wTKyRlSyOP
-# XNLt2zuNWR+VjLQIIUPjo9m3zSOsFvSEtRGUSfRQePTayhNM48Q0nAxG2kurs/DL
-# gnWZ
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBl/jCb1wk9tvNM7fj4
+# 3gaXC4e6P/bPURwKU4LOVBUcHhW2cCgKVkP/TsfWQT/AqYg2669i3opAZHLV9NzO
+# OBcUxDcRom2KX7lE3/Sjb1jAYgmEprhCbQ8mceB0ddknUc8D38Wjl+HtWWvfwUbk
+# y/IdS+GmnUKPkFM2tJMU2qcutgHF61h1hmK9ZpN8GFHPidW2AhzEj9WG1FZJ68Aa
+# lDIglNcpCuDl8bZRlruqUHx4Zxa/k3QXC4McLMtz82AEDqBll6VMcqL3EuSZgTXj
+# dXk2/dso2t6hCClSczR6UXpc2Sy8sUczJn6SUBKSFA/GComzEbzDcso0xst9Lkyk
+# eFCW
 # SIG # End signature block
