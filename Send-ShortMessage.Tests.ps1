@@ -159,7 +159,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 
 			# Assert result
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $false;
-			$result.accepted | Should Be "true";
+			$result.accepted | Should Be $true;
 			$result.to | Should Be $PhoneNumber;
 		}
 		
@@ -197,11 +197,11 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result.Count | Should Be 2;
 
 			[String]::IsNullOrWhiteSpace($result[0].apiMessageId) | Should Be $false;
-			$result[0].accepted | Should Be "true";
+			$result[0].accepted | Should Be $true;
 			$result[0].to | Should Be $PhoneNumber;
 
 			[String]::IsNullOrWhiteSpace($result[1].apiMessageId) | Should Be $false;
-			$result[1].accepted | Should Be "true";
+			$result[1].accepted | Should Be $true;
 			$result[1].to | Should Be $PhoneNumber2;
 		}
 	}
@@ -291,8 +291,8 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUo+kxGOsbU9F5hpQftpvFmkqW
-# 5uOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUk24yoSREPYbJ2CCu9ppXlGBP
+# IeSgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -391,26 +391,26 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSOyHXA6eBIXot8
-# QzWpSPaF1DCmrjANBgkqhkiG9w0BAQEFAASCAQCktHfrQvUY+HRpYlZ+IkaQslF6
-# OcpaVDKdlHZ/7HvhMlJF8wMWMXhBk0manjGFZN3iNXP0zITEx6+XIah/RmHOTRY4
-# 5ZNwHA67y5biQtOHRH8PMnkN7dykYkRI3FltYf4+cqmGO/flfERhuuDufrSt2+ys
-# tPhW/MSHowSftNOI37U8Ix+yNvSwWA3p1Wz7nq2lMRWotjDnSNNlOAGi7LtROI0w
-# bSGZubHBCbS9cPSLS4RpLX5w2FgibNxg598Ah4zxzAp4eQcMhKzea6oVIhSDrCF3
-# YdMMGt5iSQ7pMtClQIzwtLW8upVgyXrY9iBfuDD2jN1u099AG/3LGTSikP7UoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRTCYRy0tLnHHdS
+# +dXUdl8p3PnD8TANBgkqhkiG9w0BAQEFAASCAQBiNM1A+gX2oG+hsiF5kAb+ymfg
+# tMrh8Y8QisDEHVtHOlrkk/LyVZ7a4k1rPCAWYqETTWFPGbz7fmv2ie6qJyt0loEG
+# OmPDwlNhCbPMuZjQzPfL115M9EsNrESvbK6QqT5hBxR9sRCY7mZno0pqg9Ew3T4h
+# lcOtJIBncGwR11eUQsbGJkWZT68U6ekF4Qnktxz+iIEshkjOekYzyBaU047lzP7w
+# O6bRN3cztQ7oGUI60Tij4CdBK5z1/EMhihbwunf3sg65FByEv06wDCQUbCPg8dZ3
+# NKVkZlVITyX5wK0nsfuhWC6RW3PMd5VeqbAO+19acvCSgvaLXqyxPUPYTAhloYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwNjA0MzM1NVowIwYJKoZIhvcNAQkEMRYEFPdIrjPPpWaIthcsZjn5BuP70Nec
+# MDcwNjExMDIwMFowIwYJKoZIhvcNAQkEMRYEFLVjlbf8bS6TLYSgBFiTkcG/hAD+
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBsqOLvt6PfYhsLaPsc
-# BiH3f80MuzsKimIN/H/IDKlUQXf5B0W08dGaJIgIX42lz/VQzs4vgLhBT691x+bE
-# l7HqTVNjpuM7uv0N7MNCiTlB7xj1GbS0UZLbn9Zm4eltqdXBmssMV+eCdvc5ngRj
-# c1A3cCbSI7NepktNWoNdbOgysxO1WFPdBQELljn5lvrpJkShJaMS23wdFxkA9zJJ
-# tU6+naRMiNchSavyM4TTvfdSRWrhXLqUAiaFUFTrmrMg30yFqlhcY5extarDP9fV
-# NHiTiWXWrlMp0xCXqkoR5uI8VJlF07+VGpmsezJFRyjIEOrWzN4WpdENNW4mK9/N
-# Pzyu
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBTObAfHDsHe/uu21HA
+# G16cBDUctW5HdRBxzwATsTiS9J94h6mW1Xpct+VZh2EU9Jvz6pZZ719EgfjIfIgi
+# y5aAo3voyTQKMylslVZaz4wwEw4v3UQ2UqiMgxvWW/DAlMV0otydcOwPclyfJSa4
+# wsklFkUEyIrUDr2dK0odxq38TX0BYQ+Itn92aKV4gaQJpcwee9s7CTkk/6CV+8eL
+# 27dgOd3buiSP+O7XP0iNky6PPpbyK2RRHo5/+lQF9a5Ho49Y3hODd7gv965huizK
+# e3g4FJBBmSM9RVtb/VHyaYpjLyMxV/ntih22+kb2hiTZZ9ofbaa12cab6qIDpnjm
+# NYyp
 # SIG # End signature block
