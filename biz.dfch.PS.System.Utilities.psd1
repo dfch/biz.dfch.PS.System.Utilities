@@ -12,7 +12,7 @@
 RootModule = 'biz.dfch.PS.System.Utilities.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.6.20150628'
+ModuleVersion = '1.0.7.20150706'
 
 # ID used to uniquely identify this module
 GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
@@ -27,7 +27,7 @@ CompanyName = 'd-fens GmbH'
 Copyright = '(c) 2014-2015 d-fens GmbH. Distributed under Apache 2.0 license.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = 'This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.'
 
 # Minimum version of the Windows PowerShell engine required by this module
 PowerShellVersion = '3.0'
@@ -155,10 +155,6 @@ FileList = @(
 	'README.md'
 	,
 	'Import-Module.ps1'
-	,
-	'biz.dfch.PS.System.Utilities_aaab9f3e-e544-4827-9db8-44bade441fc5_en-US_HelpContent.cab'
-	,
-	'biz.dfch.PS.System.Utilities_aaab9f3e-e544-4827-9db8-44bade441fc5_HelpInfo.xml'
 )
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
@@ -178,8 +174,8 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUhwIZ8Yet4OVQNQ3xPVMx0EtE
-# EcugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwc1GFSs8sezp8rLXIXK/Lsqj
+# WXqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -278,26 +274,26 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTlfD4YDvD4ebUB
-# ElbHDJnimpy7QDANBgkqhkiG9w0BAQEFAASCAQAhhGnUW5iAq9TDolftDL4KRwDF
-# lro557iJ83MEoYWmQs02kmG9O2pnmZNEuniMJ3WNwA9opCg0FF4taiUkWplrysBu
-# 5ZCwZMiPsJZ8LVcr46uD42d5KyOj0gfeTAWfSBoGSN+PY1NjnTXEjcIYwmgSFNNr
-# zPe1cGZGIaPLsXcAnOdQ6MH9emTN67b4UZQz5EQTwL3v1g7tQqWXMIcwA/zl+2/f
-# 944WtkhjeW5dmIKDSMrc7fmrpVPVLK4lq3sYdUY+270VRJd0WfVLK0IM6lQDd2ZB
-# 2/GDiQEzB9NFgcz1p34fRsZ3gl/wB+VWars+HVzh6KXI9qyRrU9akSGTbRS5oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSGdgd13gYXWsFy
+# pFzr5r9n10qeozANBgkqhkiG9w0BAQEFAASCAQBNHRKS/fFTuSIOOkHGp1janp5p
+# QCYZmFvz5275cQccZGA+WwvYCJTOiptn+GA9w37qmbTpmFiBF8ysZnOCGRwLBoiK
+# amWBO9V8DVsyZIGTK7f0o/ii/Vnbpfh817xsP55+ZlEeZSXthJVSztHTv/u3/1HW
+# KAGcOqa6oUEjzxm0WTawxsf3ieZHhoKNXZx6eXt8gyqxoh65bef4QIQFgweVzYdN
+# UcwUXfpOUgdtWjsQUu9FXepDavONfKLXf/Lt1nOwNuv02zeJ4YeF/JOLnXb0Os9/
+# qor+vKmpbR3UHLCIJVUH/m8Ee1tuinsPRN1wxQCIqSg7hKGJVsEb+40upOhUoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDYyODEwMzc1NVowIwYJKoZIhvcNAQkEMRYEFMVbUbWDDkxNiKCQcsv17T0pJZ5Z
+# MDcwODE1MTE1NFowIwYJKoZIhvcNAQkEMRYEFIVCzphHRuJJXGbTEipCIj9oJ4Nc
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCO3PD7F+iJPqu4Sc/X
-# Z7V3WQhnPsG8wKE9aQBvs3HXyuPQEaGmhhyJnZCxd35HjFGX+zv6A4i7Y/9GN/3z
-# 98HpItHiee52ODLahshXtEDBpGBK1nzPqS0Ck5MlvoCjp8sUtbHsdHmEBfsRHIO4
-# ZKeB5AlHzMFuFPpvlKzooy0FHFG8jDWBpSxHk6pUDt6xRTkmHQmMCU6tMXVFh0Lm
-# sYrXYK5YYtEEidPJGVpdW3qDtomXEHsspudDD7eUVelv7pm+q6fQn+j81cTzk1wq
-# bQ6dDD4H8GpplfA7s8Ji64cgsgANUSZgF9FcHiNfWF/FAEvPVMB/Q6mKcJkCLY5f
-# 1Elx
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAzyPmBK6pghPyTp8DM
+# kOp02bzE8DrDN8FSFJv7q17MNeT8FvLcXekTpmS44BtjYDuapYKfoKSOBNp2RFdV
+# wXMv5hrei/8dat4AP0MJNrUaKrLP7M5V1t4iAORIZPg9EBZj/iNQuQNZ6NfwL/g2
+# 5ATvC+cAqIkPU1PN0eBFQ51xCqW2vSNGKrG7PNWqmwvLcYysE+cTqM1Ad62issU/
+# NtVPFM6WbuhNVUgaPlJrXCi83J+XLn2H94ZFmfx8C+yJJZRHm3iFb/TyLlaIAobC
+# eFm+H/lEVNLZPguO1CPRdfpJgZY0gxMgnns1xai5/lxYl6wKpUADpvuhD9UvZaom
+# mAZ6
 # SIG # End signature block
