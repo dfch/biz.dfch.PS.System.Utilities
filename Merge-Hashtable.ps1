@@ -1,57 +1,230 @@
-# http://blogs.technet.com/b/jamesone/archive/2010/01/19/how-to-pretty-print-xml-from-powershell-and-output-utf-ansi-and-other-non-unicode-formats.aspx
-function Format-Xml {
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/Format-Xml/'
-    )]
-	[OutputType([string])]
-	PARAM (
-		[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'file')]
-		$File
-		,
-		[Parameter(ValueFromPipeline = $true, Mandatory = $true, Position = 0, ParameterSetName = 'string')]
-		$String
-	)
-	BEGIN {
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	#Log-Debug -fn $fn -msg ("CALL. ExceptionString: '{0}'; idError: '{1}'; ErrorCategory: '{2}'; " -f $ExceptionString, $idError, $ErrorCategory) -fac 1;
+Function Merge-Hashtable {
+<#
+.SYNOPSIS
+Merges two hashtables and creates a resulting hashtable from both sources.
+
+
+.DESCRIPTION
+Merges two hashtables and creates a resulting hashtable from both sources.
+
+Input can be either a positional or named parameters of type hashtable. You 
+can specify the merge behaviour via the 'Action' parameter.
+
+
+.EXAMPLE
+# Effectively merges two hashtables and returns the returned hashtable.
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key2 = 'value2-left';
+
+PS > $htRight = @{};
+PS > $htRight.key3 = 'value3-right';
+PS > $htRight.key4 = 'value4-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight;
+
+PS > $result
+Name Value
+---- -----
+key1 value1-left
+key2 value2-left
+key3 value3-right
+key4 value4-right
+
+
+.EXAMPLE
+# Merges two hashtables and overwrites all keys from the Left hashtable with the values from the Right hashtable
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key2 = 'value2-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key3 = 'value3-right';
+PS > $htRight.key4 = 'value4-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action OverwriteLeft;
+
+PS > $result
+Name Value
+---- -----
+key1 value1-right
+key2 value2-left
+key3 value3-right
+key4 value4-right
+
+
+.EXAMPLE
+# Tries to merge two hashtables with duplicate keys. Result will be $null
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key3 = 'value3-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key2 = 'value2-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action FailOnDuplicateKeys;
+
+PS > $result -eq $null
+True
+
+
+.EXAMPLE
+# Tries to merge two hashtables with duplicate keys. An exception will be thrown
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key3 = 'value3-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key2 = 'value2-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action ThrowOnDuplicateKeys;
+
+Exception calling "Add" with "2" argument(s): "Item has already been added. Key in dictionary: 'key1'  Key being added: 'key1'"
+At .\Merge-Hashtable.ps1:152 char:4
++             $result.Add($i.Name, $i.Value);
++             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], MethodInvocationException
+    + FullyQualifiedErrorId : ArgumentException
+
+
+.LINK
+
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Merge-Hashtable/
+
+
+
+.NOTES
+
+See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
+[CmdletBinding(
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Merge-Hashtable/'
+)]
+[OutputType([hashtable])]
+
+PARAM
+(
+	# Specifies the first (left) input hashtable
+	[ValidateNotNull()]
+	[Parameter(Mandatory = $true, Position = 0)]
+	[hashtable] $Left
+	,
+	# Specifies the second (right) input hashtable
+	[ValidateNotNull()]
+	[Parameter(Mandatory = $true, Position = 1)]
+	[hashtable] $Right
+	,
+	# Specifies the action on how to merge hashtables
+	# 'OverwriteLeft' and 'KeepRight'
+	#     effectively copies the Right hashtable over the Left hashtable
+	# 'OverwriteRight' and 'KeepLeft' 
+	#     effectively copies the Left hashtable over the Right hashtable
+	# 'FailOnDuplicateKeys' 
+	#     effectively merges both hashtables and returns $null 
+	#     if the keys of both hashtables are not distinct
+	# 'ThrowOnDuplicateKeys' 
+	#     effectively merges both hashtables and throws an exception 
+	#     if the keys of both hashtables are not distinct
+	[ValidateSet('OverwriteLeft', 'OverwriteRight', 'KeepLeft', 'KeepRight', 'FailOnDuplicateKeys', 'ThrowOnDuplicateKeys')]
+	[Parameter(Mandatory = $false, Position = 2)]
+	[String] $Action = 'FailOnDuplicateKeys'
+)
+
+BEGIN 
+{
+	# $datBegin = [datetime]::Now;
+	# [string] $fn = $MyInvocation.MyCommand.Name;
+	# Log-Debug -fn $fn -msg ("CALL. Left: {0}; Right: {1}" -f $Left.Count, $Right.Count) -fac 1;
+}
+
+PROCESS 
+{
+	$fReturn = $false;
+	$OutputParameter = $null;
+	
+	$result = $Left.Clone();
+
+	foreach($i in $Right.GetEnumerator()) 
+	{ 
+		if($Action -ieq 'OverwriteLeft' -Or $Action -ieq 'KeepRight')
+		{
+			$result.($i.Name) = $i.Value;
+		}
+		elseif($Action -ieq 'OverwriteRight' -Or $Action -ieq 'KeepLeft')
+		{
+			if(!$Left.ContainsKey($i.Name))
+			{
+				$result.($i.Name) = $i.Value;
+			}
+		}
+		elseif($Action -ieq 'FailOnDuplicateKeys')
+		{
+			if($Left.ContainsKey($i.Name))
+			{
+				$result = $null;
+				break;
+			}
+			$result.($i.Name) = $i.Value;
+		}
+		elseif($Action -ieq 'ThrowOnDuplicateKeys')
+		{
+			$result.Add($i.Name, $i.Value);
+		}
+		else
+		{
+			$e = New-CustomErrorRecord -m ('{0}: Parameter validation FAILED.' -f $Action) -cat InvalidArgument -o $Action;
+			$PSCmdlet.ThrowTerminatingError($e);
+		}
 	}
-	PROCESS {
-	$doc = New-Object System.Xml.XmlDataDocument;
-	switch ($PsCmdlet.ParameterSetName) {
-    "file"  { 
-		$fReturn = Test-Path $File -ErrorAction:SilentlyContinue;
-		if($fReturn) {
-			$doc.Load((Resolve-Path $File));
-		} else {
-			$doc.LoadXml($File)
-		} # if
-	}
-    "string"  {
-		$doc.LoadXml($String)
-	}
-	} # switch
-	$sw = New-Object System.IO.StringWriter;
-	$writer = New-Object System.Xml.XmlTextWriter($sw);
-	$writer.Formatting = [System.Xml.Formatting]::Indented;
-	$doc.WriteContentTo($writer);
-	$doc = 
-	return $sw.ToString();
-	} # PROCESS
-	END {
-	$datEnd = [datetime]::Now;
-	#Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	} # END
-} # Format-Xml
-Set-Alias -Name fx -Value Format-Xml;
-Export-ModuleMember -Function Format-Xml -Alias fx;
+	
+	$OutputParameter = $result;
+	return $OutputParameter;
+}
+
+END 
+{
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+}
+
+} # function
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Merge-Hashtable; } 
+
+##
+ #
+ #
+ # Copyright 2015 Ronald Rink, d-fens GmbH
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ # http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ #
+ #
 
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzJU2HDZ9SCAijxLz6o12ihwK
-# uqqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUa+Kp6q/x0/HT3ZQaVZ/277Fi
+# dHqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -150,26 +323,26 @@ Export-ModuleMember -Function Format-Xml -Alias fx;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSSBSQrxWaUUlih
-# K3Zl9wJOVatiKTANBgkqhkiG9w0BAQEFAASCAQC5gaz0tl4zxre7GLiQylZHlftw
-# ncqW4UpA6x8ywND6O/q8W+aZA2ED8A7XMSY3E0rwk5JxXXXR5I/zX158gFbwjKdf
-# wHDP1hORdGX+/+yct8YH5oVfb1ggUq7WHMxIXtCvhmKOrLuEaQp728RcKn/HdLEX
-# nCi6+Rxkej4SAlxTe8BVBFu4j+2sila6sHOZHe1P9fCgSEpwd5zYEGSzMA1fHh8b
-# P4lo0FQq05QsF4WzpqFE/9Rxm0evOewhcAaIxOKk6kHoCLSbPVf+3jJx8rLfQJv9
-# NWd7+VHV5eHFKAHExEK8dtqTQ1dRl7OCvNF+eNGk6P4ZLy2mBhcQAQYvDpXQoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQSaA6vAHQif9vQ
+# kYjKklZvfWNCzzANBgkqhkiG9w0BAQEFAASCAQBQaWCmkJStsyxWCWL0l7Azfhb1
+# QJ0Tdf+i7jBwnAC7DgzwKnLEEnZaTkyHCweCNqL1sS2K/Gw82orgJo6HZrVInE3S
+# kCgj0KJTRLO/Hh0Rg9KXR8dGB1MY8LWKvNGLsrvMBvHm3YG5isN9QHNEptgt+Qq0
+# s952Hi0WSIQg8e0KPwBuhpbCz5r/HhmqdnDDraVfDrUUT3US0D31HrBsQ/GTuVo7
+# /ghCantMXGiHTlmVJrVy0Q1xAYByg8D+Uce9HDvr0xClLnVciyZXCFTx74Ish0Od
+# yXpspHqNTb8GBnbgJMGWbj8HfrE9ENSndYA4vXuZhRfPwITCrNZhCZBKHfGooYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwOVowIwYJKoZIhvcNAQkEMRYEFIR4HuFE9zvgOmp2Y8MpfOMLgsA5
+# MDcwODE1MTIxMlowIwYJKoZIhvcNAQkEMRYEFMNMndEj5R3mqJf3AQO8hwaqwNaN
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBitFaZdwqkMmTbWx3K
-# QvwgVEnz26xDzJ3rEN4RC6z+XR2nSJFD41jDwSWN9Nc5ikRtWu8XOni8qfz5GBXI
-# N/HYqRU/R/9Y8ldEHsNqYug6rvLNWIgUrO8gHJeKG35u0EyPLmuHCA9zs1A+e3Vn
-# YS+GWzVyxgAwvOihzffBvHMQxsXsSWbX8vIX73tom8/xh2lpnrF4fwEU0u7tMCxJ
-# QcXgKAtnnuKqOugG1hJxDMH4q6XabeWIJZ6hYQWdhd2X5PaIGZzj1RYkksYkRpAr
-# TmC18OofESwDC536hZa2tWTbGT4fjljO6k03nKwD/ewbZDJtizr54f/DKkx7qvZf
-# K2m9
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCMZ7WP0bmVJJlOgfpf
+# JHxDM0CxabSjqAyPmCsJBFCPJsH+lstZKxE8PQEuEXy3FxkK/JwAZ33mW0+LzAJ8
+# QqlpnxGo4RkBq37tfV4SoRPlyLNW0KKKX6X2rO/l2M2+ShaWc7i6lc94Znp4edeh
+# 7OVojOcEu0ZM11gQmYf4sqfq05GnoBh5j7pCCQdcLAZNmqF7j9i9e49L+45ILwsN
+# BSuy7mhKJLI34ifG9Pf6+UOewq/svP/5r8jTWPKAhQS7yXPD8yrqtOTermHM6S1F
+# Ya86iP4rReMWIozqzeTZRLZbAbaJi4pop8Ucqke0iAFLLN69GynBdIeBbei9UEqp
+# OSUP
 # SIG # End signature block

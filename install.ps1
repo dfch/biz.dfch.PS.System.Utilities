@@ -1,57 +1,167 @@
-# http://blogs.technet.com/b/jamesone/archive/2010/01/19/how-to-pretty-print-xml-from-powershell-and-output-utf-ansi-and-other-non-unicode-formats.aspx
-function Format-Xml {
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/Format-Xml/'
-    )]
-	[OutputType([string])]
-	PARAM (
-		[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'file')]
-		$File
-		,
-		[Parameter(ValueFromPipeline = $true, Mandatory = $true, Position = 0, ParameterSetName = 'string')]
-		$String
-	)
-	BEGIN {
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	#Log-Debug -fn $fn -msg ("CALL. ExceptionString: '{0}'; idError: '{1}'; ErrorCategory: '{2}'; " -f $ExceptionString, $idError, $ErrorCategory) -fac 1;
-	}
-	PROCESS {
-	$doc = New-Object System.Xml.XmlDataDocument;
-	switch ($PsCmdlet.ParameterSetName) {
-    "file"  { 
-		$fReturn = Test-Path $File -ErrorAction:SilentlyContinue;
-		if($fReturn) {
-			$doc.Load((Resolve-Path $File));
-		} else {
-			$doc.LoadXml($File)
-		} # if
-	}
-    "string"  {
-		$doc.LoadXml($String)
-	}
-	} # switch
-	$sw = New-Object System.IO.StringWriter;
-	$writer = New-Object System.Xml.XmlTextWriter($sw);
-	$writer.Formatting = [System.Xml.Formatting]::Indented;
-	$doc.WriteContentTo($writer);
-	$doc = 
-	return $sw.ToString();
-	} # PROCESS
-	END {
-	$datEnd = [datetime]::Now;
-	#Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	} # END
-} # Format-Xml
-Set-Alias -Name fx -Value Format-Xml;
-Export-ModuleMember -Function Format-Xml -Alias fx;
+[CmdletBinding()]
+PARAM
+( 
+	[string] $ModuleName = 'biz.dfch.PS.System.Utilities'
+)
 
+END
+{
+    $modulePath = Join-Path -Path $env:ProgramFiles -ChildPath "WindowsPowerShell\Modules";
+    $targetDirectory = Join-Path -Path $modulePath -ChildPath $ModuleName;
+
+    $scriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent;
+    $sourceDirectory = Join-Path -Path $scriptRoot -ChildPath Tools;
+
+    Update-Directory -Source $sourceDirectory -Destination $targetDirectory;
+
+    if ($PSVersionTable.PSVersion.Major -lt 4)
+    {
+        $modulePaths = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine') -split ';'
+        if ($modulePaths -notcontains $modulePath)
+        {
+            Write-Verbose "Adding '$modulePath' to PSModulePath."
+
+            $modulePaths = @(
+                $modulePath
+                $modulePaths
+            )
+
+            $newModulePath = $modulePaths -join ';'
+
+            [Environment]::SetEnvironmentVariable('PSModulePath', $newModulePath, 'Machine');
+            $env:PSModulePath += ";$modulePath";
+        }
+    }
+}
+
+BEGIN
+{
+    function Update-Directory
+    {
+        [CmdletBinding()]
+        PARAM
+		(
+            [Parameter(Mandatory = $true)]
+            [string] $Source
+			,
+            [Parameter(Mandatory = $true)]
+            [string] $Destination
+        )
+
+        $Source = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Source);
+        $Destination = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Destination);
+
+        if (!(Test-Path -LiteralPath $Destination))
+        {
+            $null = New-Item -Path $Destination -ItemType Directory -ErrorAction Stop;
+        }
+
+        try
+        {
+            $sourceItem = Get-Item -LiteralPath $Source -ErrorAction Stop
+            $destItem = Get-Item -LiteralPath $Destination -ErrorAction Stop
+
+            if ($sourceItem -isnot [System.IO.DirectoryInfo] -or $destItem -isnot [System.IO.DirectoryInfo])
+            {
+                throw ("ERROR: '{0}' and '{1}' are not of type [DirectoryInfo]." -f ($sourceItem | Out-String), ($destItem | Out-String));
+            }
+        }
+        catch
+        {
+            throw 'ERROR: Both Source and Destination must be directory paths.';
+        }
+
+        $sourceFiles = Get-ChildItem -Path $Source -Recurse | Where-Object { -not $_.PSIsContainer };
+
+        foreach ($sourceFile in $sourceFiles)
+        {
+            $relativePath = Get-RelativePath $sourceFile.FullName -RelativeTo $Source;
+            $targetPath = Join-Path -Path $Destination -ChildPath $relativePath;
+
+            $sourceHash = Get-FileHash -Path $sourceFile.FullName;
+            $destHash = Get-FileHash -Path $targetPath;
+
+            if ($sourceHash -ne $destHash)
+            {
+                $targetParent = Split-Path $targetPath -Parent;
+
+                if (-not (Test-Path -Path $targetParent -PathType Container))
+                {
+                    $null = New-Item -Path $targetParent -ItemType Directory -ErrorAction Stop;
+                }
+
+                Write-Verbose "Updating file $relativePath to new version.";
+                Copy-Item $sourceFile.FullName -Destination $targetPath -Force -ErrorAction Stop;
+            }
+        }
+
+        $targetFiles = Get-ChildItem -Path $Destination -Recurse | Where-Object { -not $_.PSIsContainer };
+    
+        foreach ($targetFile in $targetFiles)
+        {
+            $relativePath = Get-RelativePath $targetFile.FullName -RelativeTo $Destination;
+            $sourcePath = Join-Path -Path $Source -ChildPath $relativePath;
+
+            if (-not (Test-Path $sourcePath -PathType Leaf))
+            {
+                Write-Verbose "Removing unknown file $relativePath from module folder.";
+                Remove-Item -LiteralPath $targetFile.FullName -Force -ErrorAction Stop;
+            }
+        }
+
+    }
+
+    function Get-RelativePath
+    {
+        PARAM
+		(
+			[string] $Path
+			,
+			[string] $RelativeTo 
+		)
+        return $Path -replace "^$([regex]::Escape($RelativeTo))\\?"
+    }
+
+    function Get-FileHash
+    {
+        PARAM
+		(
+			[string] $Path
+		)
+
+        if (-not (Test-Path -LiteralPath $Path -PathType Leaf))
+        {
+            return $null;
+        }
+
+        $item = Get-Item -LiteralPath $Path;
+        if ($item -isnot [System.IO.FileSystemInfo])
+        {
+            return $null;
+        }
+
+        $stream = $null;
+
+        try
+        {
+            $sha = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider;
+            $stream = $item.OpenRead();
+            $bytes = $sha.ComputeHash($stream);
+            return [convert]::ToBase64String($bytes);
+        }
+        finally
+        {
+            if ($null -ne $stream) { $stream.Close() };
+            if ($null -ne $sha)    { $sha.Clear() };
+        }
+    }
+}
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzJU2HDZ9SCAijxLz6o12ihwK
-# uqqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2K50pBwlJQ1vru4vISDkIZ0q
+# EJ6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -150,26 +260,26 @@ Export-ModuleMember -Function Format-Xml -Alias fx;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSSBSQrxWaUUlih
-# K3Zl9wJOVatiKTANBgkqhkiG9w0BAQEFAASCAQC5gaz0tl4zxre7GLiQylZHlftw
-# ncqW4UpA6x8ywND6O/q8W+aZA2ED8A7XMSY3E0rwk5JxXXXR5I/zX158gFbwjKdf
-# wHDP1hORdGX+/+yct8YH5oVfb1ggUq7WHMxIXtCvhmKOrLuEaQp728RcKn/HdLEX
-# nCi6+Rxkej4SAlxTe8BVBFu4j+2sila6sHOZHe1P9fCgSEpwd5zYEGSzMA1fHh8b
-# P4lo0FQq05QsF4WzpqFE/9Rxm0evOewhcAaIxOKk6kHoCLSbPVf+3jJx8rLfQJv9
-# NWd7+VHV5eHFKAHExEK8dtqTQ1dRl7OCvNF+eNGk6P4ZLy2mBhcQAQYvDpXQoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQaZOBDfvgPATuy
+# xH/iEPWxNSu4zDANBgkqhkiG9w0BAQEFAASCAQC58M49dT5z0TZaaRdHXsqz5lmP
+# fdzAsQwbokJtOcTAGQfSC5NlLMARnrcsDSV1Qp5Ew91PfmknRmQ5ka7kufazNvb0
+# rwcOp6Vdh0aa8K8TyMrWKqgqOmzzSFdKmOSJsL7s6yU+zSvmbqtSKZih0qTRKolT
+# b2jHl2l6hvKDOUKWfEitGbEd7Mllc/xPtRKZRgx6rAQEVPD2n0537v+5sPBFf00l
+# HjZ0vAmNSUjyXWs7/rmpkxKIjbhc81mD/rfqaNXtuvRiBOMTWi5z+sKViT7CfVCb
+# hU/zmqmOCJ0yGIi2bxvJU1X4hK9akHnUoIygqGTAgSMQ5QGyaL3aUyVFM0AfoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwOVowIwYJKoZIhvcNAQkEMRYEFIR4HuFE9zvgOmp2Y8MpfOMLgsA5
+# MDcwODE1MTYwMlowIwYJKoZIhvcNAQkEMRYEFO5bbT20k6tXKqXB4e3cPkdRejvm
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBitFaZdwqkMmTbWx3K
-# QvwgVEnz26xDzJ3rEN4RC6z+XR2nSJFD41jDwSWN9Nc5ikRtWu8XOni8qfz5GBXI
-# N/HYqRU/R/9Y8ldEHsNqYug6rvLNWIgUrO8gHJeKG35u0EyPLmuHCA9zs1A+e3Vn
-# YS+GWzVyxgAwvOihzffBvHMQxsXsSWbX8vIX73tom8/xh2lpnrF4fwEU0u7tMCxJ
-# QcXgKAtnnuKqOugG1hJxDMH4q6XabeWIJZ6hYQWdhd2X5PaIGZzj1RYkksYkRpAr
-# TmC18OofESwDC536hZa2tWTbGT4fjljO6k03nKwD/ewbZDJtizr54f/DKkx7qvZf
-# K2m9
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQB4wOMgEGr6Lz4cM2Ax
+# yF/+yFnMVTe08kDGQ5cvcU/USXwx4KgFInlQDji7Rnbykhro5JosWhje2UFmG+eP
+# DRAcSYPIoWi+XGhQMnVcWFHo0v0DIBDIxq7c1PBaRcJlZbn39DhSerKrL2mD/Jpz
+# 0ahUO2Dbj+DPgnst5FGZIffch2johIcbu/x7ZIAsg+WQQ+hGRnicqONb3hSeXiTN
+# M9WZDBGRCiwvw54WuPel+utGzJpFe5bPWEkaoRN4r25DKlFYRKvMVvJcM85aYTFh
+# mtV7zW9GPeI8FrKxoCo8MTyn37x3C71jtXfHihft8jupG86E7ANgZL/r+9sPO3R1
+# Sua7
 # SIG # End signature block

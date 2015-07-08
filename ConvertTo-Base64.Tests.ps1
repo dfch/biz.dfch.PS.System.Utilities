@@ -1,57 +1,103 @@
-# http://blogs.technet.com/b/jamesone/archive/2010/01/19/how-to-pretty-print-xml-from-powershell-and-output-utf-ansi-and-other-non-unicode-formats.aspx
-function Format-Xml {
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/Format-Xml/'
-    )]
-	[OutputType([string])]
-	PARAM (
-		[Parameter(Mandatory = $true, Position = 0, ParameterSetName = 'file')]
-		$File
-		,
-		[Parameter(ValueFromPipeline = $true, Mandatory = $true, Position = 0, ParameterSetName = 'string')]
-		$String
-	)
-	BEGIN {
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	#Log-Debug -fn $fn -msg ("CALL. ExceptionString: '{0}'; idError: '{1}'; ErrorCategory: '{2}'; " -f $ExceptionString, $idError, $ErrorCategory) -fac 1;
-	}
-	PROCESS {
-	$doc = New-Object System.Xml.XmlDataDocument;
-	switch ($PsCmdlet.ParameterSetName) {
-    "file"  { 
-		$fReturn = Test-Path $File -ErrorAction:SilentlyContinue;
-		if($fReturn) {
-			$doc.Load((Resolve-Path $File));
-		} else {
-			$doc.LoadXml($File)
-		} # if
-	}
-    "string"  {
-		$doc.LoadXml($String)
-	}
-	} # switch
-	$sw = New-Object System.IO.StringWriter;
-	$writer = New-Object System.Xml.XmlTextWriter($sw);
-	$writer.Formatting = [System.Xml.Formatting]::Indented;
-	$doc.WriteContentTo($writer);
-	$doc = 
-	return $sw.ToString();
-	} # PROCESS
-	END {
-	$datEnd = [datetime]::Now;
-	#Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	} # END
-} # Format-Xml
-Set-Alias -Name fx -Value Format-Xml;
-Export-ModuleMember -Function Format-Xml -Alias fx;
 
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
+
+Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
+
+	Mock Export-ModuleMember { return $null; }
+
+	. "$here\$sut"
+
+	$htLeftNull = $null;
+	$htLeftEmpty = @{};
+
+	$htRightNull = $null;
+	$htRightEmpty = @{};
+
+	Context "Test-EmptyInput" {
+	
+		It "NullString-ShouldReturnEmptyString" {
+			
+			$r = ConvertTo-Base64 $null
+			$r -eq [String]::Empty | Should Be $true;
+		}
+
+		It "EmptyString-ShouldReturnEmptyString" {
+			
+			$r = ConvertTo-Base64 "";
+			$r -eq [String]::Empty | Should Be $true;
+		}
+	}
+	
+	Context "Test-SingleString" {
+
+		# Arrange
+		$Plaintext = 'Tralala';
+		$Encoded = 'VHJhbGFsYQ==';
+
+		It "StringInputObject-ShouldReturnEncodedString" {
+		
+			$r = ConvertTo-Base64 $Plaintext;
+			$r | Should Be $Encoded;
+		}
+
+		It "StringPipelineObject-ShouldReturnEncodedString" {
+		
+			$r = $Plaintext | ConvertTo-Base64;
+			$r | Should Be $Encoded;
+		}
+	}
+	
+	Context "Test-MultipleStrings" {
+
+		# Arrange
+		$Plaintext = @('Tralala', 'Schnittenfittich');
+		$Encoded = @('VHJhbGFsYQ==', 'U2Nobml0dGVuZml0dGljaA==');
+
+		It "StringInputObject-ShouldReturnEncodedStringArray" {
+		
+			$r = ConvertTo-Base64 $Plaintext;
+			$r -is [Array] | Should Be $true;
+			$r.Count | Should Be $Encoded.Count;
+			$r[0] | Should Be $Encoded[0];
+			$r[1] | Should Be $Encoded[1];
+		}
+
+		It "StringPipelineObject-ShouldReturnEncodedStringArray" {
+		
+			$r = $Plaintext | ConvertTo-Base64;
+			$r -is [Array] | Should Be $true;
+			$r.Count | Should Be $Encoded.Count;
+			$r[0] | Should Be $Encoded[0];
+			$r[1] | Should Be $Encoded[1];
+		}
+	}
+}
+
+##
+ #
+ #
+ # Copyright 2015 Ronald Rink, d-fens GmbH
+ #
+ # Licensed under the Apache License, Version 2.0 (the "License");
+ # you may not use this file except in compliance with the License.
+ # You may obtain a copy of the License at
+ #
+ # http://www.apache.org/licenses/LICENSE-2.0
+ #
+ # Unless required by applicable law or agreed to in writing, software
+ # distributed under the License is distributed on an "AS IS" BASIS,
+ # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ #
+ #
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUzJU2HDZ9SCAijxLz6o12ihwK
-# uqqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE83Jk89akMiM9iG1y+PZ+cZ0
+# HWagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -150,26 +196,26 @@ Export-ModuleMember -Function Format-Xml -Alias fx;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSSBSQrxWaUUlih
-# K3Zl9wJOVatiKTANBgkqhkiG9w0BAQEFAASCAQC5gaz0tl4zxre7GLiQylZHlftw
-# ncqW4UpA6x8ywND6O/q8W+aZA2ED8A7XMSY3E0rwk5JxXXXR5I/zX158gFbwjKdf
-# wHDP1hORdGX+/+yct8YH5oVfb1ggUq7WHMxIXtCvhmKOrLuEaQp728RcKn/HdLEX
-# nCi6+Rxkej4SAlxTe8BVBFu4j+2sila6sHOZHe1P9fCgSEpwd5zYEGSzMA1fHh8b
-# P4lo0FQq05QsF4WzpqFE/9Rxm0evOewhcAaIxOKk6kHoCLSbPVf+3jJx8rLfQJv9
-# NWd7+VHV5eHFKAHExEK8dtqTQ1dRl7OCvNF+eNGk6P4ZLy2mBhcQAQYvDpXQoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRjt8VbDYdGX/jF
+# i5tIfdqYzIXO/TANBgkqhkiG9w0BAQEFAASCAQCqFmPSki0vZqv2kGLu9UKtZbW1
+# ibLdQvT8ONaUtMzfQ9tpBCeWn47O5lW0sf1Y2daZW8GurfEjz2jQeeeMuLO/Q+Jg
+# iol76dQQ6KQwWSanvBJYVi3Lpo21A8rZL3ta90dlNw7ymLiyW9Lp9K/1MIbZY+PM
+# P8cVzJQ+md9WzvFvi5Mj0ucD6Jp+yR69KUQHKega9YB5yCuGzZvg/EoFVVRFckRE
+# MzpgTc6vlaRJWs7LndbRcY5fGUZ3vbq7u3jtIVo0aAQMdW6x/zzuYMZeqQTgYXu/
+# zZuBksG66yOn3FOX+jSNonNcsHuStfC7SNMcqF+j5uInT/hcVyUrKksB+YNOoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwOVowIwYJKoZIhvcNAQkEMRYEFIR4HuFE9zvgOmp2Y8MpfOMLgsA5
+# MDcwODE1MTIwNlowIwYJKoZIhvcNAQkEMRYEFNCPGlhHM90SCbQdmWk6dKMrVP9G
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBitFaZdwqkMmTbWx3K
-# QvwgVEnz26xDzJ3rEN4RC6z+XR2nSJFD41jDwSWN9Nc5ikRtWu8XOni8qfz5GBXI
-# N/HYqRU/R/9Y8ldEHsNqYug6rvLNWIgUrO8gHJeKG35u0EyPLmuHCA9zs1A+e3Vn
-# YS+GWzVyxgAwvOihzffBvHMQxsXsSWbX8vIX73tom8/xh2lpnrF4fwEU0u7tMCxJ
-# QcXgKAtnnuKqOugG1hJxDMH4q6XabeWIJZ6hYQWdhd2X5PaIGZzj1RYkksYkRpAr
-# TmC18OofESwDC536hZa2tWTbGT4fjljO6k03nKwD/ewbZDJtizr54f/DKkx7qvZf
-# K2m9
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCv9uEu5dff0kEVrZDD
+# T7sin/zt3Wzw77Ns5zIpHWG3hDg+U9KFYBL63RP11HW7Rn9W+6Q/SazSpCTmTKAi
+# 9r0bTzzHWAm6z1rkv/j2JEMK++vW5gYlHAGes7nWKP81evMV4Ic5MQUi/RteTJX4
+# bm2SirysXf++bANVsdKl50SBxcFn48vGGerDKIZ2Wt9xl09mrXNrCxCye2zpQJsa
+# PuclGeISc8gk6Mtm6+LoM+8HNi+xC5irkNNrzm5lN7YtKPZGKg5e0WjwPj5Bec54
+# nBusQXUM47k1V+KzX2bVSP3lS6ZtLV+he1w+TKAflvszLAhax1V3u+C8Qv8NXTj8
+# 3Z9l
 # SIG # End signature block
