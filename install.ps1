@@ -1,17 +1,23 @@
 [CmdletBinding()]
 PARAM
 ( 
-	[string] $ModuleName = 'biz.dfch.PS.System.Utilities'
+	[string] $ModuleName = ([regex]::Match((Get-Item $PSScriptRoot).Name, '^(.+)\.\d\.\d\.\d$')).Groups[1].Value
 )
 
 END
 {
+	if([String]::IsNullOrWhiteSpace($ModuleName))
+	{
+		$ex = New-Object System.ArgumentNullException('ModuleName', 'ModuleName: Parameter validation FAILED. Parameter must not be null or empty. Please choose a module name.');
+		throw $ex;
+	}
     $modulePath = Join-Path -Path $env:ProgramFiles -ChildPath "WindowsPowerShell\Modules";
     $targetDirectory = Join-Path -Path $modulePath -ChildPath $ModuleName;
 
     $scriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent;
     $sourceDirectory = Join-Path -Path $scriptRoot -ChildPath Tools;
 
+	Write-Verbose ("Creating/updating module '{0}' in '{1}' ..." -f $ModuleName, $targetDirectory);
     Update-Directory -Source $sourceDirectory -Destination $targetDirectory;
 
     if ($PSVersionTable.PSVersion.Major -lt 4)
@@ -160,8 +166,8 @@ BEGIN
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2K50pBwlJQ1vru4vISDkIZ0q
-# EJ6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUwTVm9G1K20oawJBEDJg5iR8E
+# pUOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -260,26 +266,26 @@ BEGIN
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQaZOBDfvgPATuy
-# xH/iEPWxNSu4zDANBgkqhkiG9w0BAQEFAASCAQC58M49dT5z0TZaaRdHXsqz5lmP
-# fdzAsQwbokJtOcTAGQfSC5NlLMARnrcsDSV1Qp5Ew91PfmknRmQ5ka7kufazNvb0
-# rwcOp6Vdh0aa8K8TyMrWKqgqOmzzSFdKmOSJsL7s6yU+zSvmbqtSKZih0qTRKolT
-# b2jHl2l6hvKDOUKWfEitGbEd7Mllc/xPtRKZRgx6rAQEVPD2n0537v+5sPBFf00l
-# HjZ0vAmNSUjyXWs7/rmpkxKIjbhc81mD/rfqaNXtuvRiBOMTWi5z+sKViT7CfVCb
-# hU/zmqmOCJ0yGIi2bxvJU1X4hK9akHnUoIygqGTAgSMQ5QGyaL3aUyVFM0AfoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQmd5xQjBzniOki
+# tEDKGgkrUf11ADANBgkqhkiG9w0BAQEFAASCAQAsqPalLhAFXxwLsFgARNXaCIuO
+# Id1TXxKF9le2fIICQ6tWjrDwtCxJkp3BeR2/V1PMi9PZULKiuY4EAC+duub2P96h
+# eDFXTm0LMpRH41lnpmOf0NOFBMAR3fuPAbnjlX4BrM5IsFHLVSA3LQJoWDKCPLFS
+# xK9GX+ENqiAEV57FO+VCLMkOE0XuDBIc0pYxFdYUEXVI8/J1XhTWTy8k/zadLPiH
+# 97lv0I7MlhIdEvlG4Q1mkhe+ZYNZslt7k+RZuDFlVw0oCm8g0s/A5Qk6P586RWis
+# N9pxFMm5dzrLaMZycnd+oBN3owgWsbona0vx/i0E9XdE1UDpxnzgikaZvAYGoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTYwMlowIwYJKoZIhvcNAQkEMRYEFO5bbT20k6tXKqXB4e3cPkdRejvm
+# MDcwOTA5MTE1NlowIwYJKoZIhvcNAQkEMRYEFCG4yFYFTtsxXBuZEKTGGJLjqY4Z
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQB4wOMgEGr6Lz4cM2Ax
-# yF/+yFnMVTe08kDGQ5cvcU/USXwx4KgFInlQDji7Rnbykhro5JosWhje2UFmG+eP
-# DRAcSYPIoWi+XGhQMnVcWFHo0v0DIBDIxq7c1PBaRcJlZbn39DhSerKrL2mD/Jpz
-# 0ahUO2Dbj+DPgnst5FGZIffch2johIcbu/x7ZIAsg+WQQ+hGRnicqONb3hSeXiTN
-# M9WZDBGRCiwvw54WuPel+utGzJpFe5bPWEkaoRN4r25DKlFYRKvMVvJcM85aYTFh
-# mtV7zW9GPeI8FrKxoCo8MTyn37x3C71jtXfHihft8jupG86E7ANgZL/r+9sPO3R1
-# Sua7
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCX4logdnSifaQHRe14
+# gGty42iMEIYTQX0KAq/116IG10DlPAlIVIf6Ru7KbtvfEsY2UJJUAvviS8Rxa/+Q
+# bRMnghJ3ZPqMuoYkjTeGfcYqLCZxug+ahQHk39CDkI/tpiyvLlyoCxolVg4DwsFO
+# L3APPOUMEjdB+mcZaDy7Y1v2+/H1hirPx3Ni1FzZqgCjvFtASboGNi0FP59ukpqH
+# OMM9YQPd+LOnVH4UG7DcIaJVNZsG/jTMdSfq2ajkM3o1knOOnx+8k2j6dOLI/NmY
+# CyOD8GzXaELDkirMHmlvwRzPWXqiSnCiNzK1wzrMNfFwNoncCBcRpYUMdbd75HQu
+# hgNb
 # SIG # End signature block
