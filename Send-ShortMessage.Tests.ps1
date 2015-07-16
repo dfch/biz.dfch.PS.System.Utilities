@@ -189,7 +189,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber,$PhoneNumber2 | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-MockCalled Invoke-RestMethod -Exactly 1 -Scope It;
+			Assert-MockCalled Invoke-RestMethod -Exactly 2 -Scope It;
 			
 			$result -is [Array] | Should Be $true;
 			$result.Count | Should Be 2;
