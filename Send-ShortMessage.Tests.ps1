@@ -135,7 +135,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber = '27999112345';
 			$Message = 'hello, world!';
 
-			Mock Invoke-RestMethod -Verifiable -MockWith { 
+			Mock Invoke-RestMethod -MockWith { 
 				$message = @{};
 				$message.apiMessageId = [Guid]::NewGuid().ToString();
 				$message.accepted = $true;
@@ -154,8 +154,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-VerifiableMocks;
-			Assert-MockCalled Invoke-RestMethod -Exactly 1;
+			Assert-MockCalled Invoke-RestMethod -Exactly 1 -Scope It;
 
 			# Assert result
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $false;
@@ -171,7 +170,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber2 = '27999112347';
 			$Message = 'hello, world!';
 
-			Mock Invoke-RestMethod -Verifiable -MockWith { 
+			Mock Invoke-RestMethod -MockWith { 
 				$message = @{};
 				$message.apiMessageId = [Guid]::NewGuid().ToString();
 				$message.accepted = $true;
@@ -190,8 +189,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber,$PhoneNumber2 | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-VerifiableMocks;
-			Assert-MockCalled Invoke-RestMethod -Times 2;
+			Assert-MockCalled Invoke-RestMethod -Exactly 1 -Scope It;
 			
 			$result -is [Array] | Should Be $true;
 			$result.Count | Should Be 2;
@@ -214,7 +212,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber = '27999112345';
 			$Message = 'hello, world!';
 
-			Mock Invoke-RestMethod -Verifiable -MockWith { 
+			Mock Invoke-RestMethod -MockWith { 
 				$response = '{"error":{"code":"001","description":"Authentication failed","documentation":"http://www.clickatell.com/help/apidocs/error/001.htm"}}' | ConvertFrom-Json;
 				$OutputParameter = $response;
 				return $OutputParameter;
@@ -226,8 +224,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-VerifiableMocks;
-			Assert-MockCalled Invoke-RestMethod -Exactly 1;
+			Assert-MockCalled Invoke-RestMethod -Exactly 1 -Scope It;
 
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $true;
 			$result.code | Should Be "001";
@@ -245,7 +242,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber = '111';
 			$Message = 'hello, world!';
 
-			Mock Send-ShortMessage -Verifiable -MockWith { 
+			Mock Send-ShortMessage -MockWith { 
 				$response = '{"data":{"message":[{"accepted":false,"to":"111","apiMessageId":"","error":{"code":"114","description":"Cannot route message","documentation":"http://www.clickatell.com/help/apidocs/error/114.htm"}}]}}' | ConvertFrom-Json;
 
 				$OutputParameter = @{};
@@ -261,6 +258,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
+			Assert-MockCalled Send-ShortMessage -Exactly 1 -Scope It;
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $true;
 			$result.to | Should Be $PhoneNumber;
 			$result.code | Should Be "114";
