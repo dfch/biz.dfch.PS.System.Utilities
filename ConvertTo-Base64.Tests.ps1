@@ -16,10 +16,9 @@ Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
 
 	Context "Test-EmptyInput" {
 	
-		It "NullString-ShouldReturnEmptyString" {
+		It "NullString-ShouldThrow" {
 			
-			$r = ConvertTo-Base64 $null
-			$r -eq [String]::Empty | Should Be $true;
+			{ ConvertTo-Base64 $null } | Should Throw;
 		}
 
 		It "EmptyString-ShouldReturnEmptyString" {
@@ -54,6 +53,7 @@ Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
 		$Plaintext = @('Tralala', 'Schnittenfittich');
 		$Encoded = @('VHJhbGFsYQ==', 'U2Nobml0dGVuZml0dGljaA==');
 
+		# DFTODO - this test fails - check InputObject handling of Cmdlet
 		It "StringInputObject-ShouldReturnEncodedStringArray" {
 		
 			$r = ConvertTo-Base64 $Plaintext;

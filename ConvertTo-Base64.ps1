@@ -82,28 +82,28 @@ See module manifest for required software versions and dependencies at: http://d
 PARAM
 (
 	# Specifies the string to convert to BASE64
+	[ValidateNotNull()]
 	[Parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true, Mandatory = $false, Position = 0)]
-	[string]
 	$InputObject
 )
 
 BEGIN 
 {
+	$OutputParameter = $null;
 	# $datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
+	# [string] $fn = $MyInvocation.MyCommand.Name;
 	# Log-Debug -fn $fn -msg ("CALL. Length: '{0}'; NonAlpha: '{1}'" -f $Length, $NonAlpha) -fac 1;
 }
 
 PROCESS 
 {
-	# $fReturn = $false;
-	$OutputParameter = $null;
-
-	$bytes  = [System.Text.Encoding]::UTF8.GetBytes($InputObject);
-	$encoded = [System.Convert]::ToBase64String($bytes); 
-
-	$OutputParameter = $encoded;
-	return $OutputParameter;
+	foreach($Object in $InputObject)
+	{
+		$bytes  = [System.Text.Encoding]::UTF8.GetBytes($Object);
+		$encoded = [System.Convert]::ToBase64String($bytes); 
+		$OutputParameter = $encoded;
+		$OutputParameter;
+	}
 }
 
 END 
