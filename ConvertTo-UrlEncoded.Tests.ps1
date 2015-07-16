@@ -1,49 +1,83 @@
-Function ConvertTo-UrlEncoded {
-[CmdletBinding(
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-UrlEncoded/'
-)]
-[OutputType([string])]
 
-PARAM
-(
-	# Specifies the string to convert to UrlEncoded format
-	[ValidateNotNull()]
-	[Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $true, Position=0)]
-	$InputObject
-)
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-BEGIN 
-{
-	$OutputParameter = $null;
-	# $datBegin = [datetime]::Now;
-	# [string] $fn = $MyInvocation.MyCommand.Name;
-	# Log-Debug -fn $fn -msg ("CALL. Length '{0}'" -f $InputObject.Length) -fac 1;
-}
+Describe -Tags "Test-ConvertTo-UrlEncoded" "Test-ConvertTo-UrlEncoded" {
 
-PROCESS 
-{
-	foreach($Object in $InputObject)
-	{
-		$encoded = [System.Web.HttpUtility]::UrlEncode($Object);
-		$OutputParameter = $encoded;
-		$OutputParameter;
+	Mock Export-ModuleMember { return $null; }
+
+	. "$here\$sut"
+
+	$htLeftNull = $null;
+	$htLeftEmpty = @{};
+
+	$htRightNull = $null;
+	$htRightEmpty = @{};
+
+	Context "Test-EmptyInput" {
+	
+		It "NullString-ShouldThrow" {
+			
+			{ ConvertTo-UrlEncoded $null } | Should Throw;
+		}
+
+		It "EmptyString-ShouldReturnEmptyString" {
+			
+			$r = ConvertTo-UrlEncoded "";
+			$r -eq [String]::Empty | Should Be $true;
+		}
+	}
+	
+	Context "Test-SingleString" {
+
+		# Arrange
+		$Plaintext = 'some string with special characters ?!#:';
+		$Encoded = 'some+string+with+special+characters+%3f!%23%3a';
+
+		It "StringInputObject-ShouldReturnEncodedString" {
+		
+			$r = ConvertTo-UrlEncoded $Plaintext;
+			$r | Should Be $Encoded;
+		}
+
+		It "StringPipelineObject-ShouldReturnEncodedString" {
+		
+			$r = $Plaintext | ConvertTo-UrlEncoded;
+			$r | Should Be $Encoded;
+		}
+	}
+	
+	Context "Test-MultipleStrings" {
+
+		# Arrange
+		$Plaintext = @('some string with special characters ?!#:', 'Schnittenfittich?@');
+		$Encoded = @('some+string+with+special+characters+%3f!%23%3a', 'Schnittenfittich%3f%40');
+
+		# DFTODO - this test fails - check InputObject handling of Cmdlet
+		It "StringInputObject-ShouldReturnEncodedStringArray" {
+		
+			$r = ConvertTo-UrlEncoded $Plaintext;
+			$r -is [Array] | Should Be $true;
+			$r.Count | Should Be $Encoded.Count;
+			$r[0] | Should Be $Encoded[0];
+			$r[1] | Should Be $Encoded[1];
+		}
+
+		It "StringPipelineObject-ShouldReturnEncodedStringArray" {
+		
+			$r = $Plaintext | ConvertTo-UrlEncoded;
+			$r -is [Array] | Should Be $true;
+			$r.Count | Should Be $Encoded.Count;
+			$r[0] | Should Be $Encoded[0];
+			$r[1] | Should Be $Encoded[1];
+		}
 	}
 }
-
-END 
-{
-	# $datEnd = [datetime]::Now;
-	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-}
-
-} 
-
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertTo-UrlEncoded; } 
 
 ##
  #
  #
- # Copyright 2013-2015 Ronald Rink, d-fens GmbH
+ # Copyright 2015 Ronald Rink, d-fens GmbH
  #
  # Licensed under the Apache License, Version 2.0 (the "License");
  # you may not use this file except in compliance with the License.
@@ -59,12 +93,11 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertTo-UrlEncode
  #
  #
 
- 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPe+vfh5s6GTLVHmEj6kdaKao
-# FmigghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE83Jk89akMiM9iG1y+PZ+cZ0
+# HWagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -163,26 +196,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertTo-UrlEncode
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT4YIF6sw18rDuN
-# VHLi2kDjx8XiUTANBgkqhkiG9w0BAQEFAASCAQA1846SkzkUat6jsWP+C+bclPZ+
-# ZZ6/iUOd1oDLaohIi5szNu7qaFa2AkKOaaBG36z5f6jmtbF5vN5nGMM1W+9jOzwK
-# bB5zcG5FnWQr2olzXhxY8t3yD0Hvu88UmeuxKiR5dRfheOc97cnVyh/QAvneJOtq
-# bzQYG0BMFp5Iq8XFYMIGifXCCV7gNGZCZzFM1/vO7cm8BuOL39MnYH5Q0J6b/4ZT
-# KgWwdwtG1KOjZsTfyuE1DMirc+ZdtGz1ftHJJ4e9xwtZlOl6qhsL4PzOGystW/gW
-# jg5R/H35NmlC38F995AsGnJwV+IZ3tVRoxFKHPbMDWtwOggrURHyQ3ZEtLP1oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRjt8VbDYdGX/jF
+# i5tIfdqYzIXO/TANBgkqhkiG9w0BAQEFAASCAQCqFmPSki0vZqv2kGLu9UKtZbW1
+# ibLdQvT8ONaUtMzfQ9tpBCeWn47O5lW0sf1Y2daZW8GurfEjz2jQeeeMuLO/Q+Jg
+# iol76dQQ6KQwWSanvBJYVi3Lpo21A8rZL3ta90dlNw7ymLiyW9Lp9K/1MIbZY+PM
+# P8cVzJQ+md9WzvFvi5Mj0ucD6Jp+yR69KUQHKega9YB5yCuGzZvg/EoFVVRFckRE
+# MzpgTc6vlaRJWs7LndbRcY5fGUZ3vbq7u3jtIVo0aAQMdW6x/zzuYMZeqQTgYXu/
+# zZuBksG66yOn3FOX+jSNonNcsHuStfC7SNMcqF+j5uInT/hcVyUrKksB+YNOoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwN1owIwYJKoZIhvcNAQkEMRYEFN+NIHShPtmwvc8JYBwN6MxkfTYO
+# MDcwODE1MTIwNlowIwYJKoZIhvcNAQkEMRYEFNCPGlhHM90SCbQdmWk6dKMrVP9G
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCGLHuNUmaJ62Y76g0Z
-# 4ww8D7byA2rrWUL4JqHyTplr3wx8ACydLwC+0DjOnXVS51CgZnsfUn+IFw7iFTa1
-# +uahglFFAde3Z5MhuBF21+L/K5fIR/6Wsp9LY1GOK0Oa9A+zexcFBwLaV28Y4MpO
-# qyx4bg79H1DspH5LJR8c8mML2FoHb2e+qRvsBCEGYrywng8K3NhEk6KRD9DBQ201
-# W6SrKIee2+zkA4D7rFvyeA3NQTlZMYfAYDGAms9yzZMr5Um8m9HhlUl+1M1qh/8s
-# zm3l9+5jgTOkX1eTpIVoDi2zihbPXSQUyn0xGux7DYCWyzEcH7cUEGBLfjVk4LUV
-# 8q7c
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCv9uEu5dff0kEVrZDD
+# T7sin/zt3Wzw77Ns5zIpHWG3hDg+U9KFYBL63RP11HW7Rn9W+6Q/SazSpCTmTKAi
+# 9r0bTzzHWAm6z1rkv/j2JEMK++vW5gYlHAGes7nWKP81evMV4Ic5MQUi/RteTJX4
+# bm2SirysXf++bANVsdKl50SBxcFn48vGGerDKIZ2Wt9xl09mrXNrCxCye2zpQJsa
+# PuclGeISc8gk6Mtm6+LoM+8HNi+xC5irkNNrzm5lN7YtKPZGKg5e0WjwPj5Bec54
+# nBusQXUM47k1V+KzX2bVSP3lS6ZtLV+he1w+TKAflvszLAhax1V3u+C8Qv8NXTj8
+# 3Z9l
 # SIG # End signature block
