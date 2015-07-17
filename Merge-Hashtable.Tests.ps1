@@ -235,7 +235,142 @@ Describe -Tags "Test-Merge-Hashtable" "Test-Merge-Hashtable" {
 			$result.key4 | Should Be $htRight.key4;
 		}
 	}
-	
+
+	Context "Test-Intersect" {
+		$htLeft = @{};
+		$htLeft.key1 = 'value1-left';
+		$htLeft.key2 = 'value2-left';
+
+		$htRight = @{};
+		$htRight.key1 = 'value1-right';
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+
+		$resultCount = 1;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result.Count | Should Be $resultCount;
+		}
+
+		It 'ShouldBe-Intersect1' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result.ContainsKey('key1') | Should Be $true;
+			$result.key1 | Should Be $htLeft.key1;
+		}
+
+		It 'ShouldBe-Intersect12' {
+			$result = Merge-Hashtable -Left $htRight -Right $htLeft -Action Intersect;
+			$result.ContainsKey('key1') | Should Be $true;
+			$result.key1 | Should Be $htRight.key1;
+		}
+	}
+
+	Context "Test-EmptyIntersect" {
+		$htLeft = @{};
+		$htLeft.key2 = 'value2-left';
+
+		$htRight = @{};
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+
+		$resultCount = 0;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result.Count | Should Be $resultCount;
+		}
+	}
+
+	Context "Test-Outersect" {
+		$htLeft = @{};
+		$htLeft.key1 = 'value1-left';
+		$htLeft.key2 = 'value2-left';
+		$htLeft.key5 = 'value5-left';
+
+		$htRight = @{};
+		$htRight.key1 = 'value1-right';
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+		$htRight.key6 = 'value6-right';
+
+		$resultCount = 5;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result.Count | Should Be $resultCount;
+		}
+
+		It 'ShouldBe-Outersect1' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result.ContainsKey('key2') | Should Be $true;
+			$result.ContainsKey('key3') | Should Be $true;
+			$result.ContainsKey('key4') | Should Be $true;
+			$result.ContainsKey('key5') | Should Be $true;
+			$result.ContainsKey('key6') | Should Be $true;
+			$result.key2 | Should Be $htLeft.key2;
+			$result.key3 | Should Be $htRight.key3;
+			$result.key4 | Should Be $htRight.key4;
+			$result.key5 | Should Be $htLeft.key5;
+			$result.key6 | Should Be $htRight.key6;
+		}
+
+		It 'ShouldBe-Outersect2' {
+			$result = Merge-Hashtable -Left $htRight -Right $htLeft -Action Outersect;
+			$result.ContainsKey('key2') | Should Be $true;
+			$result.ContainsKey('key3') | Should Be $true;
+			$result.ContainsKey('key4') | Should Be $true;
+			$result.ContainsKey('key5') | Should Be $true;
+			$result.ContainsKey('key6') | Should Be $true;
+			$result.key2 | Should Be $htLeft.key2;
+			$result.key3 | Should Be $htRight.key3;
+			$result.key4 | Should Be $htRight.key4;
+			$result.key5 | Should Be $htLeft.key5;
+			$result.key6 | Should Be $htRight.key6;
+		}
+	}
+
+	Context "Test-EmptyOutersect" {
+		$htLeft = @{};
+		$htLeft.key1 = 'value1-left';
+		$htLeft.key2 = 'value2-left';
+		$htLeft.key3 = 'value3-left';
+		$htLeft.key4 = 'value4-left';
+
+		$htRight = @{};
+		$htRight.key1 = 'value1-right';
+		$htRight.key2 = 'value2-right';
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+
+		$resultCount = 0;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result.Count | Should Be $resultCount;
+		}
+	}
+
 	Context "Test-FailOnDuplicateKeys" {
 
 		It "ShouldBe-NullOnDuplicateKeys" {

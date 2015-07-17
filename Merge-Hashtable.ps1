@@ -57,6 +57,48 @@ key4 value4-right
 
 
 .EXAMPLE
+# Returns the intersection of two hashtables and takes the value from the 'Left' hashtable
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key2 = 'value2-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key3 = 'value3-right';
+PS > $htRight.key4 = 'value4-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersection;
+
+PS > $result
+Name Value
+---- -----
+key1 value1-left
+
+
+.EXAMPLE
+# Returns the outersection (or difference set) of two hashtables
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key2 = 'value2-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key3 = 'value3-right';
+PS > $htRight.key4 = 'value4-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersection;
+
+PS > $result
+Name Value
+---- -----
+key2 value2-left
+key3 value3-right
+key4 value4-right
+
+
+.EXAMPLE
 # Tries to merge two hashtables with duplicate keys. Result will be $null
 
 PS > $htLeft = @{};
@@ -134,7 +176,13 @@ PARAM
 	# 'ThrowOnDuplicateKeys' 
 	#     effectively merges both hashtables and throws an exception 
 	#     if the keys of both hashtables are not distinct
-	[ValidateSet('OverwriteLeft', 'OverwriteRight', 'KeepLeft', 'KeepRight', 'FailOnDuplicateKeys', 'ThrowOnDuplicateKeys')]
+	# 'Intersect'
+	#     returns the intersection of both hashtables
+	#     value of duplicate keys is implicitly taken from the 'Left' hashtable
+	# 'Outersect'
+	#     returns the keys and values of both hashtables 
+	#     that do not exist in both hashtables
+	[ValidateSet('OverwriteLeft', 'OverwriteRight', 'KeepLeft', 'KeepRight', 'FailOnDuplicateKeys', 'ThrowOnDuplicateKeys', 'Intersect', 'Outersect')]
 	[Parameter(Mandatory = $false, Position = 2)]
 	[String] $Action = 'FailOnDuplicateKeys'
 )
@@ -179,10 +227,38 @@ PROCESS
 		{
 			$result.Add($i.Name, $i.Value);
 		}
+		elseif($Action -ieq 'Intersect')
+		{
+			if(!$result.ContainsKey($i.Name))
+			{
+				$result.Remove($i.Name);
+			}
+		}
+		elseif($Action -ieq 'Outersect')
+		{
+			if($result.ContainsKey($i.Name))
+			{
+				$result.Remove($i.Name);
+			}
+			else
+			{
+				$result.Add($i.Name, $i.Value);
+			}
+		}
 		else
 		{
 			$e = New-CustomErrorRecord -m ('{0}: Parameter validation FAILED.' -f $Action) -cat InvalidArgument -o $Action;
 			$PSCmdlet.ThrowTerminatingError($e);
+		}
+	}
+	if($Action -ieq 'Intersect')
+	{
+		foreach($i in $htLeft.GetEnumerator())
+		{
+			if(!$htRight.ContainsKey($i.Name))
+			{
+				$result.Remove($i.Name);
+			}
 		}
 	}
 	
