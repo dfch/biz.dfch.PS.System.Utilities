@@ -35,10 +35,10 @@ Describe -Tags "Test-Get-Priority" "Test-Get-Priority" {
 				$ex = New-Object Microsoft.PowerShell.Commands.ProcessCommandException($exMessage);
 				throw $ex;
 			}
-			
+
 			# Act / Assert
-			Assert-MockCalled Get-Process -Exactly 1 -Scope It;
 			{ Get-Priority -Id $processId } | Should Throw;
+			Assert-MockCalled Get-Process -Exactly 1 -Scope It;
 		}
     }
 
@@ -59,6 +59,44 @@ Describe -Tags "Test-Get-Priority" "Test-Get-Priority" {
 			Assert-MockCalled Get-Process -Exactly 1 -Scope It;
 			$result -is [String] | Should Be $true;
 			$result | Should Be $expectedResult;
+		}
+		It "Pipeline-ShouldBeNormal" {
+
+			# Arrange
+			$expectedResult = 'anyPriorityClass';
+			Mock Get-Process {
+				return @{ PriorityClass = $expectedResult; }
+			}
+
+			# Act 
+			$result = 42, 43, 44 | Get-Priority 
+
+			# Assert
+			Assert-MockCalled Get-Process -Exactly 3 -Scope It;
+			$result -is [Array] | Should Be $true;
+			$result.Count | Should Be 3;
+			$result[0] | Should Be $expectedResult;
+			$result[1] | Should Be $expectedResult;
+			$result[2] | Should Be $expectedResult;
+		}
+		It "Array-ShouldBeNormal" {
+
+			# Arrange
+			$expectedResult = 'anyPriorityClass';
+			Mock Get-Process {
+				return @{ PriorityClass = $expectedResult; }
+			}
+
+			# Act 
+			$result = Get-Priority @(42, 43, 44)
+
+			# Assert
+			Assert-MockCalled Get-Process -Exactly 3 -Scope It;
+			$result -is [Array] | Should Be $true;
+			$result.Count | Should Be 3;
+			$result[0] | Should Be $expectedResult;
+			$result[1] | Should Be $expectedResult;
+			$result[2] | Should Be $expectedResult;
 		}
     }
 }
