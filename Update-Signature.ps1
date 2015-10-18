@@ -22,7 +22,7 @@ Signs the specified script with the default certificate and timestamps it.
 
 .EXAMPLE
 
-Update-Signature C:\scripts
+Update-Signature C:\scripts\*.*
 
 Signs the all scripts in the specified folder with the default certificate and timestamps it.
 
@@ -40,7 +40,7 @@ PARAM
 	# The path to script files to sign
 	[ValidateScript( { Test-Path($_) -PathType Container; } )]
 	[Parameter(Mandatory = $false, ParameterSetName = 'path')]
-	[System.IO.DirectoryInfo] $Path = 'C:\Github'
+	[System.IO.DirectoryInfo] $Path = $PWD.Path
 	,
 	# A script file or array of script files to sign
 	[ValidateScript( { if($_) { foreach($item in $_) {Test-Path($item) -PathType Leaf -Include $IncludeExtensions; } } else { $true } } )]
@@ -116,8 +116,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUCAeDa0ZyXZoDDHOmf1nFFXWq
-# UqigghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnReLkphf8jjgJwDQHjD5iOOK
+# Q7mgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -216,26 +216,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT8SnW39pf2x14j
-# NsJigUsc3lVqBDANBgkqhkiG9w0BAQEFAASCAQC8ER/eBJqkMfFNs9Ucl8Qp6WgN
-# uzsR+A2CDk+R9xukENUaqcZqF8c8FOOKovr1DYTO83xG2iJp8LuSVQdIjhemgoRV
-# iW7YSWjBFcgk1zyZE2txOZPa9bqqrtS8I9vLiARBv9pnhh+eMbo1QsSxAfOYbYL8
-# TToMhMuUNgZOB95iYoLdvq66VGlvxMlwiwtDO44OymT5uNNPHlGvJ1epcAMb86tn
-# 0fODTAylvDB8zsjkIZoqbRCM5IHsaNjtVPkmDL4swelisl7yRw+f+PJPUQXAZ+pv
-# SNqMQkMzhLo4H/lafzoFeO1qWq2oNLThEaik4aOEHNgLkFMFVTO2MvKtSGK4oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRlvIbCKh6iB/yV
+# 598qjEpwUQGhJDANBgkqhkiG9w0BAQEFAASCAQB7bU76OrueIaC2y47BhbVopmlx
+# 2XuGKmRcac5viI3EkLpCQ2tKPpblsFOeT28PSwpcjhKaxJuHPLBxOqz9kT0q8WS+
+# nOa00LtH6+IvhpsDNUoXdZUvOvx2cCj02g2T8a00ozX0d9D7M9Fam3SSwEZ0ig80
+# bra1OxLaMXxAk/InRHpj6/SkN5o9ueWFKhAEH1cGcJn6bskzfL5osjJxRkBjhZ3m
+# subyP83tdK3swn+2TiJWdgdFWaBu82ZxcRiIsi8CDtdnx1X987yHK/GWhpEnkoeO
+# W3FFnHN4ZTMRN8+5n03e7EAYme3IOn2p73SXQclGQOWDnDMWMyanjuPeQT3HoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDUxMTAzMjU0MFowIwYJKoZIhvcNAQkEMRYEFHUKW/yDtqiFj8D8lKA030cOSzHr
+# MTAxODExMDMyMlowIwYJKoZIhvcNAQkEMRYEFHg8FRoAMa6FGyy3le36Je+KbQPP
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQArBmkQw4iyd65zw0AY
-# OrsWDsF+2Hw/BA0TrAHWx1IhTMkT7K5SnoI7v/ci5bdU+5iumnlr+Z9MpHEFGzIC
-# xuxlC/EaawfacBvR9RABca5+qcTzgCFvAGwE35FR08e7dSWlNsjZyC0fqb98L/Dc
-# wg5Uy6mR0LJyrXV1tLeSMMnjn/C/jemcT0VhnDrOlaUP7IW8Uh3EoBJZwZdBa8V+
-# mGlTWclBYtyKYJ4OoHgwzZzb2ZoiMs/dVE8GcM66IhMzAD1SdwYR0nEao2vOfjZs
-# Nf68yFDVp7Z5UXPGZ7owGrlEx81rQ/dnZUhYUuuf5OPaZPEYElG8nYSyPhXzFrSH
-# AMDM
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBxp6TWwhrRpAmAWtnz
+# slFbDClmf8EokpZ8wXK/vUGinyT4DYJnWZZvFfqF+r5T/UyKP/ntPBiK4Oyy4fDT
+# HLzmTj0pvcDBK9tXRjMiIdHf9YyG/7OA+N2j8gRc5GSKwE1dFa0Tx50CFvof0lrz
+# hf3XGFLQrLwmJlFLpzLhhwoIdaVqeo7qDOkcw2s+sl2rgiPFgzQE85fqoeehZcSv
+# DUqe9/zSvTDYq+rJHo/VjR8f4iZ6dB6fdJZs/GjeFWK5g1wTnbABTfdWDqOQr/bn
+# lpFWRhYj/DrRyEHmRgu7VXKPmRoxU0zlet5FvphfEaoZVBmhIp7rYktUy1B9q652
+# 16Nt
 # SIG # End signature block
