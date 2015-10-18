@@ -175,14 +175,28 @@ END
 }
 
 } # function
+
 # You might want to add an Alias "unzip" as well
 # Set-Alias -Name 'Unzip' -Value 'Expand-CompressedItem';
 # if($MyInvocation.ScriptName) { Export-ModuleMember -Function Expand-CompressedItem -Alias Unzip; } 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Expand-CompressedItem; } 
 
-<#
-2014-11-15; rrink; ADD: Expand-CompressedItem; Initial version
-#>
+#
+# Copyright 2014-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR

@@ -35,24 +35,21 @@ if( Test-Path -Path $ManifestPathAndFile)
 	}
 }
 
-<#
- # ########################################
- # Version history
- # ########################################
- #
- # 2014-10-15; rrink; CHG: split module in separate PS1 files and use manifest file
- # 2013-12-28; rrink; ADD: Remove-ActivityProgress
- # 2013-12-28; rrink; ADD: Set-ActivityProgress
- # 2013-12-28; rrink; ADD: New-ActivityProgress
- # 2013-11-25; rrink; CHG: $Input to $InputString
- # 2013-10-27; rrink; ADD: Set-SslSecurityPolicy
- # 2013-10-27; rrink; ADD: Get-Constructor
- # 2013-10-24; rrink; ADD: Export-Credential, rewrite to accept pipeline input
- # 2013-10-24; rrink; ADD: Import-Credential, rewrite to accept pipeline input
- # 2013-01-11; rrink; ADD: initial release
- #
- # ########################################
- #>
+#
+# Copyright 2013-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
