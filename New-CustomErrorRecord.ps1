@@ -162,16 +162,30 @@ Requires module 'biz.dfch.PS.System.Logging'.
 		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 	} # END
 } # New-CustomErrorRecord
-# Set-Alias -Name ex -Value New-CustomErrorRecord;
-# Set-Alias -Name New-Exception -Value New-CustomErrorRecord;
-# Export-ModuleMember -Function New-CustomErrorRecord -Alias New-Exception, ex;
-Export-ModuleMember -Function New-CustomErrorRecord;
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-CustomErrorRecord; } 
+
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjGUHmHyd8l3fIpCT/Js3M/Li
-# WqugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPYR18CvzJaUaTfwSL1gi+Vgl
+# qeygghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -270,26 +284,26 @@ Export-ModuleMember -Function New-CustomErrorRecord;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQD6APsexoSeBkZ
-# HqCcJlzocw1JnDANBgkqhkiG9w0BAQEFAASCAQCNT5fOw+wwzr1/im/dXa0Erzjb
-# aJBiKvjFr59uLYNYdWlPxDrU1fHVA9sUKgRowCZR0pQEb+5+fcuaRyzNYF6xwbyF
-# tWOysPUfXdjq7WmK3S4H43MT4ig/RqYi5+Cu34C+qePDyog5R3OBlDlm0uvtz5bm
-# GDpS2ZNLINzxpf4Ui6f/AUNN9gjO8Qrd4yuiOdS5vRIo80kDdvAd7k58ApxvSTbM
-# BmTQMvCm7ERKPeVDfCoDnznHpd8+ogQdvr0zUymAfbsj9o4d1q6qr+HnvfBtNHC5
-# bwUejb86C8E8QV84Wym2KUJS7YvSE0t/hWTSwP9HGvzLaENVbRQBQYcrZXzEoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBREXygWne+SsNUc
+# g0AcuHbWBDHPGDANBgkqhkiG9w0BAQEFAASCAQBSxUaFkPnrXdXDW6QiXr9AcHDl
+# x1cgyPnm42Z0cfblJUmGrzCodsRr63kkfFwddCgbS4lzUNUpCsgQb/ZzdjjAv5Q8
+# f0NtTkWiwNQyKp7KPhqZJvlwSGz0ZSjndZv5SnJXM8dqjVlAzEEpnEL9Y8e/kTR+
+# XhfB+bMGGQ3uFvHtwD26x4FJw0DbTYlGG2n5/MljRbwRgswQVliQhglUSpwjYH+Z
+# axe2to2jSEtWJgSTorkYSb5dXw43axqpaIMcnGh3tNbnqcJouG4SG+c3sbunHyhn
+# nEFQb73GZHFhNWLVWEZfIs5dqAfDb/KJPq2PhQYRr/TCxZF/oSL79Tm7iBC2oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxM1owIwYJKoZIhvcNAQkEMRYEFN82p5/F60vyYqzbeBJuNXbAVjvG
+# MTAxODExMDMxMFowIwYJKoZIhvcNAQkEMRYEFJarcUUpvV8+8vqxlaX+DCCQ/4Be
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBDwvvkbu90zh/ojLaP
-# xTM/nZ9gqxUjUKhQa0wUNK10jzM1DFK2C3swg+9zz199nf80b2Y2rMs5l7d9S+jc
-# Pn5M8uqe5Ae4oCicQo3KvNsTlzjyF6H3V6ZH5NkehKNQ7CO+xZ/NrcxVkmOo7tNd
-# n4HiizR0m+fZcQ0G5RuULd8ozFtoxVquK2AJMLzTT9CdyHLtEtWyv8v62C+3NVjr
-# 0JFJaWtDygWKQQ3D5y9XxA/VvIUzxkhaois6auMzwZIajeQ9fP3KnvXJZzoebjdh
-# rMmJPiEfjTsgLHN072Y1t7IzBdhSRpXc0+tTluoSsu/irM/HrDN0/WqJBnNjDRMd
-# ryUQ
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCN2+hICbCx0PLfXTNl
+# fkdfwf4o+jseAnt8fM0lmMl0FWeUJxhVwiV34/HzPZuLdNcmFXaSplR7L5LnR0tn
+# vN4zcALjHaN0E88xKzkExfyvoOfCQOttwFsRCcq59KGhtCrLjWMtE8GEieIpdlUU
+# wK+LpvuB4BahKwLxHjG3hOQjd/vvTwwRtiGUqIh1umGYv3ydHzyjYt0XBm8lDj8k
+# U5V91xIvM6ay3xTrLRJou8w9jhfR7soshfQy3NL51LWb4Gd4VYwYWYBimSgIuJ0T
+# Tv14dMI1xhJTSQLkI6CAIpNw84hbBK4c3LNkvpY/vDd0s5YfQaX07zsGuAFZA0iP
+# PPYC
 # SIG # End signature block

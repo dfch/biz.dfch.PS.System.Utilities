@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Test-Merge-Hashtable" "Test-Merge-Hashtable" {
+Describe -Tags "Merge-Hashtable.Tests" "Merge-Hashtable.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 
@@ -235,7 +235,142 @@ Describe -Tags "Test-Merge-Hashtable" "Test-Merge-Hashtable" {
 			$result.key4 | Should Be $htRight.key4;
 		}
 	}
-	
+
+	Context "Test-Intersect" {
+		$htLeft = @{};
+		$htLeft.key1 = 'value1-left';
+		$htLeft.key2 = 'value2-left';
+
+		$htRight = @{};
+		$htRight.key1 = 'value1-right';
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+
+		$resultCount = 1;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result.Count | Should Be $resultCount;
+		}
+
+		It 'ShouldBe-Intersect1' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result.ContainsKey('key1') | Should Be $true;
+			$result.key1 | Should Be $htLeft.key1;
+		}
+
+		It 'ShouldBe-Intersect12' {
+			$result = Merge-Hashtable -Left $htRight -Right $htLeft -Action Intersect;
+			$result.ContainsKey('key1') | Should Be $true;
+			$result.key1 | Should Be $htRight.key1;
+		}
+	}
+
+	Context "Test-EmptyIntersect" {
+		$htLeft = @{};
+		$htLeft.key2 = 'value2-left';
+
+		$htRight = @{};
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+
+		$resultCount = 0;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersect;
+			$result.Count | Should Be $resultCount;
+		}
+	}
+
+	Context "Test-Outersect" {
+		$htLeft = @{};
+		$htLeft.key1 = 'value1-left';
+		$htLeft.key2 = 'value2-left';
+		$htLeft.key5 = 'value5-left';
+
+		$htRight = @{};
+		$htRight.key1 = 'value1-right';
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+		$htRight.key6 = 'value6-right';
+
+		$resultCount = 5;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result.Count | Should Be $resultCount;
+		}
+
+		It 'ShouldBe-Outersect1' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result.ContainsKey('key2') | Should Be $true;
+			$result.ContainsKey('key3') | Should Be $true;
+			$result.ContainsKey('key4') | Should Be $true;
+			$result.ContainsKey('key5') | Should Be $true;
+			$result.ContainsKey('key6') | Should Be $true;
+			$result.key2 | Should Be $htLeft.key2;
+			$result.key3 | Should Be $htRight.key3;
+			$result.key4 | Should Be $htRight.key4;
+			$result.key5 | Should Be $htLeft.key5;
+			$result.key6 | Should Be $htRight.key6;
+		}
+
+		It 'ShouldBe-Outersect2' {
+			$result = Merge-Hashtable -Left $htRight -Right $htLeft -Action Outersect;
+			$result.ContainsKey('key2') | Should Be $true;
+			$result.ContainsKey('key3') | Should Be $true;
+			$result.ContainsKey('key4') | Should Be $true;
+			$result.ContainsKey('key5') | Should Be $true;
+			$result.ContainsKey('key6') | Should Be $true;
+			$result.key2 | Should Be $htLeft.key2;
+			$result.key3 | Should Be $htRight.key3;
+			$result.key4 | Should Be $htRight.key4;
+			$result.key5 | Should Be $htLeft.key5;
+			$result.key6 | Should Be $htRight.key6;
+		}
+	}
+
+	Context "Test-EmptyOutersect" {
+		$htLeft = @{};
+		$htLeft.key1 = 'value1-left';
+		$htLeft.key2 = 'value2-left';
+		$htLeft.key3 = 'value3-left';
+		$htLeft.key4 = 'value4-left';
+
+		$htRight = @{};
+		$htRight.key1 = 'value1-right';
+		$htRight.key2 = 'value2-right';
+		$htRight.key3 = 'value3-right';
+		$htRight.key4 = 'value4-right';
+
+		$resultCount = 0;
+
+		It 'ShouldBe-TypeHashtable' {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result -is [hashtable] | Should Be $true;
+		}
+
+		It "ShouldBe-CountHashtable$resultCount" {
+			$result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Outersect;
+			$result.Count | Should Be $resultCount;
+		}
+	}
+
 	Context "Test-FailOnDuplicateKeys" {
 
 		It "ShouldBe-NullOnDuplicateKeys" {
@@ -315,30 +450,27 @@ Describe -Tags "Test-Merge-Hashtable" "Test-Merge-Hashtable" {
 	
 }
 
-##
- #
- #
- # Copyright 2015 Ronald Rink, d-fens GmbH
- #
- # Licensed under the Apache License, Version 2.0 (the "License");
- # you may not use this file except in compliance with the License.
- # You may obtain a copy of the License at
- #
- # http://www.apache.org/licenses/LICENSE-2.0
- #
- # Unless required by applicable law or agreed to in writing, software
- # distributed under the License is distributed on an "AS IS" BASIS,
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
- #
- #
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUr/8kmZdwuDZO57jYagDxbgbb
-# IEWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUQX392R521DJaQRAUlPSahmRw
+# YN2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -437,26 +569,26 @@ Describe -Tags "Test-Merge-Hashtable" "Test-Merge-Hashtable" {
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQ3rFQLmaQ38V+t
-# FSy2IiPNR8PzTjANBgkqhkiG9w0BAQEFAASCAQCC5Xn6F02A8YFRmmsIrVNwh1Xh
-# Secu5KYTcHWrOIvYJFhP5s+DZ4KFYYXJVSYfIChX9Rm6PldKPe5jCxmGAa7s7pWr
-# yTwKTLiyc4PRoiyW49l0oSFdQaAIEL9lJ8JKWRFX6HH2ccHS4T28f4BtDYR3bIUg
-# 2Vc5IL81XwDb9Z16TjMptVza2cWbbH2LIhQf3K1tlRG9W52Q/gMTtlfKPlgXmdH4
-# WwBexyFde1LXirP0WHCXL46d8e6zHjf4+b96dXZaBzEaPnY5t5/eU0WRmcxy20lF
-# JtNThM8j++SGX+fdjUwbUjS69zVwkjuKPnek3NZXm9LmIlKha/6/CQRsPH81oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQUVd+iUfoDdoGD
+# FHgoZSH2Y6CQfzANBgkqhkiG9w0BAQEFAASCAQA/mmnZcQ0fkdOeqU5Crwe1VTAL
+# rg1VTQdZPW13oTzCMrc1E8UqO4ZmYovp1RGe8epgj2VUTChYNHsPH9RERc0yugsr
+# Fsk2vcftjp1vtVfEPZyGXCcUnqFBLIYYv4hP5ngHF0DBh/zY5FamcYiSomfwcGp0
+# F7Uf0kNd9/BBSyWVYPdb3TWe4JQt6fQf9ooAueXSrt+8mo9fKCqP5tu4YbZTSI4u
+# tidu8KJ8DkoVluiAmQd7+kJXhRsmADwv+xFNPrkfY9Q/q/2n7st2N9sqMrWFlsQm
+# SexIKDAc4XrG4R39GQr7pk0Li+jfE3iJtUmMzl2OH0u5Hym5NdvVRXRatFqPoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxMlowIwYJKoZIhvcNAQkEMRYEFLeNcCfBeG8Rw4qTtHRUVH7jOT3l
+# MTAxODExMDMwOFowIwYJKoZIhvcNAQkEMRYEFJBBo974YJjr8I9YU5r/A7jnYNM4
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCOZWmvrpRPqZckIi/J
-# 9kdOltG5G/H0Lux/0JyKzuRcQ54hCLjBGWyjbCPfC4yFwKhYgtjnlQbB0vF1Kucm
-# u8KTr8nfFpqngZAI9PMBhKV8IblNUot/5795dCT7R1NmdT8lkG4M1IoijUCbomek
-# MB9k45ZNaMw/Sfd6n5tKZuvMWlD2BiKJz1mKBtMeorR5zQ9pmTV/OCHeLLWi/pyX
-# xMLErZ7PS2xAXDkPkNnUBbvaHfEVGlZQ/Hi4Uvgji72a6gUl1lkamSIsM78YSKwp
-# l3xKa2/CesMxYyWssETh3BpP4dgNxmqIDAhHldTwyDolwSSjWIr00mDpCz9MG0xx
-# hd88
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAuQKGtN8dBHHNCggUU
+# 0NuqzM8h9rq24s+YcVT0S+4NSJlcoxRry+FO9o6whRcgpGokydZkFxhsfIXCQ4v9
+# P3ka+eaP4iZl3X1mh6p9U4JgQF/aicKOg8RWCsgKhVrUeJiZdXbACTvIIjBAwPvx
+# J8DBlnewymABSlEW9Wg+tgBQ7DnUcFimFlPl899IFi7Fh3gBBfVkwoyDbpE7Sx1/
+# OCxlgnjBFdEE964UK1ZGoTMZu1eOdDWkoZBMt42jluQqWJHfR34ScrAdeIhS0huW
+# IbBSdYclZxfaUL7XJC/POKZe1cE8C06IoMGHPvFYAUAlmrFYFmlHUgX0t9s1x0cK
+# PZCG
 # SIG # End signature block

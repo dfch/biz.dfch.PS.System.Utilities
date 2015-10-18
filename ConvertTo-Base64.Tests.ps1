@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
+Describe -Tags "ConvertTo-Base64.Tests" "ConvertTo-Base64.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 
@@ -16,10 +16,9 @@ Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
 
 	Context "Test-EmptyInput" {
 	
-		It "NullString-ShouldReturnEmptyString" {
+		It "NullString-ShouldThrow" {
 			
-			$r = ConvertTo-Base64 $null
-			$r -eq [String]::Empty | Should Be $true;
+			{ ConvertTo-Base64 $null } | Should Throw;
 		}
 
 		It "EmptyString-ShouldReturnEmptyString" {
@@ -54,6 +53,7 @@ Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
 		$Plaintext = @('Tralala', 'Schnittenfittich');
 		$Encoded = @('VHJhbGFsYQ==', 'U2Nobml0dGVuZml0dGljaA==');
 
+		# DFTODO - this test fails - check InputObject handling of Cmdlet
 		It "StringInputObject-ShouldReturnEncodedStringArray" {
 		
 			$r = ConvertTo-Base64 $Plaintext;
@@ -74,30 +74,27 @@ Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
 	}
 }
 
-##
- #
- #
- # Copyright 2015 Ronald Rink, d-fens GmbH
- #
- # Licensed under the Apache License, Version 2.0 (the "License");
- # you may not use this file except in compliance with the License.
- # You may obtain a copy of the License at
- #
- # http://www.apache.org/licenses/LICENSE-2.0
- #
- # Unless required by applicable law or agreed to in writing, software
- # distributed under the License is distributed on an "AS IS" BASIS,
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
- #
- #
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUE83Jk89akMiM9iG1y+PZ+cZ0
-# HWagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcv/kJFI/ydVZpp9famzkX8pC
+# f4KgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -196,26 +193,26 @@ Describe -Tags "Test-ConvertTo-Base64" "Test-ConvertTo-Base64" {
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRjt8VbDYdGX/jF
-# i5tIfdqYzIXO/TANBgkqhkiG9w0BAQEFAASCAQCqFmPSki0vZqv2kGLu9UKtZbW1
-# ibLdQvT8ONaUtMzfQ9tpBCeWn47O5lW0sf1Y2daZW8GurfEjz2jQeeeMuLO/Q+Jg
-# iol76dQQ6KQwWSanvBJYVi3Lpo21A8rZL3ta90dlNw7ymLiyW9Lp9K/1MIbZY+PM
-# P8cVzJQ+md9WzvFvi5Mj0ucD6Jp+yR69KUQHKega9YB5yCuGzZvg/EoFVVRFckRE
-# MzpgTc6vlaRJWs7LndbRcY5fGUZ3vbq7u3jtIVo0aAQMdW6x/zzuYMZeqQTgYXu/
-# zZuBksG66yOn3FOX+jSNonNcsHuStfC7SNMcqF+j5uInT/hcVyUrKksB+YNOoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBR5zfWxneYfLXU3
+# 16RZt0WhJzOWDjANBgkqhkiG9w0BAQEFAASCAQAGjgETSRbjSuSQk59dRXBbQOGZ
+# 7st1YCJaFz3agM7rYzvtTEHuxK3h3Kb/3OGjzNMX+PzJuKax5W3de3ck5wgT16VS
+# P+uUbwMYvs9d2ZSaCqFMGJdl+asf3xtsQxaNf2s2eSJ0QWx72qn69Z+4C3IGkGHU
+# VahmnJBSKjGtWFtpqacFGPdd56WD4Muo8Qplij3+t+L/A67ZlRxxOFJ2crfARgII
+# NggB/1CN27FsktYaHFenjC3VJIylIML+YO7155Ky6sMt1Dy2jPTZBhp4Oh67+7ZJ
+# eHbzk18eWCxRUELz1e8bz+yKuYhHxwKrEBwLYkQVnmMcAtZoQj+jqfR91vzAoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwNlowIwYJKoZIhvcNAQkEMRYEFNCPGlhHM90SCbQdmWk6dKMrVP9G
+# MTAxODExMDI0N1owIwYJKoZIhvcNAQkEMRYEFEanob4kYm0dH0Hkr8SK0n855+Zl
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCv9uEu5dff0kEVrZDD
-# T7sin/zt3Wzw77Ns5zIpHWG3hDg+U9KFYBL63RP11HW7Rn9W+6Q/SazSpCTmTKAi
-# 9r0bTzzHWAm6z1rkv/j2JEMK++vW5gYlHAGes7nWKP81evMV4Ic5MQUi/RteTJX4
-# bm2SirysXf++bANVsdKl50SBxcFn48vGGerDKIZ2Wt9xl09mrXNrCxCye2zpQJsa
-# PuclGeISc8gk6Mtm6+LoM+8HNi+xC5irkNNrzm5lN7YtKPZGKg5e0WjwPj5Bec54
-# nBusQXUM47k1V+KzX2bVSP3lS6ZtLV+he1w+TKAflvszLAhax1V3u+C8Qv8NXTj8
-# 3Z9l
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQADDXfoKVYuBD0wiwju
+# qkoLrAcfveHAQx5QWcbzurVUUGwMFrn9RNrAbUYiWM+qmg9XMuGpjzjWhjTm9aAK
+# t/+yEgkxYaHxc9ADVJpiH7KCzH9rgmVYCZ3aWKAiSluCPgvilkfvKXlutm/5sCOH
+# scdu6CRGlGfShs9vmLCbyAMefz0ICIQMRz5zAb1FjH1dDpRFIgDLVPtgZurez17i
+# qGdnGvDS1LQ9SzkHMM17f4rz/xnj2Wm7QPtfa0Dc+K1F4Nqq5MTPLJVIydI6T5/b
+# 1vVmd4ffKSwjD113lcHLRnmI9NpQKNTsdaaKMOVSaJ/P4Vg0cm9Tz0GV6/+/bkqg
+# dYbi
 # SIG # End signature block

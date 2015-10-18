@@ -21,12 +21,10 @@ PARAM (
 )
 
 [string] $fn = $MyInvocation.MyCommand.Name;
-#Write-Host $PSCmdlet.ParameterSetName
 $fReturn = $false;
 $OutputParameter = $null;
 $Matches = $null;
 
-#$InputObject = 'urn:vcloud:vcd:559ccf96-1cc5-4f79-ba4e-69dd1fa66fab';
 switch($PSCmdlet.ParameterSetName) {
 'guid' {
 	$Pattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
@@ -41,12 +39,10 @@ switch($PSCmdlet.ParameterSetName) {
 	'hp' {
 		$Pattern = '^(?<Name>doc-?[^_]*)_(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hour>\d{2})(?<Minute>\d{2})(?<Second>\d{2})(?<Counter>\d{2})(?<Extension>\..+)$';
 		$fReturn = $InputObject -match $Pattern;
-		#if($fReturn -and ( ($Matches.Year -le 1300) -or ($Matches.Month -gt 12) -or ($Matches.Day -gt 31) )) { $fReturn = $false; }
 	}
 	'hp4345' {
 		$Pattern = '^(?<Name>doc-?[^_]*)_(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hour>\d{2})(?<Minute>\d{2})(?<Second>\d{2})(?<Counter>\d{2})(?<Extension>\..+)$';
 		$fReturn = $InputObject -match $Pattern;
-		#if($fReturn -and ( ($Matches.Year -le 1300) -or ($Matches.Month -gt 12) -or ($Matches.Day -gt 31) )) { $fReturn = $false; }
 	}
 	'hp3027' {
 		$Pattern = '^(?<Name>\[[^\-_]+-?)_(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hour>\d{2})(?<Minute>\d{2})(?<Second>\d{2})(?<Counter>\d{2})(?<Extension>\..+)$';
@@ -85,14 +81,30 @@ if($Extract -and $fReturn) {
 return $OutputParameter;
 
 } # Test-StringPattern
-Export-ModuleMember -Function Test-StringPattern;
 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Test-StringPattern; } 
+
+#
+# Copyright 2014-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUG8LHFUx2ItKTVJN8OeBb8Wia
-# puKgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUi5wxUo+b0nryWLTvCLYRN0Fn
+# u8igghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -191,26 +203,26 @@ Export-ModuleMember -Function Test-StringPattern;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQ3RWETy8SuinzU
-# iEKaN81DvbI0tDANBgkqhkiG9w0BAQEFAASCAQBImHWCS2rV1reY/L8AXxnGf+Um
-# hAqPE95iPHvWFUZ3WSeHzJ4s9APH5GUep2sUAO7apM6IyfvbrLOO+8hNMILZ9xvK
-# s4WALUPU+SRIHXtTfFgmgMGJrOiXn1oU8V+BFsV98b0QO2ROfIu007oGDFC7dUoc
-# 3rUmKGKRBLdE/0ixQDHtPPRHWVIJ2hK371vuuLBTM95tCwmduxW++qEFDfJkloop
-# 6qggz5AV4ehOdRu8BDaNCXWbl23Kowp6ziAujpG+qyXCUvzLSSKF0zn0gOk7Y2Id
-# 9b5A8nza72JxyL2BvSxzf9G7rHS08Op//Vd93qKZMzG3w7WnxuswkpPBi/yvoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBR9pCQWda+Q28pY
+# hwpost4YU+x5KzANBgkqhkiG9w0BAQEFAASCAQCUWStw7bWw13NdRdsSZ60gZkYH
+# THL7qOk4y5hOHpxa+RgZs6yYdLfMt86TuhbTFdhTxBZBqGrRXV7mJ+z8k9A+LFdN
+# 3GRr16siOHY2vh4YdIp2r4eE+hafN7T1yFry1hJCoCuVdohWtSlSt8Kw7e8Hv/tN
+# Hc9CflAKmMBpZKLVCxgqYoHXuUt/5MqEGK1MzF5OLmJeIhCyK/uGouPShwm2/MTE
+# QVGCxJuF5RDn1Ey9D6R9S8V3+fr71G0d5h7Z7IncoxOaC4fGxQam0g4T3zi8uqmC
+# RgDIX7hIDjZscEQjGjCgX96ZOec6b8zz1rGlW3dC1zap3wTmvSoFQ7wwaNvVoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxOVowIwYJKoZIhvcNAQkEMRYEFHxlIOHxf49mhnDjVZhs2qYFxR4O
+# MTAxODExMDMyMVowIwYJKoZIhvcNAQkEMRYEFGrHaimFkT0UEgQ211toZuXSmGOZ
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCTgWIw0+4qsAMnsl2E
-# bftJ2nJs2vDTUFjEekWZfKlAKp/6BAktJw6FuQoUxwP6Y1GsZRW6oEC+jJDF14K9
-# QsVCjvqpt78lvbXHO/9MEuSv0ohtTVNg5TCZMSd2ngWtsyI8o6RilclGqHtaNmAa
-# SZb64YOw+iB+j1TTKQzBf/s5/vgQOQ8Jc/wZyeXCnlehUdtq5W7ZvLNhJCdX1tH2
-# Xq0c24lpkGKFrKlL/CducmMqccQhZ9RiDZteIR1OYW6R+8V63XaSb0/pslxuwQXK
-# 9aATpUh2GGjRCNfgTrxMgTLC3HhjCDQfog4Efd/RPRIIoZw2ukcWQJh8tANWCNxW
-# e9hX
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCksDAJw/eUK3xW3P7r
+# xjnvmAQctrKt0tdpcvFW/VuUFB8lRQvfvLqUZv+HjiDcQOOcaQjNnpt5tg6Zcjus
+# n3A6atnK7Rg6ACxdu/PRZAfty5f+aiQgltZuZQmg52bO2atFbCO3KEyI25lpzgOm
+# 62jxOSX74r3QKYHxZ9RijoxcuYK+XKa8dwPBWcIYr8YmpVus+o/r6+ecrkWeFfCl
+# KZjgXvxGxWr98g3JYf+imGMpT6nZuWrZpMjwolnUfXwtvkc5a+YKSuZL0NgLfJk6
+# he8D+OoMql9eV4HpEFMMg76pma+DJZPOS2zyAUG9qcT7+2Gjdi5YjRAMr36OgO6a
+# 5dOz
 # SIG # End signature block

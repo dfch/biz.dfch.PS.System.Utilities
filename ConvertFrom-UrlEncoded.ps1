@@ -126,14 +126,30 @@ END
 }
 
 } # function
+
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-UrlEncoded; } 
 
+#
+# Copyright 2013-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEH23TXwCX7wYAB/VuHMzHVAJ
-# ktOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUbELIIFIwWiw6RzHii2R5m9bJ
+# viOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -232,26 +248,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-UrlEnco
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQGdHo+a7XHDiVC
-# Xpi8O/1bTpsxujANBgkqhkiG9w0BAQEFAASCAQCKIorO0jtS1TUc5eZx+sZM7QBw
-# 9qgaapbLYPod3pcOoQe1ugKTSvm6jxPf92rJAjAEdPgpcqTYR3E8uiFn42XpEnhU
-# yo/Lq1NngWPseziMULHf2Gj64Wgh1c/sAT0aDTOpqIras7xNe+OI5PRFxI2mf5UC
-# DJpsZ4qe+IulLblr/yiVoDMEws7bElWhG7wkYg+WNn6CUuU8c+jetnLAWobZCJl5
-# yMPYRBRwruHhFIbzzrDaVPX68u/z8Ee/+UsuS038U7P0qwyYXpazkOYwKgeuo4aA
-# lnL0xBtNAiNxz9g8aqXaxSAM+hIyrLqraz1j1+YAdJ4GLo0zISQgscv9r/IuoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQfAufjqLMINf3c
+# jOy23+nLf885YzANBgkqhkiG9w0BAQEFAASCAQAP4w63NJ7eQtAE/o6W/h/c/2Rb
+# DoOgAStvbceukN1QH7boQN/XCm0kpU0WwkuWFj35fPZBg5vqOUwOj3i9yMAWDt4y
+# hKGh2ZP5MsbcTfgYycUV6PIgA54mWyUMWuXTsARZZ2HeaXUsCr4FOaNqx4ETbNcl
+# YxkL+fHBjnNXbUDP8zAqtU00/TeBD/G9Exzh1rl7kVwD8Ce9d/S5twLjc1YJ5Tpa
+# I1fSfsIFozvvFuu3IM46CdzfHkLJL3hsRq+b6324/XTlq/dNwM/Tct7Kyc/Kfo5N
+# kFoiMucyT/JRMDuIFFCCjRlzPBKNAr7UzdX3dRGz6+uy1uScaKJdBCiet3d7oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwNVowIwYJKoZIhvcNAQkEMRYEFBipP4g5Mdbth4VTYtT+VXhiYDo+
+# MTAxODExMDI0NFowIwYJKoZIhvcNAQkEMRYEFHxkxMapSzTELicJVFDyULKwKzZq
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAHL5dprzBh/qVcmG8e
-# ksxxeMkyINtT0vK0Tr8melkKtDItwbNsTpEWPN9PBK8KFP/88vI5JjDrclhbSxHQ
-# q5GQdRwhddMOQIzGW45fuIQI9BzydnyoT+34wyB5H8vgMlOgxp+ZOoH+d3jONqap
-# phlYFt7p8nnqfdCVZ79tHVj90EmdHvgf6xNVrGqlF4VLR/mKVAQbTAmDEzVVDeV2
-# wSC4VrAFkcidAtf8bRF4IUai3fYP3dy6nrvp/QwDTUGXdX9c+RFUfP0CirN1owD3
-# ipY1o9ks3bw72SHN5xpMauFuydbIYJGV1DKzt8GsKDSWFhDLLH/Dcs5CSs1sY74Z
-# mjTf
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAah6+Y73/aERIL+XyW
+# lFPNo6eq4VEmSrm9GWzKIj3N/s2TLPnxr5IyZT0HuHfWd6JERzCnx5dltysLnSoe
+# +rry/hbe/pgHp2kC3WKEdeQFY1OrTQ286WPp+B98+XC2+piUt92abia8tzvHUat4
+# UEjPKG3+k4EvfwKT26shMMY1vCxL+VS1D4/v/RrT7VB0DJGj77Wp/jCwOisY6V3x
+# p2R6Cei7MU7l9iHXzFu7BInKTS5nF1CWaCpAQh250pRv3PQK5DVoAj+mkbQhNmI3
+# jUy5UJiZ93Js28GJkUwFbgwnreDsRqRZROTN9lXn60bZmmCw7B/MOl9jER8MqaaW
+# gOhb
 # SIG # End signature block

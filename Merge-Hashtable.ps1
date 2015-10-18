@@ -57,6 +57,48 @@ key4 value4-right
 
 
 .EXAMPLE
+# Returns the intersection of two hashtables and takes the value from the 'Left' hashtable
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key2 = 'value2-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key3 = 'value3-right';
+PS > $htRight.key4 = 'value4-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersection;
+
+PS > $result
+Name Value
+---- -----
+key1 value1-left
+
+
+.EXAMPLE
+# Returns the outersection (or difference set) of two hashtables
+
+PS > $htLeft = @{};
+PS > $htLeft.key1 = 'value1-left';
+PS > $htLeft.key2 = 'value2-left';
+
+PS > $htRight = @{};
+PS > $htRight.key1 = 'value1-right';
+PS > $htRight.key3 = 'value3-right';
+PS > $htRight.key4 = 'value4-right';
+
+PS > $result = Merge-Hashtable -Left $htLeft -Right $htRight -Action Intersection;
+
+PS > $result
+Name Value
+---- -----
+key2 value2-left
+key3 value3-right
+key4 value4-right
+
+
+.EXAMPLE
 # Tries to merge two hashtables with duplicate keys. Result will be $null
 
 PS > $htLeft = @{};
@@ -134,7 +176,13 @@ PARAM
 	# 'ThrowOnDuplicateKeys' 
 	#     effectively merges both hashtables and throws an exception 
 	#     if the keys of both hashtables are not distinct
-	[ValidateSet('OverwriteLeft', 'OverwriteRight', 'KeepLeft', 'KeepRight', 'FailOnDuplicateKeys', 'ThrowOnDuplicateKeys')]
+	# 'Intersect'
+	#     returns the intersection of both hashtables
+	#     value of duplicate keys is implicitly taken from the 'Left' hashtable
+	# 'Outersect'
+	#     returns the keys and values of both hashtables 
+	#     that do not exist in both hashtables
+	[ValidateSet('OverwriteLeft', 'OverwriteRight', 'KeepLeft', 'KeepRight', 'FailOnDuplicateKeys', 'ThrowOnDuplicateKeys', 'Intersect', 'Outersect')]
 	[Parameter(Mandatory = $false, Position = 2)]
 	[String] $Action = 'FailOnDuplicateKeys'
 )
@@ -179,10 +227,38 @@ PROCESS
 		{
 			$result.Add($i.Name, $i.Value);
 		}
+		elseif($Action -ieq 'Intersect')
+		{
+			if(!$result.ContainsKey($i.Name))
+			{
+				$result.Remove($i.Name);
+			}
+		}
+		elseif($Action -ieq 'Outersect')
+		{
+			if($result.ContainsKey($i.Name))
+			{
+				$result.Remove($i.Name);
+			}
+			else
+			{
+				$result.Add($i.Name, $i.Value);
+			}
+		}
 		else
 		{
 			$e = New-CustomErrorRecord -m ('{0}: Parameter validation FAILED.' -f $Action) -cat InvalidArgument -o $Action;
 			$PSCmdlet.ThrowTerminatingError($e);
+		}
+	}
+	if($Action -ieq 'Intersect')
+	{
+		foreach($i in $htLeft.GetEnumerator())
+		{
+			if(!$htRight.ContainsKey($i.Name))
+			{
+				$result.Remove($i.Name);
+			}
 		}
 	}
 	
@@ -200,31 +276,27 @@ END
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Merge-Hashtable; } 
 
-##
- #
- #
- # Copyright 2015 Ronald Rink, d-fens GmbH
- #
- # Licensed under the Apache License, Version 2.0 (the "License");
- # you may not use this file except in compliance with the License.
- # You may obtain a copy of the License at
- #
- # http://www.apache.org/licenses/LICENSE-2.0
- #
- # Unless required by applicable law or agreed to in writing, software
- # distributed under the License is distributed on an "AS IS" BASIS,
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
- #
- #
-
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUa+Kp6q/x0/HT3ZQaVZ/277Fi
-# dHqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUEiOkDzJ8D+7LUsH+fn3/GGOV
+# NASgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -323,26 +395,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Merge-Hashtable; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQSaA6vAHQif9vQ
-# kYjKklZvfWNCzzANBgkqhkiG9w0BAQEFAASCAQBQaWCmkJStsyxWCWL0l7Azfhb1
-# QJ0Tdf+i7jBwnAC7DgzwKnLEEnZaTkyHCweCNqL1sS2K/Gw82orgJo6HZrVInE3S
-# kCgj0KJTRLO/Hh0Rg9KXR8dGB1MY8LWKvNGLsrvMBvHm3YG5isN9QHNEptgt+Qq0
-# s952Hi0WSIQg8e0KPwBuhpbCz5r/HhmqdnDDraVfDrUUT3US0D31HrBsQ/GTuVo7
-# /ghCantMXGiHTlmVJrVy0Q1xAYByg8D+Uce9HDvr0xClLnVciyZXCFTx74Ish0Od
-# yXpspHqNTb8GBnbgJMGWbj8HfrE9ENSndYA4vXuZhRfPwITCrNZhCZBKHfGooYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS/YRB/O2caLhU4
+# e9g1RymgWHPCMjANBgkqhkiG9w0BAQEFAASCAQCss0LrZ2hBufLMh+LlbZfAK3BD
+# Zh6woNDBH7of50+dXRI8q8yAxwDQYIQHXPES8rKCwVG7fjHrPIDD60kj1JsVoMpY
+# aXrms80btwx/JAd4h+XaYs8l4gKTENr5GNHzYF8F71Rpvn8HG62K5dAu3w/sdwkm
+# 4WKgXAcR3iZikQzr3FzSJ8QkBqpmkIQ7vytd2nx2IyQZdfFLdMnF4vGbrZHF7bt/
+# QK2HLWdVcEUh2kgHJAqHlxrj9ID07Fte7QVIzpKwDWduGa8Hnn+OIWG/4ZNVIQDR
+# 4tf/8UI+d9+bbKE0gy8R2TLWM2CDQR1tgV/8ut/PFgCzM9wG/3g5rtdD4a2voYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxMlowIwYJKoZIhvcNAQkEMRYEFMNMndEj5R3mqJf3AQO8hwaqwNaN
+# MTAxODExMDMwNlowIwYJKoZIhvcNAQkEMRYEFKYSAAWU6QK4QjT/jrlQ//6CJVuv
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCMZ7WP0bmVJJlOgfpf
-# JHxDM0CxabSjqAyPmCsJBFCPJsH+lstZKxE8PQEuEXy3FxkK/JwAZ33mW0+LzAJ8
-# QqlpnxGo4RkBq37tfV4SoRPlyLNW0KKKX6X2rO/l2M2+ShaWc7i6lc94Znp4edeh
-# 7OVojOcEu0ZM11gQmYf4sqfq05GnoBh5j7pCCQdcLAZNmqF7j9i9e49L+45ILwsN
-# BSuy7mhKJLI34ifG9Pf6+UOewq/svP/5r8jTWPKAhQS7yXPD8yrqtOTermHM6S1F
-# Ya86iP4rReMWIozqzeTZRLZbAbaJi4pop8Ucqke0iAFLLN69GynBdIeBbei9UEqp
-# OSUP
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCR1j2+54jH5v99cCL5
+# +qSeP9phP2/UNnuw0oHg3nDIxVF1+qxdYhzm/mJX4B//Jqf4dRZOySj0/D+fwwWk
+# +LAAHSMQSVcB9+KsaIHv1lScZ4dURzfydTQrlzvcBl94cM19xI8Ek/rHXc/O/lMC
+# H2e+n9Awrs/cJDDCx23qUXSWp2bFZgaQ19n5oq8WOyVR4VeshqcBuuIgicpYNccB
+# t17i3EkMG72v0ByiYFMg+0NrmnhGP+mVUquYHpvG10B2yDbXY6sl8ZrNHgeAYaYY
+# nyjz0S5IPZqRiA5S79IktjKRelwBeFP3AXq9ddm3rQ+3YV6u2hxr2GU/45Ba8GP+
+# 6P4t
 # SIG # End signature block

@@ -1,162 +1,108 @@
-function Import-Credential {
-<#
-.SYNOPSIS
+﻿
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Import and decrypt a credential object with a static keyphrase
+Describe -Tags "Get-Priority.Tests" "Get-Priority.Tests" {
 
-.DESCRIPTION
+	Mock Export-ModuleMember { return $null; }
 
-Import and decrypt a credential object with a static keyphrase
+	. "$here\$sut"
 
-This Cmdlet lets you import credentials via a static keyphrase from a text file.
-In contrast to Import-CliXml the SecureString in the Credential object is 
-not decrypted with the identity of the current user but with a static 
-keyphrase and thus can be read by any other user (on any other machine) that 
-also has access to the keyphrase.
+	Context "Test-CmdletExists" {
 
-The Cmdlet does not verify the specifed keyphrase.
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Get-Priority | Should Not Be $Null;
+		}
+    }
 
-.INPUTS
+	Context "Test-InvalidInput" {
 
-You can pipe a path to the Cmdlet.
-
-.OUTPUTS
-
-PSCredential
-
-.EXAMPLE
-$cred = Import-Credential .\Credential.xml -Keyphrase P@ssw0rd
-
-Decrypts the PSCredential object in the file in the currenty directory with 
-the keyphrase ^P@ssw0rd' and stores the result in the variable '$cred'.
-
-.LINK
-
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/
-
-.NOTES
-
-See module manifest for required software versions and dependencies at: 
-http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
-
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/'
-)]
-
-Param
-(
-	# Specifies the  full path and file name of the encrypted credential object
-	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 0)]
-	[string] $Path
-	,
-	# Specifies a keyphrase of the encrypted credential object
-	[Parameter(Mandatory = $false, Position = 1)]
-	[Alias('Password')]
-	[string] $KeyPhrase = [NullString]::Value
-)
-
-BEGIN
-{
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Path '{0}'. KeyPhrase.Count '{1}'." -f $Path, $KeyPhrase.Count) -fac 1;
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
-}
-PROCESS
-{
-	try 
-	{
-
-		# Parameter validation
-		# N/A
-		if($PSCmdlet.ShouldProcess($Path)) 
-		{
-			$Credential = Import-CliXml $Path;
-			if($KeyPhrase) 
-			{
-				$KeyPhrase = $KeyPhrase.PadRight(32, '0').Substring(0, 32);
-				$Enc = [System.Text.Encoding]::UTF8;
-				$k = $Enc.GetBytes($KeyPhrase);
-				
-				$Credential.Password = $Credential.Password | ConvertTo-SecureString -Key $k;
-				$Credential = New-Object System.Management.Automation.PSCredential($Credential.Username, $Credential.Password);
-			} 
-			else 
-			{
-				$Credential = Import-CliXml $Path;
-			}
-			$fReturn = $true;
-			$OutputParameter = $Credential;
+		It "InvalidInput-ShouldThrow" {
+			# Act / Assert
+			{ Get-Priority -Id -1 } | Should Throw;
+			{ Get-Priority -Id 0 } | Should Throw;
+			{ Get-Priority -Id "some bogus string" } | Should Throw;
+			{ Get-Priority -Id [String]::Empty } | Should Throw;
+			{ Get-Priority -Id $null } | Should Throw;
 		}
 
-	}
-	catch 
-	{
-		if($gotoSuccess -eq $_.Exception.Message) 
-		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
-			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
+		It "NonExistentProcess-ShouldThrow" {
+			# Arrange
+			$processId = 42;
+			$exMessage = 'Get-Process : Cannot find a process with the name "{0}". Verify the process name and call the cmdlet again.' -f $processId;
+			Mock Get-Process {
+				$ex = New-Object Microsoft.PowerShell.Commands.ProcessCommandException($exMessage);
+				throw $ex;
 			}
-			else 
-			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -eq $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					throw($_);
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
+
+			# Act / Assert
+			{ Get-Priority -Id $processId } | Should Throw;
+			Assert-MockCalled Get-Process -Exactly 1 -Scope It;
 		}
-	}
-	finally 
-	{
-		# Clean up
+    }
 
-		$datEnd = [datetime]::Now;
-		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	}
-	return $OutputParameter;
-}
-END
-{
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-}
+	Context "Test-ValidInput" {
 
-} # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; } 
+		It "CurrentPriority-ShouldBeNormal" {
+
+			# Arrange
+			$expectedResult = 'anyPriorityClass';
+			Mock Get-Process {
+				return @{ PriorityClass = $expectedResult; }
+			}
+
+			# Act 
+			$result = Get-Priority 
+
+			# Assert
+			Assert-MockCalled Get-Process -Exactly 1 -Scope It;
+			$result -is [String] | Should Be $true;
+			$result | Should Be $expectedResult;
+		}
+		It "Pipeline-ShouldBeNormal" {
+
+			# Arrange
+			$expectedResult = 'anyPriorityClass';
+			Mock Get-Process {
+				return @{ PriorityClass = $expectedResult; }
+			}
+
+			# Act 
+			$result = 42, 43, 44 | Get-Priority 
+
+			# Assert
+			Assert-MockCalled Get-Process -Exactly 3 -Scope It;
+			$result -is [Array] | Should Be $true;
+			$result.Count | Should Be 3;
+			$result[0] | Should Be $expectedResult;
+			$result[1] | Should Be $expectedResult;
+			$result[2] | Should Be $expectedResult;
+		}
+		It "Array-ShouldBeNormal" {
+
+			# Arrange
+			$expectedResult = 'anyPriorityClass';
+			Mock Get-Process {
+				return @{ PriorityClass = $expectedResult; }
+			}
+
+			# Act 
+			$result = Get-Priority @(42, 43, 44)
+
+			# Assert
+			Assert-MockCalled Get-Process -Exactly 3 -Scope It;
+			$result -is [Array] | Should Be $true;
+			$result.Count | Should Be 3;
+			$result[0] | Should Be $expectedResult;
+			$result[1] | Should Be $expectedResult;
+			$result[2] | Should Be $expectedResult;
+		}
+    }
+}
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2015 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -171,11 +117,12 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # limitations under the License.
 #
 
+
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU07CNrCSrnM9+KYRy2D2Er5Pz
-# 7R2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUqx+P/b2e5vB1fRquA0RbkMXp
+# +rGgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -274,26 +221,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQWsQ2tSzkS32hH
-# i+nCHiYlQsjA2TANBgkqhkiG9w0BAQEFAASCAQBlExWamu8Uwzt4K+v94iDcOAYZ
-# EcmLxXlWfioDwB2LaxsGDWWQV53I2q66gA66LjHEm+6ERY3G3Ltc6/JW3ncWQZ9v
-# +NtkCSdPNvMBs8kXTT2RWf4HWahn/+rKA0PXtarB7+fvHyhJmxCwtA+nNjaLH1Lj
-# yde/u2bWzx6zClqFQ6irY468ltax9EMIMsl/C9JYllKaAyqkPnNIP5UL4qbhgFpL
-# 1Jx5lSiQSA+PJ0Obkwfdfey96XXuzMz6Nfsxqr4yRJulH50hkGj3YA7m1njac65l
-# Lpoq0mxAd/N28/Tz0brxlMAFVdH+cHXlpLmwCLeYbG1zu8yvtvo4WxYWY9XPoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRZA4mh4l2vzFRL
+# k4MNS/TcNU0EWTANBgkqhkiG9w0BAQEFAASCAQCthFKhjDBWhWwBBtx1yVWdkTBi
+# 0e1wYAlv+K8Hb7fMiTpPfdhUXCmNkOnCDEfrZsAaBKj8EgIb4BT/NwKd+mPdx48T
+# syEptI8611v2JlIaqD2AXMAtJtHSAF7LRvJ14jpBgNlYGahj9OePL6MUW23sgHs5
+# teriHdEnzDAUZgoiuNNapcPIvSlq9xoC8OUXbY8gLByNe66uqYnMlGPBubKJFv13
+# Zzl2e0UAFMRLkl/fJdRUHXO/nwP0DBzx4zmGf3xPv4NTBaTff3TrSIFKQtZUxCJd
+# 1kGLvpVsWHdDBf5DacH9WsCOQM6zWSbjOElJcOaWzpSzjNzzqqVDmMnDPqhOoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMwMVowIwYJKoZIhvcNAQkEMRYEFMJpIkr1bLFKcKceVswwvrblD71c
+# MTAxODExMDMwMFowIwYJKoZIhvcNAQkEMRYEFAC1lqhlSe9dQSPvBRWSxJ4XeJFL
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAq8XYAOD6YWb1rSf3R
-# fhQKmPTTki6LKyKYRGsZqYe5L4UBtg3aXSiR+A3j9qwvqn7k2mdlg1Z66QHcq0s1
-# 5D7NxZRNnhEx8adTzuPn/zTGj+To5BPvy+cPIIaloY8o3yUJOvLXipc9o0aq2oep
-# 30Mz6GBQNzA17O9u9kibSKa6UUWEQt8Iek3cPe/JjRWyRb12stYjejYn1zAXV1iQ
-# 6dJzq9CiKnxqjLbQBZaBTYOFaDA6ZNsZCjDiGZIJlIJD9+hTHGgU4z+9HfQPTzpq
-# mdXl1Tw8qAyWgrl4tI7rwOUQH8N//C/NB/DjPeFPxCD5GpdZXBLNNAe8UT6TCPmp
-# cvlf
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQArj7Q7X4g5UxbfD2VX
+# Bc7Pa+S1Gv+uYNocURrrooClsAHIi7zJI42+NjP4j173wk0Q3ayMMI/B4+NtrN+z
+# t5a2lr+4KGpjg5G4Sy3ANMtLjYCMjNtoAku1cCHl2Fukf8qH9V8KgIwbDXGYdlc9
+# Gq+8kEk3RO0af0yPRyf1Yu5QVY5VML77XCc4OOxejN63oBDwyT1Nw3aCdlgR3Bvs
+# 2T654sK0CiElDmGhBu5z8crKBinIieOxLP5J3QKdggwql3OaZdMmofHMhA/TesFQ
+# QhaHZcQruJZ4sIP//kuH1Hu7mxl/0yjVRc4rCKSlA2WSyqh8N9ikp6f4v/kochLd
+# /WlT
 # SIG # End signature block

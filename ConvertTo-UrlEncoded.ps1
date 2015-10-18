@@ -1,38 +1,66 @@
 Function ConvertTo-UrlEncoded {
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-UrlEncoded/'
-    )]
-	[OutputType([string])]
-	PARAM(
-	    [Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $false, Position=0)]
-	    [string]
-	    $InputObject
-	)
-	BEGIN {
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Length '{0}'" -f $InputObject.Length) -fac 1;
-	} # BEGIN
-	PROCESS {
-	$fReturn = $false;
+[CmdletBinding(
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/ConvertTo-UrlEncoded/'
+)]
+[OutputType([string])]
+
+PARAM
+(
+	# Specifies the string to convert to UrlEncoded format
+	[ValidateNotNull()]
+	[Parameter(ValueFromPipeline=$true, ValueFromPipelineByPropertyName=$true, Mandatory = $true, Position=0)]
+	$InputObject
+)
+
+BEGIN 
+{
 	$OutputParameter = $null;
+	# $datBegin = [datetime]::Now;
+	# [string] $fn = $MyInvocation.MyCommand.Name;
+	# Log-Debug -fn $fn -msg ("CALL. Length '{0}'" -f $InputObject.Length) -fac 1;
+}
 
-	$OutputParameter = [System.Web.HttpUtility]::UrlEncode($InputObject);
-	return $OutputParameter;
-	} # PROCESS
-	END {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	} # END
-} # ConvertTo-UrlEncoded
-Export-ModuleMember -Function ConvertTo-UrlEncoded;
+PROCESS 
+{
+	foreach($Object in $InputObject)
+	{
+		$encoded = [System.Web.HttpUtility]::UrlEncode($Object);
+		$OutputParameter = $encoded;
+		$OutputParameter;
+	}
+}
 
+END 
+{
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+}
+
+} 
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertTo-UrlEncoded; } 
+
+#
+# Copyright 2013-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPe+vfh5s6GTLVHmEj6kdaKao
-# FmigghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUS6PmBWi6LP5hyBBejjMkdWdj
+# /UKgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -131,26 +159,26 @@ Export-ModuleMember -Function ConvertTo-UrlEncoded;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT4YIF6sw18rDuN
-# VHLi2kDjx8XiUTANBgkqhkiG9w0BAQEFAASCAQA1846SkzkUat6jsWP+C+bclPZ+
-# ZZ6/iUOd1oDLaohIi5szNu7qaFa2AkKOaaBG36z5f6jmtbF5vN5nGMM1W+9jOzwK
-# bB5zcG5FnWQr2olzXhxY8t3yD0Hvu88UmeuxKiR5dRfheOc97cnVyh/QAvneJOtq
-# bzQYG0BMFp5Iq8XFYMIGifXCCV7gNGZCZzFM1/vO7cm8BuOL39MnYH5Q0J6b/4ZT
-# KgWwdwtG1KOjZsTfyuE1DMirc+ZdtGz1ftHJJ4e9xwtZlOl6qhsL4PzOGystW/gW
-# jg5R/H35NmlC38F995AsGnJwV+IZ3tVRoxFKHPbMDWtwOggrURHyQ3ZEtLP1oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTGNfEJ2GEzuiA1
+# B9K8S5H2CbvvJzANBgkqhkiG9w0BAQEFAASCAQAueBCisHyj5pKiQKzhJt4DaWF3
+# n8qhdJv5qhdZL5yjwA3xd9ljbw1oXAg8MFPsHHVxajMbe/viohK6yaORGOz1t6bE
+# W29KwyF1aqXKugdZflDSbjAxKxKy0H60wOJyu1sTieC+1aLrLCwe+TtCZ5CnTQ2j
+# 2rYD5Szog7/G7R46ZrXn/tT3djNsFFPohuUrfkmuzmwP1zOq2GuA2iV++ecuQlK4
+# igcimSMf95IzR6YXte+NZ3sXk9zs8fBTZAZ6zpQUZMPWFcZRkvR6rp946xsoEWXW
+# JuNuERZrMMf1w3Md3FkLO3H5CZJ42ilHBLJVO+mAK5Cyw/ECQYPWPmeVjTR2oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwN1owIwYJKoZIhvcNAQkEMRYEFN+NIHShPtmwvc8JYBwN6MxkfTYO
+# MTAxODExMDI0OFowIwYJKoZIhvcNAQkEMRYEFEq1C/+ulW7KguziERSRZ7bGyxWp
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCGLHuNUmaJ62Y76g0Z
-# 4ww8D7byA2rrWUL4JqHyTplr3wx8ACydLwC+0DjOnXVS51CgZnsfUn+IFw7iFTa1
-# +uahglFFAde3Z5MhuBF21+L/K5fIR/6Wsp9LY1GOK0Oa9A+zexcFBwLaV28Y4MpO
-# qyx4bg79H1DspH5LJR8c8mML2FoHb2e+qRvsBCEGYrywng8K3NhEk6KRD9DBQ201
-# W6SrKIee2+zkA4D7rFvyeA3NQTlZMYfAYDGAms9yzZMr5Um8m9HhlUl+1M1qh/8s
-# zm3l9+5jgTOkX1eTpIVoDi2zihbPXSQUyn0xGux7DYCWyzEcH7cUEGBLfjVk4LUV
-# 8q7c
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBxUx1cIejyOEfTVJTn
+# JaQvpGnN0isxB0TL1UpTYrJH9xRs9otCIjcdvTD6CEQFhToGNBetLXmSTa1Mk8IZ
+# +ZpaS888lfpoFfOi9lFl426UlHvItenQzc4QfWXx5ehay1p5Fh/tjccKUeb3DroT
+# 2SKlYmM22rnERE1+nYINQ9wKW6GBTpO6BENuXGIwu9CV/JEgY7+uGYEcDS2hnSrT
+# fMT46Mb+AQ9SHyCHwvm+JdwxblUawiqAnfIUZAx9a26aNidMs1cl5PRqXzDgxge7
+# nAUzQqcDzBHveSKqsFXwQ4/+wbFHfveOUCYkxEWfNY3ZgGHpOXdyFVUEIqWdtOU5
+# NR9A
 # SIG # End signature block

@@ -2,7 +2,7 @@
 $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
+Describe -Tags "Send-ShortMessage.Tests" "Send-ShortMessage.Tests" {
 
 	Mock Export-ModuleMember { return $null; }
 	
@@ -14,7 +14,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 	$htRightNull = $null;
 	$htRightEmpty = @{};
 
-	Context "Test-Send-ShortMessage-RestApi" {
+	Context "Send-ShortMessage.Tests-RestApi" {
 	
 		function Invoke-RestMethod(
 			[String] $Method
@@ -127,7 +127,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 		}
 	}
 
-	Context "Test-Send-ShortMessage-Result" {
+	Context "Send-ShortMessage.Tests-Result" {
 		It "SendingMessage-ShouldBeCorrectResult" -Test {
 
 			# Arrange
@@ -135,7 +135,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber = '27999112345';
 			$Message = 'hello, world!';
 
-			Mock Invoke-RestMethod -Verifiable -MockWith { 
+			Mock Invoke-RestMethod -MockWith { 
 				$message = @{};
 				$message.apiMessageId = [Guid]::NewGuid().ToString();
 				$message.accepted = $true;
@@ -154,8 +154,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-VerifiableMocks;
-			Assert-MockCalled Invoke-RestMethod -Exactly 1;
+			Assert-MockCalled Invoke-RestMethod -Exactly 1 -Scope It;
 
 			# Assert result
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $false;
@@ -171,7 +170,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber2 = '27999112347';
 			$Message = 'hello, world!';
 
-			Mock Invoke-RestMethod -Verifiable -MockWith { 
+			Mock Invoke-RestMethod -MockWith { 
 				$message = @{};
 				$message.apiMessageId = [Guid]::NewGuid().ToString();
 				$message.accepted = $true;
@@ -190,8 +189,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber,$PhoneNumber2 | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-VerifiableMocks;
-			Assert-MockCalled Invoke-RestMethod -Times 2;
+			Assert-MockCalled Invoke-RestMethod -Exactly 2 -Scope It;
 			
 			$result -is [Array] | Should Be $true;
 			$result.Count | Should Be 2;
@@ -206,7 +204,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 		}
 	}
 
-	Context "Test-Send-ShortMessage-ErrorHandling" {
+	Context "Send-ShortMessage.Tests-ErrorHandling" {
 		It "SendingMessageWithInvalidToken-ShouldReturnErrorMessage" -Test {
 
 			# Arrange
@@ -214,7 +212,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber = '27999112345';
 			$Message = 'hello, world!';
 
-			Mock Invoke-RestMethod -Verifiable -MockWith { 
+			Mock Invoke-RestMethod -MockWith { 
 				$response = '{"error":{"code":"001","description":"Authentication failed","documentation":"http://www.clickatell.com/help/apidocs/error/001.htm"}}' | ConvertFrom-Json;
 				$OutputParameter = $response;
 				return $OutputParameter;
@@ -226,8 +224,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
-			Assert-VerifiableMocks;
-			Assert-MockCalled Invoke-RestMethod -Exactly 1;
+			Assert-MockCalled Invoke-RestMethod -Exactly 1 -Scope It;
 
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $true;
 			$result.code | Should Be "001";
@@ -245,7 +242,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$PhoneNumber = '111';
 			$Message = 'hello, world!';
 
-			Mock Send-ShortMessage -Verifiable -MockWith { 
+			Mock Send-ShortMessage -MockWith { 
 				$response = '{"data":{"message":[{"accepted":false,"to":"111","apiMessageId":"","error":{"code":"114","description":"Cannot route message","documentation":"http://www.clickatell.com/help/apidocs/error/114.htm"}}]}}' | ConvertFrom-Json;
 
 				$OutputParameter = @{};
@@ -261,6 +258,7 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 			$result = $PhoneNumber | Send-ShortMessage -Message $Message -Credential $BearerToken;
 
 			# Assert
+			Assert-MockCalled Send-ShortMessage -Exactly 1 -Scope It;
 			[String]::IsNullOrWhiteSpace($result.apiMessageId) | Should Be $true;
 			$result.to | Should Be $PhoneNumber;
 			$result.code | Should Be "114";
@@ -269,30 +267,28 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 		}
 	}
 }
-##
- #
- #
- # Copyright 2015 Ronald Rink, d-fens GmbH
- #
- # Licensed under the Apache License, Version 2.0 (the "License");
- # you may not use this file except in compliance with the License.
- # You may obtain a copy of the License at
- #
- # http://www.apache.org/licenses/LICENSE-2.0
- #
- # Unless required by applicable law or agreed to in writing, software
- # distributed under the License is distributed on an "AS IS" BASIS,
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
- #
- #
+
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUk24yoSREPYbJ2CCu9ppXlGBP
-# IeSgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVekhFTyA+m1uYO7U3UYyJy6T
+# DXOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -391,26 +387,26 @@ Describe -Tags "Test-Send-ShortMessage" "Test-Send-ShortMessage" {
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRTCYRy0tLnHHdS
-# +dXUdl8p3PnD8TANBgkqhkiG9w0BAQEFAASCAQBiNM1A+gX2oG+hsiF5kAb+ymfg
-# tMrh8Y8QisDEHVtHOlrkk/LyVZ7a4k1rPCAWYqETTWFPGbz7fmv2ie6qJyt0loEG
-# OmPDwlNhCbPMuZjQzPfL115M9EsNrESvbK6QqT5hBxR9sRCY7mZno0pqg9Ew3T4h
-# lcOtJIBncGwR11eUQsbGJkWZT68U6ekF4Qnktxz+iIEshkjOekYzyBaU047lzP7w
-# O6bRN3cztQ7oGUI60Tij4CdBK5z1/EMhihbwunf3sg65FByEv06wDCQUbCPg8dZ3
-# NKVkZlVITyX5wK0nsfuhWC6RW3PMd5VeqbAO+19acvCSgvaLXqyxPUPYTAhloYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQUwgOK9e4MYnqq
+# n6Z/YfOCIY3dWjANBgkqhkiG9w0BAQEFAASCAQCpRFt8lfQi6JdWW8ycXlfDdOau
+# xGrPFa39jYZE5K1pUx2TKwdB9mtoZAH7bqQiW7MFAzHbreJ2CowDynbLSNIbNJzT
+# LELJ1m08XDvj7MgfoF5mA1RJWmjJZD754qXf4eBSHqyqeHERJzf9NCays4OFLHz3
+# Fw1sg7Uyh7alblkPctP1VSy0knRNIe0zeIHWyLEJQoG4t4N0H9lN4OnbJODSIaix
+# ZzugmP2ltjLuVEvsVOiSIBDLkXNxxwhAuBiuMszpubPZxDyzQ9HAq9aI00OS4/6F
+# SKUoKxyA3zLljZ4WialdLoZ/V/heydFlPYpxOvwbmApbp/fpDvZHTEhRnZREoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxN1owIwYJKoZIhvcNAQkEMRYEFLVjlbf8bS6TLYSgBFiTkcG/hAD+
+# MTAxODExMDMxN1owIwYJKoZIhvcNAQkEMRYEFAEXeJKfxfxN6XxVAEqyAbWJam0q
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQByqIP210kGnNdI+K+7
-# bRTVsalZqebnFEzIKDDPV4pkUIwWav9qJPcukEfsfGD5Q23/xrHb2qiHrT1pCiei
-# khMLHMcR3e9M2DNaZqtqQdTgQlYD8ZDvEcS8vk0yZUrJVM7NNxByrmve5dPAJieo
-# GSxH/3/TMG/xdmfWoTKkIxdwoW78rTClkYm1xFkRRTpiy8BeNodJr+JpVFwyLlkg
-# Rln/kcWdRJ7Q+2nhO3VcDzZh13x2IyeQFDrWSa/60KH8rbc4stwvptLd5W7TLjVm
-# Fm07KjpimgcjBQoSFSvzYQeNjVVxNcJy0Jo79MiiDjKw0OUTyoovxsY8LibTxZdW
-# CA0T
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBbQnXEUpf1O8GXCnhs
+# TYTd1m/mpt3jcS4RDzWDDJBi+A+pUPIKLIMxHqvkTtUmoMPknlormXmUgCt5XcOH
+# jYTEdr8akafiNUDnsZjQaVZ7N6yY4UhnxUxdilDBAxjIgThRpW6Kh8KtQfDqSr9m
+# K0eXN14OWMUGFseMUcFe3VWD3rXzspIvzahj9VcqzmFE9Ap5ptsrfelMF1rTSc/L
+# f5vmc2RWY3QtdWuCD4RsvjbaHuXNgQPUu3+sj+0CSOZ4k2rgY8tPWVqIvi8Q75lo
+# n9bAFrFqU6GdRCipYjlKbC1QCtSs4UyrgbRhgggfBei68Mu7uhKL2AkRSfZhS41C
+# 41sk
 # SIG # End signature block

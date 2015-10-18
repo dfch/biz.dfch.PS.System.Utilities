@@ -25,13 +25,30 @@ function ConvertFrom-SecureStringDF {
 	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 	} # END
 } # function
-Export-ModuleMember -Function ConvertFrom-SecureStringDF;
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-SecureStringDF; } 
+
+#
+# Copyright 2013-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUD+1B8EDm4pwo6KNA1tbCZLK0
-# niugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUZTWGu3qQTiIJ67R3mPcamwzv
+# hFSgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -130,26 +147,26 @@ Export-ModuleMember -Function ConvertFrom-SecureStringDF;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRugvF4nimNVZ7F
-# aNwW8xa5gJD4xzANBgkqhkiG9w0BAQEFAASCAQDKhhigTndZPiUSZJjNqJ/hHTul
-# j85akso3Oe2x3l6JjUzEdPwSlJ8JH+fDjGkANp18APHKmeILjNFTuqJEogIzxcsT
-# aT/ddk24jEqxPOG6+P/HeZwwHySxvm6k+uF4jdo65qKTP/+KYqLSnNLp8AkN5reC
-# 0MGwt8yo1OmxwU399AreHnX3vnRK+gLedm4lhbherlB8k5yEipPerOt69+q/9mKW
-# DOKusLEIm3WMwIafRB9H2sC9QcStXBGSKKBMF+8nh/1KTvmAwSxTQTMD0AUC2nt6
-# NX7yjT2/VxhqhBm55vJh+B9E4QZQFiBVgVciEJlEUmTlGsPb147U7TQxj4MtoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTpWGoJQLyX6nIH
+# q97O5ICgL3+CFzANBgkqhkiG9w0BAQEFAASCAQCJHycBpQv9h/R8foRsLoFe5CCP
+# pl2Es5i3smFSfaua4n6OWT//KlNT4QXrnoKJTjYLqS1L70thvRr+FuLfJF/IROEc
+# ZAwEkZ/XjVY3t4fFDVB5AjSYAXPAs0cpfTw5Gd4QHKqMnFigepxVvYpg0+QYUGBk
+# i2Xt8CqNcAcESDHQ7bY1jS1GGmZvRXtbe/nhCv8IIsvunyUW3L11S/pYFTZ4puDd
+# heNCOTKfm0lpTWGdo58kRj+E6g7KcEQ7LrmiF16LKdWIWHfbZHV2vg+r5PwSgTF7
+# DfvRybX2IOyFa/oTLo5wG7/cUzfD36VQXfI7k3Mi00V3YDJqfWTZwypJvpnLoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTE1OFowIwYJKoZIhvcNAQkEMRYEFCwvozXR2Q+G9kzuscJpiFm+t4ca
+# MTAxODExMDI0MVowIwYJKoZIhvcNAQkEMRYEFF1N/atCCxlAKVEmmNyaSrojjgU6
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCMtnKYqpJa/3keuObd
-# dugQjtL2sUrc19fEWaulrNPT5V2HUsJ3upLm+/OSOrM8Y6UDv101LWH5JJYwWqtv
-# F6da+1619dgRhXGwWNOzAqX334gh+HSvf2+irDYHcirENmdwENPOr1EAqAfMAMSc
-# bo/uez9ztamFPLoc2lJMPqvxTiKddObtSkrFjNA/NAAajnWzjxxeLzMAQjm+suO4
-# kL/HwvLe0wjM/JtVmZVCTjihKlQ6aaOQdDlxUWqrtP7jdPlIyKnI6dn3HK4pRIhC
-# OIBvM6Myq4soTLC2hlzjCfFBftr7RGEfzRxrW9M02J8dr9oYBqLXKXKrX9AFaHTh
-# 2guy
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBat3L7iBXyamxJFhGU
+# yGj9A/aiIGORa6T8Gppz/Au8yv6h07kBd+jT4jW2VHZrrnpAj/4TJXSfdOpeTGse
+# LJ5htwF0J/8EGN1TghesZHeKmPngRRIIkIsahECinu8Q1Ye+Xg58c7zuU0/Drv6u
+# 1yrmy7RsvQZH9lXu58R79STrGEq1Vkm70oOWQqrwK30rhgFVWTCohjIBeQPxICn7
+# YmUHy+S+lu1HqDAofFuFAKATf4dWa/97ETn1bMcKE5/L1LTSyF5NB7FBAOgfVhnC
+# cwGKly1VQn+S7CpHh1Nqvax3y1EU3XGPouoqcVmRu0RixgXJWr9DFgld1U1DYPJm
+# 2qDK
 # SIG # End signature block

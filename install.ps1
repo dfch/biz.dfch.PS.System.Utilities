@@ -1,17 +1,23 @@
 [CmdletBinding()]
 PARAM
 ( 
-	[string] $ModuleName = 'biz.dfch.PS.System.Utilities'
+	[string] $ModuleName = ([regex]::Match((Get-Item $PSScriptRoot).Name, '^(.+)\.\d\.\d\.\d$')).Groups[1].Value
 )
 
 END
 {
+	if([String]::IsNullOrWhiteSpace($ModuleName))
+	{
+		$ex = New-Object System.ArgumentNullException('ModuleName', 'ModuleName: Parameter validation FAILED. Parameter must not be null or empty. Please choose a module name.');
+		throw $ex;
+	}
     $modulePath = Join-Path -Path $env:ProgramFiles -ChildPath "WindowsPowerShell\Modules";
     $targetDirectory = Join-Path -Path $modulePath -ChildPath $ModuleName;
 
     $scriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent;
     $sourceDirectory = Join-Path -Path $scriptRoot -ChildPath Tools;
 
+	Write-Verbose ("Creating/updating module '{0}' in '{1}' ..." -f $ModuleName, $targetDirectory);
     Update-Directory -Source $sourceDirectory -Destination $targetDirectory;
 
     if ($PSVersionTable.PSVersion.Major -lt 4)
@@ -157,11 +163,27 @@ BEGIN
     }
 }
 
+#
+# Copyright 2014-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU2K50pBwlJQ1vru4vISDkIZ0q
-# EJ6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcLrDiahVJjgo467/FIpVopuB
+# CtegghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -260,26 +282,26 @@ BEGIN
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQaZOBDfvgPATuy
-# xH/iEPWxNSu4zDANBgkqhkiG9w0BAQEFAASCAQC58M49dT5z0TZaaRdHXsqz5lmP
-# fdzAsQwbokJtOcTAGQfSC5NlLMARnrcsDSV1Qp5Ew91PfmknRmQ5ka7kufazNvb0
-# rwcOp6Vdh0aa8K8TyMrWKqgqOmzzSFdKmOSJsL7s6yU+zSvmbqtSKZih0qTRKolT
-# b2jHl2l6hvKDOUKWfEitGbEd7Mllc/xPtRKZRgx6rAQEVPD2n0537v+5sPBFf00l
-# HjZ0vAmNSUjyXWs7/rmpkxKIjbhc81mD/rfqaNXtuvRiBOMTWi5z+sKViT7CfVCb
-# hU/zmqmOCJ0yGIi2bxvJU1X4hK9akHnUoIygqGTAgSMQ5QGyaL3aUyVFM0AfoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT8rm/qCXlDeO38
+# gsmpBZQMoi/R1DANBgkqhkiG9w0BAQEFAASCAQAqxzoX5CT0R039KHNaPgZGYF2l
+# O95oF3Y2tzg1yT1oD/xdCPEyiY5Mdk9nKC9gp84wzo7OqjNQ4pvxWeId4OYcrzxP
+# j45pWRqpxHS8atpG3OlV2VdnyyiaAmOkNBpfgVtGDulxSFpmRdOiVkTk1AncJKdg
+# dWFBtDKaOUc3d78KaqOpRQJTCzgL5nvVZ3LWiHwTuBdAK8tJstqfA7m03tnfBJdh
+# K15dPgVo/OYPB24b9AqE1UXbn7rpCXW4Pq2ZBHWYaEAZcMIujG7mTK4CM0+q4yVQ
+# Y9qLlGcqCbB+vYrvCYYrFdJ6mq90djuh64U+GvA0uTBaijAPQh3zsbVPNfhloYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTYwMlowIwYJKoZIhvcNAQkEMRYEFO5bbT20k6tXKqXB4e3cPkdRejvm
+# MTAxODExMDMwNVowIwYJKoZIhvcNAQkEMRYEFEHIruJsd+Vs7sOYHwPOtOXfmUEp
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQB4wOMgEGr6Lz4cM2Ax
-# yF/+yFnMVTe08kDGQ5cvcU/USXwx4KgFInlQDji7Rnbykhro5JosWhje2UFmG+eP
-# DRAcSYPIoWi+XGhQMnVcWFHo0v0DIBDIxq7c1PBaRcJlZbn39DhSerKrL2mD/Jpz
-# 0ahUO2Dbj+DPgnst5FGZIffch2johIcbu/x7ZIAsg+WQQ+hGRnicqONb3hSeXiTN
-# M9WZDBGRCiwvw54WuPel+utGzJpFe5bPWEkaoRN4r25DKlFYRKvMVvJcM85aYTFh
-# mtV7zW9GPeI8FrKxoCo8MTyn37x3C71jtXfHihft8jupG86E7ANgZL/r+9sPO3R1
-# Sua7
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCneT9IkXgn3BU0nAQ2
+# Qye78E17/Bm/O9Drb24yKz0yLH6Os21ZWKi8C6viepvY43ZOz30wCA6ffrhksIvt
+# tojSZTNiSm5G+GFKmhdqmV+24AGSdRNIsi4j4D0KnHV9zFTGa6fDrl7/ugPN2odv
+# 9on/rI6nnJdPYK4snc68iV79K1kal4zyEE42g8othiLRq/R/RwQ7o6xYDQLVu1Zd
+# dIZatpxWQy3VgEuS2mMh/QH2De/FghJh2C/ZKfdVytbFoA+igQ9gRMHiNVOvwVwa
+# +x4A1Q3TfThFhnyIbGSSRQKy5m9zrfe7Snv4LJeqCQllcKz61JKoXFXj9Cbnn8Tl
+# 0NZq
 # SIG # End signature block

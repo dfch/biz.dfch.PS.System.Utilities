@@ -1,162 +1,128 @@
-function Import-Credential {
+﻿function Get-Priority {
 <#
 .SYNOPSIS
+Gets the current CPU priority of a process.
 
-Import and decrypt a credential object with a static keyphrase
 
 .DESCRIPTION
+Gets the current CPU priority of a process.
 
-Import and decrypt a credential object with a static keyphrase
+Priority can be one of the following: 
+Idle, BelowNormal, AboveNormal, Normal, High, RealTime
 
-This Cmdlet lets you import credentials via a static keyphrase from a text file.
-In contrast to Import-CliXml the SecureString in the Credential object is 
-not decrypted with the identity of the current user but with a static 
-keyphrase and thus can be read by any other user (on any other machine) that 
-also has access to the keyphrase.
-
-The Cmdlet does not verify the specifed keyphrase.
 
 .INPUTS
+You can query the priority of the currently running process or any other 
+process specified by the PID. Elevated privileges might be needed to return 
+the priority of other processes.
 
-You can pipe a path to the Cmdlet.
 
 .OUTPUTS
+The Cmdlet returns the [System.Diagnostics.ProcessPriorityClass] of the 
+specified process as a string with one of the following values: 
+Idle, BelowNormal, AboveNormal, Normal, High, RealTime
 
-PSCredential
 
 .EXAMPLE
-$cred = Import-Credential .\Credential.xml -Keyphrase P@ssw0rd
+# Retrieves the CPU priority of the current process
+PS > $result = Get-Priority;
+PS > $result
+Normal
 
-Decrypts the PSCredential object in the file in the currenty directory with 
-the keyphrase ^P@ssw0rd' and stores the result in the variable '$cred'.
+
+.EXAMPLE
+# Retrieves the CPU priority of the process with id 42
+PS > $result = Get-Priority 42;
+PS > $result
+High
+
+
+.EXAMPLE
+# Retrieves the CPU priority of the process with id 42
+PS > $result = Get-Priority -Id 42;
+PS > $result
+High
+
+
+.EXAMPLE
+# Retrieves the CPU priority of these processes 42, 5.
+# Priority is returned in the order they are specified.
+PS > $result = Get-Priority 42, 5;
+PS > $result
+Normal
+High
+
+
+.EXAMPLE
+# Retrieves the CPU priority of these processes 42, 5.
+# Priority is returned in the order they are specified.
+PS > $result = 42, 5 | Get-Priority;
+PS > $result
+Normal
+High
+
 
 .LINK
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Get-Priority/
 
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/
 
 .NOTES
-
 See module manifest for required software versions and dependencies at: 
 http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
+
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+	SupportsShouldProcess = $false
 	,
-    ConfirmImpact = 'Low'
+	ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Get-Priority/'
 )]
-
-Param
-(
-	# Specifies the  full path and file name of the encrypted credential object
-	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 0)]
-	[string] $Path
-	,
-	# Specifies a keyphrase of the encrypted credential object
-	[Parameter(Mandatory = $false, Position = 1)]
-	[Alias('Password')]
-	[string] $KeyPhrase = [NullString]::Value
+PARAM (
+	# Specifies the process id whose priority should be returned
+	# Default is current process ($PID)
+	[ValidateRange(1,[Int32]::MaxValue)]
+	[Parameter(Mandatory = $false, ValueFromPipeline = $true, Position = 0)]
+	[Alias('Id')]
+	$InputObject = $PID 
 )
 
 BEGIN
 {
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Path '{0}'. KeyPhrase.Count '{1}'." -f $Path, $KeyPhrase.Count) -fac 1;
 	# Default test variable for checking function response codes.
 	[Boolean] $fReturn = $false;
 	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
+	$OutputParameter = @();
+	$OutputParameterList = New-Object System.Collections.ArrayList;
+	$datBegin = [datetime]::Now;
+	[string] $fn = $MyInvocation.MyCommand.Name;
+	# Log-Debug $fn ("CALL.");
 }
+
 PROCESS
 {
-	try 
+	foreach($Object in $InputObject) 
 	{
-
-		# Parameter validation
-		# N/A
-		if($PSCmdlet.ShouldProcess($Path)) 
-		{
-			$Credential = Import-CliXml $Path;
-			if($KeyPhrase) 
-			{
-				$KeyPhrase = $KeyPhrase.PadRight(32, '0').Substring(0, 32);
-				$Enc = [System.Text.Encoding]::UTF8;
-				$k = $Enc.GetBytes($KeyPhrase);
-				
-				$Credential.Password = $Credential.Password | ConvertTo-SecureString -Key $k;
-				$Credential = New-Object System.Management.Automation.PSCredential($Credential.Username, $Credential.Password);
-			} 
-			else 
-			{
-				$Credential = Import-CliXml $Path;
-			}
-			$fReturn = $true;
-			$OutputParameter = $Credential;
-		}
-
+		$process = Get-Process -Id $Object -ErrorAction:Stop;
+		$null = $OutputParameterList.Add($process.PriorityClass.ToString());
 	}
-	catch 
-	{
-		if($gotoSuccess -eq $_.Exception.Message) 
-		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
-			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
-			}
-			else 
-			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -eq $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					throw($_);
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
-		}
-	}
-	finally 
-	{
-		# Clean up
-
-		$datEnd = [datetime]::Now;
-		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	}
-	return $OutputParameter;
 }
+
 END
 {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	$OutputParameter = $OutputParameterList.ToArray();
+	return $OutputParameter;
 }
 
 } # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; } 
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Priority; } 
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2015 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -174,8 +140,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU07CNrCSrnM9+KYRy2D2Er5Pz
-# 7R2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUM96TS/9iY+0gryR+CSkPNqy8
+# iLWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -274,26 +240,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQWsQ2tSzkS32hH
-# i+nCHiYlQsjA2TANBgkqhkiG9w0BAQEFAASCAQBlExWamu8Uwzt4K+v94iDcOAYZ
-# EcmLxXlWfioDwB2LaxsGDWWQV53I2q66gA66LjHEm+6ERY3G3Ltc6/JW3ncWQZ9v
-# +NtkCSdPNvMBs8kXTT2RWf4HWahn/+rKA0PXtarB7+fvHyhJmxCwtA+nNjaLH1Lj
-# yde/u2bWzx6zClqFQ6irY468ltax9EMIMsl/C9JYllKaAyqkPnNIP5UL4qbhgFpL
-# 1Jx5lSiQSA+PJ0Obkwfdfey96XXuzMz6Nfsxqr4yRJulH50hkGj3YA7m1njac65l
-# Lpoq0mxAd/N28/Tz0brxlMAFVdH+cHXlpLmwCLeYbG1zu8yvtvo4WxYWY9XPoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRjPUJvuf+aj1HZ
+# V6SAROYGAicpAjANBgkqhkiG9w0BAQEFAASCAQBj1dlzC41k/qkAzZrAqaagOVF0
+# 4bLlOi3NW+JFf+SwZry/bnd7kvlYQWmoLMLhDdTXqBsbeDHb3A4jltwBUViQL9V8
+# InfkqXA4LcGUEibbuhISYrQaOx1ohTsNs3aLsq1pmCk1JJoLDVXTRARxmwikcegC
+# lcfjne7vljmGNHliCdcGzFv4DdXgLeq67RWgQoNOykVJTe+FFMFu+M+7/QdxWVbq
+# VGY94dc5P36ERUoB6P/3hCvBqUg4pNcLsXLg2KLaBPfnfAppIN6xEdfb+9WWCFST
+# sTTQWLz0iZLpeQS9D2vIpFK93foNYvzCywZQ82CAMcQjBVjaSlccx2645DafoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMwMVowIwYJKoZIhvcNAQkEMRYEFMJpIkr1bLFKcKceVswwvrblD71c
+# MTAxODExMDI1OVowIwYJKoZIhvcNAQkEMRYEFM3vJF4Xp0wWkVsPNDzfnBVMQHt7
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAq8XYAOD6YWb1rSf3R
-# fhQKmPTTki6LKyKYRGsZqYe5L4UBtg3aXSiR+A3j9qwvqn7k2mdlg1Z66QHcq0s1
-# 5D7NxZRNnhEx8adTzuPn/zTGj+To5BPvy+cPIIaloY8o3yUJOvLXipc9o0aq2oep
-# 30Mz6GBQNzA17O9u9kibSKa6UUWEQt8Iek3cPe/JjRWyRb12stYjejYn1zAXV1iQ
-# 6dJzq9CiKnxqjLbQBZaBTYOFaDA6ZNsZCjDiGZIJlIJD9+hTHGgU4z+9HfQPTzpq
-# mdXl1Tw8qAyWgrl4tI7rwOUQH8N//C/NB/DjPeFPxCD5GpdZXBLNNAe8UT6TCPmp
-# cvlf
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCa6CJGZXsBMEbjG8P/
+# /BxMNNVsXd9BQaB1TKVFtuJ9kbGsd4EbZ6yRedgX1zdvSEYOyGKwxjHSMGBVV+sW
+# NA3YlDSuHa0fEwYZnBbOcMKGE/xL4+L0MVFWc+rTfmjShYqofItDKsSeEWBduKVr
+# /V++MHsL0v7ZN4VghuWFnFtgkRe6mxsECeslzI+AuRhcuM3IJpzHyJEab6yn+97o
+# sm0MQE+Kdd1WKiaM8sfNMGMHAFGjz6rJR3hpDiIe1kq2+J4Oxv/TNumiQyNLkuBr
+# Oz9WRcgXq7VPJIGKa2SUc4MgfDOeaURvk7Qx/DstCsJgUL/FeIk1kOGLQaiXMZt4
+# Z2lY
 # SIG # End signature block

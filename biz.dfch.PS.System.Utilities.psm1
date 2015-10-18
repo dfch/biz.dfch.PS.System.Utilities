@@ -35,30 +35,27 @@ if( Test-Path -Path $ManifestPathAndFile)
 	}
 }
 
-<#
- # ########################################
- # Version history
- # ########################################
- #
- # 2014-10-15; rrink; CHG: split module in separate PS1 files and use manifest file
- # 2013-12-28; rrink; ADD: Remove-ActivityProgress
- # 2013-12-28; rrink; ADD: Set-ActivityProgress
- # 2013-12-28; rrink; ADD: New-ActivityProgress
- # 2013-11-25; rrink; CHG: $Input to $InputString
- # 2013-10-27; rrink; ADD: Set-SslSecurityPolicy
- # 2013-10-27; rrink; ADD: Get-Constructor
- # 2013-10-24; rrink; ADD: Export-Credential, rewrite to accept pipeline input
- # 2013-10-24; rrink; ADD: Import-Credential, rewrite to accept pipeline input
- # 2013-01-11; rrink; ADD: initial release
- #
- # ########################################
- #>
+#
+# Copyright 2013-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKj/CtobAeADu5+YEoPK+l1C1
-# cuugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUSKQQhDqiNXLSy8gF6ja9y+1O
+# kemgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -157,26 +154,26 @@ if( Test-Path -Path $ManifestPathAndFile)
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQUjwv2YSZTlNg9
-# OiPfx1GN25HLPjANBgkqhkiG9w0BAQEFAASCAQAPHsGrMclrActI2L5YDTluwbyH
-# xqaNg6HxVloISx73IRdlAsm0BHvi03iv9eqTqH0Exs2hWpORXMXgkwv17ng4SESG
-# +DxKG3uoIzdifQcr5u62XlWFh6Nrzt2JNATtaQdwcKXHtnzbXSRQb2IrfixdJ0hp
-# 2JsrjkcHqB9zXRUW0wEvx6aYIspHvQtXeiOb8zklJ2Ee+LOlP6s/+8uuh19RjNNv
-# RLLEtoUPq76gUiFAm4l58cvP1vrhe+MRg9TelOStqeYbBXB+TUHMJTzoegADHLBG
-# JE+wZSf54mOevnB03Fdbzhka+X4LHrgjA30yozsP8HeUSBUjXF4vn4tVd9vvoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSInXTJXxBg+jv8
+# t98CROkqYfzpLDANBgkqhkiG9w0BAQEFAASCAQCCO4dl7UaWYnQhb3D0+2ZPSBzD
+# CmhADwNWFN6aAW1egEUrCzNhekcFHqSajGatED33lNwZKvJPAtzW0trlGoNnZdoa
+# 89SkPtQDYc9y5/ff0MvSW32mM+8F175NwyfjkMTNfiymbBZJh+2J0So6Ok6hFtBF
+# PavU1hZh693n7ojf68EBgNDkRAxammSZd30qIf6BAFRQT/rHQhil7LNLUGVefGzJ
+# 0UouTf1ErAKA6wbUOLjr8FqDrx4HwXb+GjNh0Oaph64Fnvpd/aCAy2uYifu8LDJp
+# OI+TijiliMP/y6aKlkXvfKmQNVkrM+dY2KvpMwhAHRvBywhyUe5ii21JzOnZoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTE1NVowIwYJKoZIhvcNAQkEMRYEFFG3U8PB5fx2Tdi3pPq55lqDqkCK
+# MTAxODExMDIzNVowIwYJKoZIhvcNAQkEMRYEFHOlLkGXf3ZmJMS8DSgqvyymy1az
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBPap6W/oSr1+Wh7e8p
-# rYr/hL2MCVClMMzMKrjwXrAnni/8QJ7QS2LCsCevDQlywT3BrrJEOR9DbnS/v01u
-# eQAOc4JCAP63ZyMsbwdCh7Ja86HbUbfmGRnZ8Co5j6M5WAKBXgV7Zmo8k/WvKYou
-# t2OC4HEU9a2WP9VNSygIhgaTlDKDtj4cGituryl9Pp0UBWT1JKdcKTV7x+L9rbbt
-# dTPWQvd0t5yIw3svvvLUlE+AH+gsz40WCXey3/WAscgwxzttOvO42tNDDL4Qszhz
-# 8OGl403W+tT4Wl7VCW5pY+RyktEds5EzOyvoMlzcfww7jH/Rpxg78AGULPr9KJiI
-# v6sN
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCOlXMQCswwWZDLlnEc
+# IsHMd2KZ3KX49gff3kYxrwvEH+N0EIthCIRlMVvShzH8UFBGByW/RorPksGWejHA
+# MbJRnVUPQSEu1QlKpQ9072MIaz3hm+Tt1248IWjATw+IPOYB8NY9ZQsZK9U8pmb/
+# AvxWUMJHoHR9cU1QHy2CT12SuzivjQJK7Kb67xuIWgPelY75YG2nCWPl82aEqowq
+# zxYXjYspT84kZbS3ozt7NeV97HUOUJ1qpUzzAU5CjOn4tJjfxHUoFrqQVnznrqhH
+# toy5iCZzR2lHfFsGSaFUb4Sn96MSuRvG307TLKe+7MNFAjCEaaSdbhMU2r79r+79
+# uQzM
 # SIG # End signature block

@@ -1,162 +1,24 @@
-function Import-Credential {
-<#
-.SYNOPSIS
+﻿
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Import and decrypt a credential object with a static keyphrase
+Describe -Tags "Update-Signature.Tests" "Update-Signature.Tests" {
 
-.DESCRIPTION
+	Mock Export-ModuleMember { return $null; }
 
-Import and decrypt a credential object with a static keyphrase
+	. "$here\$sut"
 
-This Cmdlet lets you import credentials via a static keyphrase from a text file.
-In contrast to Import-CliXml the SecureString in the Credential object is 
-not decrypted with the identity of the current user but with a static 
-keyphrase and thus can be read by any other user (on any other machine) that 
-also has access to the keyphrase.
+	Context "Test-CmdletExists" {
 
-The Cmdlet does not verify the specifed keyphrase.
-
-.INPUTS
-
-You can pipe a path to the Cmdlet.
-
-.OUTPUTS
-
-PSCredential
-
-.EXAMPLE
-$cred = Import-Credential .\Credential.xml -Keyphrase P@ssw0rd
-
-Decrypts the PSCredential object in the file in the currenty directory with 
-the keyphrase ^P@ssw0rd' and stores the result in the variable '$cred'.
-
-.LINK
-
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/
-
-.NOTES
-
-See module manifest for required software versions and dependencies at: 
-http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
-
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/'
-)]
-
-Param
-(
-	# Specifies the  full path and file name of the encrypted credential object
-	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 0)]
-	[string] $Path
-	,
-	# Specifies a keyphrase of the encrypted credential object
-	[Parameter(Mandatory = $false, Position = 1)]
-	[Alias('Password')]
-	[string] $KeyPhrase = [NullString]::Value
-)
-
-BEGIN
-{
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Path '{0}'. KeyPhrase.Count '{1}'." -f $Path, $KeyPhrase.Count) -fac 1;
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
-}
-PROCESS
-{
-	try 
-	{
-
-		# Parameter validation
-		# N/A
-		if($PSCmdlet.ShouldProcess($Path)) 
-		{
-			$Credential = Import-CliXml $Path;
-			if($KeyPhrase) 
-			{
-				$KeyPhrase = $KeyPhrase.PadRight(32, '0').Substring(0, 32);
-				$Enc = [System.Text.Encoding]::UTF8;
-				$k = $Enc.GetBytes($KeyPhrase);
-				
-				$Credential.Password = $Credential.Password | ConvertTo-SecureString -Key $k;
-				$Credential = New-Object System.Management.Automation.PSCredential($Credential.Username, $Credential.Password);
-			} 
-			else 
-			{
-				$Credential = Import-CliXml $Path;
-			}
-			$fReturn = $true;
-			$OutputParameter = $Credential;
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Update-Signature | Should Not Be $Null;
 		}
-
-	}
-	catch 
-	{
-		if($gotoSuccess -eq $_.Exception.Message) 
-		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
-			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
-			}
-			else 
-			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -eq $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					throw($_);
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
-		}
-	}
-	finally 
-	{
-		# Clean up
-
-		$datEnd = [datetime]::Now;
-		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	}
-	return $OutputParameter;
+    }
 }
-END
-{
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-}
-
-} # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; } 
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2015 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -174,8 +36,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU07CNrCSrnM9+KYRy2D2Er5Pz
-# 7R2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUOsg8RBMPVojy3Yfrte65c6gb
+# UXugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -274,26 +136,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQWsQ2tSzkS32hH
-# i+nCHiYlQsjA2TANBgkqhkiG9w0BAQEFAASCAQBlExWamu8Uwzt4K+v94iDcOAYZ
-# EcmLxXlWfioDwB2LaxsGDWWQV53I2q66gA66LjHEm+6ERY3G3Ltc6/JW3ncWQZ9v
-# +NtkCSdPNvMBs8kXTT2RWf4HWahn/+rKA0PXtarB7+fvHyhJmxCwtA+nNjaLH1Lj
-# yde/u2bWzx6zClqFQ6irY468ltax9EMIMsl/C9JYllKaAyqkPnNIP5UL4qbhgFpL
-# 1Jx5lSiQSA+PJ0Obkwfdfey96XXuzMz6Nfsxqr4yRJulH50hkGj3YA7m1njac65l
-# Lpoq0mxAd/N28/Tz0brxlMAFVdH+cHXlpLmwCLeYbG1zu8yvtvo4WxYWY9XPoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBShmv9q1eph7Q94
+# sUrHkhnu21wJbzANBgkqhkiG9w0BAQEFAASCAQCIzwoXQfBhfvaSiAKJKzyzwrAN
+# 0WKqFAzvI7xxaqaYx9aeT6Eio4fQkdBfK3YssdzED6lw7Xo9kTN1l/VeCfUVQ7vP
+# HHL6lk7cfGNKhlT71d8bKI7DgcTJiyCU5VoH4SKVwjw/mzdcF5X2XhuCuaIteEi7
+# n9gF6r4gfXrEoWQvG3UW3Hdvu2taPYS4Yq58NJkSwZpDFDONR5tL6crZcbqh2emJ
+# GnUVR9wPFw2sh+KF6z99tGeCMZFVYewXSddGES+nYiAJvK5rng2U36sPU6mTiM0c
+# NaRFq4tMxVnpkOiG/17TCL+AnbgF0Y23ycIn84u7oKsAEMI/BYeAqCW9z9cpoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMwMVowIwYJKoZIhvcNAQkEMRYEFMJpIkr1bLFKcKceVswwvrblD71c
+# MTAxODExMDMyNFowIwYJKoZIhvcNAQkEMRYEFMaKTZ4VbF51Jq3GaXQ9HEWszwjV
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAq8XYAOD6YWb1rSf3R
-# fhQKmPTTki6LKyKYRGsZqYe5L4UBtg3aXSiR+A3j9qwvqn7k2mdlg1Z66QHcq0s1
-# 5D7NxZRNnhEx8adTzuPn/zTGj+To5BPvy+cPIIaloY8o3yUJOvLXipc9o0aq2oep
-# 30Mz6GBQNzA17O9u9kibSKa6UUWEQt8Iek3cPe/JjRWyRb12stYjejYn1zAXV1iQ
-# 6dJzq9CiKnxqjLbQBZaBTYOFaDA6ZNsZCjDiGZIJlIJD9+hTHGgU4z+9HfQPTzpq
-# mdXl1Tw8qAyWgrl4tI7rwOUQH8N//C/NB/DjPeFPxCD5GpdZXBLNNAe8UT6TCPmp
-# cvlf
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBP7vCAqUb3GMkdsPNH
+# /9JFkHKzpvoxEbJofD94zcwDUSi9ovbAHtTwsRAyQJu7oBuv5Gyqm4lGEEw7yMQP
+# Hzb0D6Z/k77y6Dlb71DkrCm1hDG1ZIsrlEB7upwGrFVfq9SCBpSymclh1gaqYFdK
+# Tm6k9rpCzEeBnV0GUJtYluOFSP35nM/wAaXyHqp2E+ZtYYcCB2ExJ335ITEBqPMY
+# u9nUayeTk4kbhnBIFLNbF5J0Lb5JXWTpGrlwevoAmo8tlY8EguHe853nMlhnh5vI
+# 1QorJVV17PhZTLJVHnXxleLRsvVOZ4CuhXQOLe+y8/RO2YZVPCLEx7OgqNsnVPBW
+# vLOI
 # SIG # End signature block

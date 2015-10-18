@@ -1,162 +1,85 @@
-function Import-Credential {
-<#
-.SYNOPSIS
 
-Import and decrypt a credential object with a static keyphrase
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-.DESCRIPTION
+Describe -Tags "ConvertTo-UrlEncoded.Tests" "ConvertTo-UrlEncoded.Tests" {
 
-Import and decrypt a credential object with a static keyphrase
+	# This assembly will be loaded automatically during module import
+	# we load this manually here in case the module has not been loaded before
+	Add-Type -AssemblyName System.Web;
+	
+	Mock Export-ModuleMember { return $null; }
 
-This Cmdlet lets you import credentials via a static keyphrase from a text file.
-In contrast to Import-CliXml the SecureString in the Credential object is 
-not decrypted with the identity of the current user but with a static 
-keyphrase and thus can be read by any other user (on any other machine) that 
-also has access to the keyphrase.
+	. "$here\$sut"
 
-The Cmdlet does not verify the specifed keyphrase.
+	$htLeftNull = $null;
+	$htLeftEmpty = @{};
 
-.INPUTS
+	$htRightNull = $null;
+	$htRightEmpty = @{};
 
-You can pipe a path to the Cmdlet.
-
-.OUTPUTS
-
-PSCredential
-
-.EXAMPLE
-$cred = Import-Credential .\Credential.xml -Keyphrase P@ssw0rd
-
-Decrypts the PSCredential object in the file in the currenty directory with 
-the keyphrase ^P@ssw0rd' and stores the result in the variable '$cred'.
-
-.LINK
-
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/
-
-.NOTES
-
-See module manifest for required software versions and dependencies at: 
-http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
-
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/'
-)]
-
-Param
-(
-	# Specifies the  full path and file name of the encrypted credential object
-	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 0)]
-	[string] $Path
-	,
-	# Specifies a keyphrase of the encrypted credential object
-	[Parameter(Mandatory = $false, Position = 1)]
-	[Alias('Password')]
-	[string] $KeyPhrase = [NullString]::Value
-)
-
-BEGIN
-{
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Path '{0}'. KeyPhrase.Count '{1}'." -f $Path, $KeyPhrase.Count) -fac 1;
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
-}
-PROCESS
-{
-	try 
-	{
-
-		# Parameter validation
-		# N/A
-		if($PSCmdlet.ShouldProcess($Path)) 
-		{
-			$Credential = Import-CliXml $Path;
-			if($KeyPhrase) 
-			{
-				$KeyPhrase = $KeyPhrase.PadRight(32, '0').Substring(0, 32);
-				$Enc = [System.Text.Encoding]::UTF8;
-				$k = $Enc.GetBytes($KeyPhrase);
-				
-				$Credential.Password = $Credential.Password | ConvertTo-SecureString -Key $k;
-				$Credential = New-Object System.Management.Automation.PSCredential($Credential.Username, $Credential.Password);
-			} 
-			else 
-			{
-				$Credential = Import-CliXml $Path;
-			}
-			$fReturn = $true;
-			$OutputParameter = $Credential;
-		}
-
-	}
-	catch 
-	{
-		if($gotoSuccess -eq $_.Exception.Message) 
-		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
+	Context "Test-EmptyInput" {
+	
+		It "NullString-ShouldThrow" {
 			
-			if($_.Exception -is [System.Net.WebException]) 
-			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
-			}
-			else 
-			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -eq $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					throw($_);
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
+			{ ConvertTo-UrlEncoded $null } | Should Throw;
+		}
+
+		It "EmptyString-ShouldReturnEmptyString" {
+			
+			$r = ConvertTo-UrlEncoded "";
+			$r -eq [String]::Empty | Should Be $true;
 		}
 	}
-	finally 
-	{
-		# Clean up
+	
+	Context "Test-SingleString" {
 
-		$datEnd = [datetime]::Now;
-		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+		# Arrange
+		$Plaintext = 'some string with special characters ?!#:';
+		$Encoded = 'some+string+with+special+characters+%3f!%23%3a';
+
+		It "StringInputObject-ShouldReturnEncodedString" {
+		
+			$r = ConvertTo-UrlEncoded $Plaintext;
+			$r | Should Be $Encoded;
+		}
+
+		It "StringPipelineObject-ShouldReturnEncodedString" {
+		
+			$r = $Plaintext | ConvertTo-UrlEncoded;
+			$r | Should Be $Encoded;
+		}
 	}
-	return $OutputParameter;
-}
-END
-{
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-}
+	
+	Context "Test-MultipleStrings" {
 
-} # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; } 
+		# Arrange
+		$Plaintext = @('some string with special characters ?!#:', 'Schnittenfittich?@');
+		$Encoded = @('some+string+with+special+characters+%3f!%23%3a', 'Schnittenfittich%3f%40');
+
+		# DFTODO - this test fails - check InputObject handling of Cmdlet
+		It "StringInputObject-ShouldReturnEncodedStringArray" {
+		
+			$r = ConvertTo-UrlEncoded $Plaintext;
+			$r -is [Array] | Should Be $true;
+			$r.Count | Should Be $Encoded.Count;
+			$r[0] | Should Be $Encoded[0];
+			$r[1] | Should Be $Encoded[1];
+		}
+
+		It "StringPipelineObject-ShouldReturnEncodedStringArray" {
+		
+			$r = $Plaintext | ConvertTo-UrlEncoded;
+			$r -is [Array] | Should Be $true;
+			$r.Count | Should Be $Encoded.Count;
+			$r[0] | Should Be $Encoded[0];
+			$r[1] | Should Be $Encoded[1];
+		}
+	}
+}
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2015 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -174,8 +97,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU07CNrCSrnM9+KYRy2D2Er5Pz
-# 7R2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPpETKJLxh/sbKCmRcMpnIwTh
+# rjegghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -274,26 +197,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQWsQ2tSzkS32hH
-# i+nCHiYlQsjA2TANBgkqhkiG9w0BAQEFAASCAQBlExWamu8Uwzt4K+v94iDcOAYZ
-# EcmLxXlWfioDwB2LaxsGDWWQV53I2q66gA66LjHEm+6ERY3G3Ltc6/JW3ncWQZ9v
-# +NtkCSdPNvMBs8kXTT2RWf4HWahn/+rKA0PXtarB7+fvHyhJmxCwtA+nNjaLH1Lj
-# yde/u2bWzx6zClqFQ6irY468ltax9EMIMsl/C9JYllKaAyqkPnNIP5UL4qbhgFpL
-# 1Jx5lSiQSA+PJ0Obkwfdfey96XXuzMz6Nfsxqr4yRJulH50hkGj3YA7m1njac65l
-# Lpoq0mxAd/N28/Tz0brxlMAFVdH+cHXlpLmwCLeYbG1zu8yvtvo4WxYWY9XPoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBToXdq4VqFgdXPT
+# qVCQBbkxDcUlZTANBgkqhkiG9w0BAQEFAASCAQDKtM74SeBvE/3G+IDp3hxjICHs
+# hVPQdthgz3xh2c5bDgDJkmcya9QdGLPMi0ni0wly9xjk/jRjKpZ8thPYWuKaiH2p
+# o0EBvDFPQy6cy8BmD287tPtdRddEaVzYrzYWxLEn47EauOOm2gnhqDllN1z7nMgb
+# IuGBGCLs90H8zuDqrSm1FHjopm6/VUBEH9wqhXzokdJGZI6OpkBou0rVlOftvX1e
+# Tl/jC/mB3bIiDaclGbGqUaSE5PmNNgMmwql3p1DM2YX+qsS7DhwXVP9Vn71k8VK+
+# Wgw/1X/7wy7TyUBIkF4AD4MgNZBz8mFoxYR9HnLKhLumHRJUfvnLE1X9OkdYoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMwMVowIwYJKoZIhvcNAQkEMRYEFMJpIkr1bLFKcKceVswwvrblD71c
+# MTAxODExMDI1MFowIwYJKoZIhvcNAQkEMRYEFFSQfYs5vpthSyFdCnS5TTJi6wT3
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAq8XYAOD6YWb1rSf3R
-# fhQKmPTTki6LKyKYRGsZqYe5L4UBtg3aXSiR+A3j9qwvqn7k2mdlg1Z66QHcq0s1
-# 5D7NxZRNnhEx8adTzuPn/zTGj+To5BPvy+cPIIaloY8o3yUJOvLXipc9o0aq2oep
-# 30Mz6GBQNzA17O9u9kibSKa6UUWEQt8Iek3cPe/JjRWyRb12stYjejYn1zAXV1iQ
-# 6dJzq9CiKnxqjLbQBZaBTYOFaDA6ZNsZCjDiGZIJlIJD9+hTHGgU4z+9HfQPTzpq
-# mdXl1Tw8qAyWgrl4tI7rwOUQH8N//C/NB/DjPeFPxCD5GpdZXBLNNAe8UT6TCPmp
-# cvlf
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCLR6/c1duNr31BRR+n
+# OG83sZjJZKa7Ql9vaHLpYnOqUvqwzabRHHfn9OU5AJwm9c2nU+k/pSf3p/+Pl2e0
+# zDtEr27uWEE5McBVhEFZ1TIx/QW4CAb2fUmTiljauynuF1SPOD78NfKvPZBnQxHP
+# 2LkhLsacqKjNqMfkmTZpyo3mPIrKagtpHrj3bYIqDI0d1+WsFFKFFHE6kcf+o93Q
+# pFL7L2JBnNlskuCxjDkEo3CqOB9HbMe4xqRze+4MF5lknFtvVfma8IapbEYfliFC
+# j5MvyO+1BIfJkDv2demGtDGz0zVkz3Wahm4ycMaKIImoSyKawd/blFAQU5MO14+u
+# nNrw
 # SIG # End signature block

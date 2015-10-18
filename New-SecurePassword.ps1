@@ -59,14 +59,30 @@ Function New-SecurePassword {
 	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 	} # END
 } # New-SecurePassword
-Export-ModuleMember -Function New-SecurePassword;
 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-SecurePassword; } 
+
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUflPLkEAAQD/BacWEp0t3hH69
-# aI2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVo7zkXVS1IpNt9RrF6z28hm2
+# V9WgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -165,26 +181,26 @@ Export-ModuleMember -Function New-SecurePassword;
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSHqS+/p/KhyM4F
-# c1GW6gsql55xUzANBgkqhkiG9w0BAQEFAASCAQAC2UMfKrwpqhIGk+cXKxDbdUiY
-# kSbe+xjTvx53Qn1jCzw0f+rrTmXgx/I0tSvm6vuu1nd7MaNdsbqKiytqd4IWRL+z
-# yC1e8MeqBKFLrFTeKY5S4br3+Ja6+SMjFsZOYgtUw8K8dO3ud7KRSyutlmbciAoE
-# Vz6Z+IYzzNP8nDJyyE7U9r/MWOrweoIYr8QeWWq7bYVPpfqNxTQDvXhbeMeUuKwp
-# purQcOXImduv35fAOOx8zaauCnuqNAs4fLfy2s5jUOypmeTT2npEPyZ1pLrW/SMY
-# SBIXeVsZto6UmtZijZmrkwYyQiC/7WDYStqhZJMi0lMvkCPu5/fqG9gKZ3StoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRKte3nN9Fcj6MS
+# 9uRouiJhki2sbjANBgkqhkiG9w0BAQEFAASCAQCXzBN9s/CFfG/4MjTHH9Trko4v
+# LJtafbaRfYah16cVm2wK7DeIg6E3Ebk2G/zuzwPi2QImusBm5XhCESeOtFgHwd4U
+# CQ8S2VuI2ZM7EfzSRjEA9xoHkiZUvxHlupn6Dkz7vLFumco6bQ/XOGIDvFGIuD2J
+# UKos2DGFzO6aKmr7nrbZ3BGHgu03tIwpHYSyK42quRV2WAlkASEltLHPuvn1jacU
+# RFaGTHEgv096qp2PQSuv89meS7x3arG89PT0fPuKGzkXKxSrJ5GwBrXftNpcThl2
+# 3tPLHGsY77STJ6q4dBzST22P/eCFCTaLaozBJsreRm8MxJ3JWjVE18QFD4z4oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxNFowIwYJKoZIhvcNAQkEMRYEFJKEUvL5zJC1fSaYkveD+VunMDeK
+# MTAxODExMDMxMVowIwYJKoZIhvcNAQkEMRYEFJxS9E7kohOBPtoEhhwDI3/Q5ZKF
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBHS69wk9u3y6lasMVm
-# rDhcPes17lx6zhISg2g+fWtdRDPZTnyBPL/o1NeaAV7hPs5ia5pxX9OYp7EYawJT
-# bFJ7nF4B3HTqh5N9+yHwqdS7vFH7hQBin9HPbOzvCYFPSq2y38FMJoUtiLd7j8LW
-# q0PkyL4mDUMd1WHGYpPIdsjOBYANtHRlwj+MnEU6wdxFOo3U0/G06PJt7M0r9FLR
-# fldWhikKxkKFmElSZu/szUFZtBnE17keiM8rGtipnVXKxrhN1ataa+ne8f39QCHN
-# 5HCfWxN9o/y5QwMEAFXdjOtINsgpJMjhlNAN4/hjxs5RbCJSU3yi/0OnG5XacqaH
-# n/p3
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAGvTHt1jlWdBjj2vW5
+# TFWHyo0uUcxB5Rln/IUHxPvvujLcC2BM6X6zvBEA1Rh9Xb2so3YvVO6BqaCxOfJp
+# +eUxwU+HGH5OgiSCfPpFuOKgJL+GhmUEOp3v73aGpCYLb7YERlGTqyhLL7cG8HoH
+# 4uO9a4gUAefALXkpsdtyL4yXDxzxRIQLQbq8nWcfdGZELVh4EDPyC2PmqXoXv5bE
+# eEtxwqXNPZb3BuR++BNVyfdfN/vkHdHsAb2YNbASnskb6kOYwvPTa6/XrUUu0A8o
+# OC4QdGgfbz7A16t/OEcwWFzCGXRhId2sKeMrxqgj+cIIB0vhThEfpeDPROvZbXkp
+# JPHb
 # SIG # End signature block

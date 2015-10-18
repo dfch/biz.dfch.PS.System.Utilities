@@ -153,13 +153,30 @@ END
 }
 
 } # function
+
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; } 
+
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1tq7O++pUep7jhIGQEpkep6X
-# Bi+gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUjN/U5SQJ/k45emJCnVTyLIjM
+# NuigghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -258,26 +275,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTMICPInTEIjxqD
-# PTlS+78y3vmftDANBgkqhkiG9w0BAQEFAASCAQAnCiOnQOXBGdxrOuDCoei08Z30
-# BzRSuFPUc5gGkSxgW9z2rbKZSfrIdZCNSJbC0HBwVhUNNtSFXcVVE8KdQ1kiN1wD
-# ZKpe6R8U0OLwo0hgpvQ7pCW9IVW4zS20DglzVI5gu3zrkc5sr1agGc5O0IDNqHna
-# KaLb1molNTB84FGM0Qt7KnW0KRfc+ze7Oz659ESAa1pvQojXuBCrfJOFfY74JmRD
-# gE633HLQP1K8A6ZgYC0JUsPqnPO/IEUBIc217vhgTwEcM7HsIreXnxtSZuchmBZz
-# MKNubfs8ieaXIYCwjSqYD2EbiKcS0R844jhKqNsMv8128oDn3Qewn9JDG9/zoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS75un1IRS5Zaej
+# JhgTGzoT0o2O4jANBgkqhkiG9w0BAQEFAASCAQDJtbE/H+/6AlN+hMaX4FLyzGiE
+# P/9gqYii+YMiZC1lApjp13xYkzSjb9+OW1FGOfiPcypmlmi2uZJPiYX1GMkiJXB7
+# 7AtGkFg/6/6X74Os6bhuOHIV8BJ27/YA/ZXfCheDZ+k6qy14FQeQaPlr8Djv67qz
+# p6WBs36kFuO4dE35jFu49PmSbr774mPK8xKvZkfBJleDem+XKF9E6IJWv7oHsGoi
+# S5mfIrhBdQrj8+w08rdSf9OZSxQ3mWqhTdYPorsgLDZG1LmPvqiBy+SfhSUe3OWZ
+# SSudKiTwSPqhASC3pXoqR9UIPtxOUnxRvY6pDg+Gbh+VKJQjHpBj892Uzs3GoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwOFowIwYJKoZIhvcNAQkEMRYEFA5JoPcH2u0Bv49I8NbSXvwoi4yH
+# MTAxODExMDI1M1owIwYJKoZIhvcNAQkEMRYEFJ8D0qsle1IUT1sNN334dBOwFqRK
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQApWiM81dHq4uPL/2Vr
-# uMfNkKVTapiHcCBcJwgkRypgwxq+MTQbsKGHvEa6qWNySDQ62YkK0urXDo303JWl
-# obTphUI3EIzLHc7beY9Uz5Fvoofl6gN6wcpduZKABwxZsLphtSQR4/UOSr4u0139
-# YlaJKro/3nx2Mhy1jMGjdsZ8KgCHDPBFJLXVTRkGUsQGjsZDkzaxW/08dAO5fp5s
-# 7V1dXtTldB9k+6Cns3zO69YTn2hXoAKdYCaTg0CHtg6sNnuldc91eU04+UO8WKHp
-# MCbAakDYygX/bJ+sLzwT8/8KbaA5Y0YosDLL5CteZA1wd0+yJYxQ5YfX6nBq6WDY
-# SXKI
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBBGKHtJAUEUig8z0Rb
+# 8eX+geJZiK8vPLvevfgTjQTY+5vjW7GljS0XnprNu6GfTQfOHCrXhlDu4Zj8cUKU
+# 9cspNUjNTsgUaED8RnIXqK8dKm1anKi+QQrnUo5R//27CfYYqQ7zOONOizd/ORlz
+# LNUSE5tB9+vg2h+2cEp+QW42LhbuW1t6fnLuheyzSZHyZe1RlWaQciOTPNlCJFZy
+# usVsctsef+kHgKrfQJ36/ConklrUlej1IwUa4sy+6fiHpKfwfYdzOvftahBpoynb
+# n7g84g4l+dgG6cXSh2sfItyU4OFn7nXP7ShDViZQD04Jxv23TMtYzsn7532X346/
+# GZEs
 # SIG # End signature block

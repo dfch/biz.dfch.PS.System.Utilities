@@ -9,11 +9,27 @@
 # show up as loaded module, see the bug on Microsoft Connect below: 
 # https://connect.microsoft.com/PowerShell/feedback/details/903654/scripts-loaded-via-a-scriptstoprocess-attribute-in-a-module-manifest-appear-as-if-they-are-loaded-modules
 
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUCDg5J0kx+ImoIwMjqpK6L5zh
-# 9vqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUGwgZ50fbHy186GxTFL4dkxcp
+# eTOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -112,26 +128,26 @@
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRAnFI61WQmLMYl
-# LUhzUOtgpi1A+zANBgkqhkiG9w0BAQEFAASCAQBwuMIMw2ESXOGel7OrkAraSsSe
-# DyTmdanGrIKPWtYmjznvXC0RPviBKg61rTxPSQyGT1sYWRfRWLSV1pzlyB7lNKRG
-# p81aZccudbWnmnCG0IrbDz5FJmlGpg1q8zddHEkk1zx4f5esSLk/cnRRLUn0UPCC
-# nD7oeEuas8Zi5V+T9CdfI+vVn0QA544cdFTX+bkMAbh4ItzOLNNRo0Qo3PhADr9k
-# NgTLO0fYCLn+Nwi87qOiwQHbSOh7wbRpGC3jlzLIpPibqdWHS1vBGV/jCWdebi/t
-# 1VOPuvowSKfhZT8j1lVhTpesNhewRtq6fapM0G9pEA33oPbzN+2EFLhHrxMzoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQPHZ7C0Tz1gFUR
+# /7AAJe8MkpDiGjANBgkqhkiG9w0BAQEFAASCAQAq9QDwoVDRsJXQFeKQH1WeJhP4
+# ZB6pbiSvBJXNWKMBZuiQYLJX8fYh0zpcA42bx39SYUdPWSu6nCP1xQOT2VomPu8Z
+# 9DPNjj91lRruJny5mpdOcXlLELykk1dEsbfstCRIURo95GsrJMdzpIb8wBcYyRer
+# bmuosj+cT/gq2KJ6xPBgHiuGwDj4atFk3r+lDlE2IHUgah+nlyQrXLHs/vyrz0Cw
+# yi8VQ7U+Clag6DIORCwaYmmuV4xY4m9e/5y0AoW9ZgBXkeUME5W/ea8EUL+GPAFr
+# +H0Zh4z86TxAuWlKkGvqmIk9LpBBGSkYZLTyXz0cGPW6t6IL5wNL3Gi6lOyZoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIxMVowIwYJKoZIhvcNAQkEMRYEFJZuYPkwt58YI9i7R7wgKQubcWJ8
+# MTAxODExMDMwM1owIwYJKoZIhvcNAQkEMRYEFCwOVwsa9KCj8HuAHGLeRS51wx6A
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBeer2oUcX6yWkXJox7
-# Pfhk+e66MDXEtZxMDhcWXDo19ROdWHzkWVAtKtH9Zboqlu8XlWqXHG+H0j+Hrlpr
-# dprRHxcj9eVravtW5Qk60GvNawkPhPVVNF9vyXr5+ke0+ihX37UjYWhUZdHlePcn
-# n5Q/yuQovEhrbKCRWX5tP4of9wFvJqzrVzRNVnXcJpA8KgGzqK/bZVEvGH3qjh2q
-# zpas9x62W8/sujLPb3Hsxwkdo/aaNNeH7XVuXcL1lZfTut3DKmGqAdfxjNSm3SVt
-# N5DC+d1XApgF41P3HWXTroQCvVIGAdoYkwyedUhtvo5/2ygcDVqkS6mPFgHxbSha
-# iW6P
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCtWeKJXGOj5X8iYHv1
+# t6c7V+SxLXAxcOtCpsqHRuQ6lhzc4rUmgQQtDr01tTw2cnkEwNwpA+jeF65dy4FB
+# gGKePx5Ih5XpA48J66Ev1pgqVRrOCHRVhEsjBDV74LHTNYRsQtsTQZTLn7ThP2nE
+# UpEfQMkw4NCQu1s53gS+JwfxivR+kM4D+xTidISFmvJ5WR/lHtM5pmlNEvmT88uy
+# JWJ/fUyGEdcqxQXQuctAsj/wLtGzQgNCW5Hoqmxk3PL+wdJFcamwdxogW3CzFpIs
+# hKCLfCHvQx10/XE56YYZlSrcCt8NqsM7GlCYudhtQxr8fDu5jGxk62wTuc8w8vLb
+# sERY
 # SIG # End signature block

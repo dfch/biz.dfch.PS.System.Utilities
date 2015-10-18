@@ -1,43 +1,31 @@
-function Import-Credential {
+#Requires -Modules Microsoft.PowerShell.Security
+function Update-Signature {
 <#
 .SYNOPSIS
 
-Import and decrypt a credential object with a static keyphrase
+Updates the digital signature of PowerShell scripts.
+
 
 .DESCRIPTION
 
-Import and decrypt a credential object with a static keyphrase
+Updates the digital signature of PowerShell scripts.
 
-This Cmdlet lets you import credentials via a static keyphrase from a text file.
-In contrast to Import-CliXml the SecureString in the Credential object is 
-not decrypted with the identity of the current user but with a static 
-keyphrase and thus can be read by any other user (on any other machine) that 
-also has access to the keyphrase.
+You can either sign all scripts in a given folder or only individual files.
 
-The Cmdlet does not verify the specifed keyphrase.
-
-.INPUTS
-
-You can pipe a path to the Cmdlet.
-
-.OUTPUTS
-
-PSCredential
 
 .EXAMPLE
-$cred = Import-Credential .\Credential.xml -Keyphrase P@ssw0rd
 
-Decrypts the PSCredential object in the file in the currenty directory with 
-the keyphrase ^P@ssw0rd' and stores the result in the variable '$cred'.
+Update-Signature C:\scripts\myScript.ps1
 
-.LINK
+Signs the specified script with the default certificate and timestamps it.
 
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/
 
-.NOTES
+.EXAMPLE
 
-See module manifest for required software versions and dependencies at: 
-http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+Update-Signature C:\scripts\*.*
+
+Signs the all scripts in the specified folder with the default certificate and timestamps it.
+
 
 #>
 [CmdletBinding(
@@ -45,137 +33,91 @@ http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 	,
     ConfirmImpact = 'Low'
 	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Import-Credential/'
+	DefaultParameterSetName = 'path'
 )]
-
-Param
+PARAM
 (
-	# Specifies the  full path and file name of the encrypted credential object
-	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 0)]
-	[string] $Path
+	# The path to script files to sign
+	[ValidateScript( { Test-Path($_) -PathType Container; } )]
+	[Parameter(Mandatory = $false, ParameterSetName = 'path')]
+	[System.IO.DirectoryInfo] $Path = $PWD.Path
 	,
-	# Specifies a keyphrase of the encrypted credential object
+	# A script file or array of script files to sign
+	[ValidateScript( { if($_) { foreach($item in $_) {Test-Path($item) -PathType Leaf -Include $IncludeExtensions; } } else { $true } } )]
+	[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ParameterSetName = 'file')]
+	[AllowNull()]
+	[Alias('File')]
+	$InputObject
+	,
+	# The certificate to use for signing the specified scripts
 	[Parameter(Mandatory = $false, Position = 1)]
-	[Alias('Password')]
-	[string] $KeyPhrase = [NullString]::Value
+	# $Cert = (Select-Object -First 1 -InputObject (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert))
+	$Cert = (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert | Select-Object -First 1)
+	,
+	# Specify wheter to timestamp (countersign) the script files
+	[Parameter(Mandatory = $false)]
+	[Alias('TimeStamp')]
+	[switch] $CounterSign = $true
+	,
+	# The timestamp server url
+	[Parameter(Mandatory = $false, Position = 2)]
+	[Uri] $TimestampServer = 'http://timestamp.globalsign.com/scripts/timstamp.dll'
+	,
+	# File extensions of the script files to sign
+	[Parameter(Mandatory = $false)]
+	$IncludeExtensions = @('*.ps1','*.psm1','*.psd1','*.dll','*.exe')
 )
 
-BEGIN
+if($PSCmdlet.ParameterSetName -eq 'path')
 {
-	$datBegin = [datetime]::Now;
-	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Path '{0}'. KeyPhrase.Count '{1}'." -f $Path, $KeyPhrase.Count) -fac 1;
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
+	$InputObjectTemp = (Get-ChildItem $Path -Include $IncludeExtensions -Recurse | Get-AuthenticodeSignature |? { ($_.Status -eq 'HashMismatch') -Or (($_.TimeStamperCertificate -eq $null) -And ($_.Status -eq 'Valid')) }).Path;
+	if($InputObjectTemp)
+	{
+		$InputObject = $InputObjectTemp;
+		Remove-Variable InputObjectTemp;
+	}
 }
-PROCESS
+foreach($Object in $InputObject)
 {
-	try 
+	if(!$PSCmdlet.ShouldProcess($Object))
 	{
-
-		# Parameter validation
-		# N/A
-		if($PSCmdlet.ShouldProcess($Path)) 
-		{
-			$Credential = Import-CliXml $Path;
-			if($KeyPhrase) 
-			{
-				$KeyPhrase = $KeyPhrase.PadRight(32, '0').Substring(0, 32);
-				$Enc = [System.Text.Encoding]::UTF8;
-				$k = $Enc.GetBytes($KeyPhrase);
-				
-				$Credential.Password = $Credential.Password | ConvertTo-SecureString -Key $k;
-				$Credential = New-Object System.Management.Automation.PSCredential($Credential.Username, $Credential.Password);
-			} 
-			else 
-			{
-				$Credential = Import-CliXml $Path;
-			}
-			$fReturn = $true;
-			$OutputParameter = $Credential;
-		}
-
+		continue;
 	}
-	catch 
+	if($CounterSign)
 	{
-		if($gotoSuccess -eq $_.Exception.Message) 
-		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
-			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
-			}
-			else 
-			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
-				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -eq $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
-				{
-					throw($_);
-				}
-			}
-			$fReturn = $false;
-			$OutputParameter = $null;
-		}
+		Set-AuthenticodeSignature $Object -Certificate $cert -TimestampServer $TimestampServer -Confirm:$false;
 	}
-	finally 
+	else
 	{
-		# Clean up
-
-		$datEnd = [datetime]::Now;
-		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+		Set-AuthenticodeSignature $Object -Certificate $cert -Confirm:$false;
 	}
-	return $OutputParameter;
-}
-END
-{
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 }
 
 } # function
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; } 
 
-#
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; } 
+
+# 
 # Copyright 2014-2015 d-fens GmbH
-#
+# 
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-#
+# 
 # http://www.apache.org/licenses/LICENSE-2.0
-#
+# 
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+# 
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU07CNrCSrnM9+KYRy2D2Er5Pz
-# 7R2gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnReLkphf8jjgJwDQHjD5iOOK
+# Q7mgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -274,26 +216,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Import-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQWsQ2tSzkS32hH
-# i+nCHiYlQsjA2TANBgkqhkiG9w0BAQEFAASCAQBlExWamu8Uwzt4K+v94iDcOAYZ
-# EcmLxXlWfioDwB2LaxsGDWWQV53I2q66gA66LjHEm+6ERY3G3Ltc6/JW3ncWQZ9v
-# +NtkCSdPNvMBs8kXTT2RWf4HWahn/+rKA0PXtarB7+fvHyhJmxCwtA+nNjaLH1Lj
-# yde/u2bWzx6zClqFQ6irY468ltax9EMIMsl/C9JYllKaAyqkPnNIP5UL4qbhgFpL
-# 1Jx5lSiQSA+PJ0Obkwfdfey96XXuzMz6Nfsxqr4yRJulH50hkGj3YA7m1njac65l
-# Lpoq0mxAd/N28/Tz0brxlMAFVdH+cHXlpLmwCLeYbG1zu8yvtvo4WxYWY9XPoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRlvIbCKh6iB/yV
+# 598qjEpwUQGhJDANBgkqhkiG9w0BAQEFAASCAQB7bU76OrueIaC2y47BhbVopmlx
+# 2XuGKmRcac5viI3EkLpCQ2tKPpblsFOeT28PSwpcjhKaxJuHPLBxOqz9kT0q8WS+
+# nOa00LtH6+IvhpsDNUoXdZUvOvx2cCj02g2T8a00ozX0d9D7M9Fam3SSwEZ0ig80
+# bra1OxLaMXxAk/InRHpj6/SkN5o9ueWFKhAEH1cGcJn6bskzfL5osjJxRkBjhZ3m
+# subyP83tdK3swn+2TiJWdgdFWaBu82ZxcRiIsi8CDtdnx1X987yHK/GWhpEnkoeO
+# W3FFnHN4ZTMRN8+5n03e7EAYme3IOn2p73SXQclGQOWDnDMWMyanjuPeQT3HoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMwMVowIwYJKoZIhvcNAQkEMRYEFMJpIkr1bLFKcKceVswwvrblD71c
+# MTAxODExMDMyMlowIwYJKoZIhvcNAQkEMRYEFHg8FRoAMa6FGyy3le36Je+KbQPP
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAq8XYAOD6YWb1rSf3R
-# fhQKmPTTki6LKyKYRGsZqYe5L4UBtg3aXSiR+A3j9qwvqn7k2mdlg1Z66QHcq0s1
-# 5D7NxZRNnhEx8adTzuPn/zTGj+To5BPvy+cPIIaloY8o3yUJOvLXipc9o0aq2oep
-# 30Mz6GBQNzA17O9u9kibSKa6UUWEQt8Iek3cPe/JjRWyRb12stYjejYn1zAXV1iQ
-# 6dJzq9CiKnxqjLbQBZaBTYOFaDA6ZNsZCjDiGZIJlIJD9+hTHGgU4z+9HfQPTzpq
-# mdXl1Tw8qAyWgrl4tI7rwOUQH8N//C/NB/DjPeFPxCD5GpdZXBLNNAe8UT6TCPmp
-# cvlf
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBxp6TWwhrRpAmAWtnz
+# slFbDClmf8EokpZ8wXK/vUGinyT4DYJnWZZvFfqF+r5T/UyKP/ntPBiK4Oyy4fDT
+# HLzmTj0pvcDBK9tXRjMiIdHf9YyG/7OA+N2j8gRc5GSKwE1dFa0Tx50CFvof0lrz
+# hf3XGFLQrLwmJlFLpzLhhwoIdaVqeo7qDOkcw2s+sl2rgiPFgzQE85fqoeehZcSv
+# DUqe9/zSvTDYq+rJHo/VjR8f4iZ6dB6fdJZs/GjeFWK5g1wTnbABTfdWDqOQr/bn
+# lpFWRhYj/DrRyEHmRgu7VXKPmRoxU0zlet5FvphfEaoZVBmhIp7rYktUy1B9q652
+# 16Nt
 # SIG # End signature block
