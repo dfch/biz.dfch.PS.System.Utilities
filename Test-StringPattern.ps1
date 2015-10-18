@@ -21,12 +21,10 @@ PARAM (
 )
 
 [string] $fn = $MyInvocation.MyCommand.Name;
-#Write-Host $PSCmdlet.ParameterSetName
 $fReturn = $false;
 $OutputParameter = $null;
 $Matches = $null;
 
-#$InputObject = 'urn:vcloud:vcd:559ccf96-1cc5-4f79-ba4e-69dd1fa66fab';
 switch($PSCmdlet.ParameterSetName) {
 'guid' {
 	$Pattern = '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}';
@@ -41,12 +39,10 @@ switch($PSCmdlet.ParameterSetName) {
 	'hp' {
 		$Pattern = '^(?<Name>doc-?[^_]*)_(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hour>\d{2})(?<Minute>\d{2})(?<Second>\d{2})(?<Counter>\d{2})(?<Extension>\..+)$';
 		$fReturn = $InputObject -match $Pattern;
-		#if($fReturn -and ( ($Matches.Year -le 1300) -or ($Matches.Month -gt 12) -or ($Matches.Day -gt 31) )) { $fReturn = $false; }
 	}
 	'hp4345' {
 		$Pattern = '^(?<Name>doc-?[^_]*)_(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hour>\d{2})(?<Minute>\d{2})(?<Second>\d{2})(?<Counter>\d{2})(?<Extension>\..+)$';
 		$fReturn = $InputObject -match $Pattern;
-		#if($fReturn -and ( ($Matches.Year -le 1300) -or ($Matches.Month -gt 12) -or ($Matches.Day -gt 31) )) { $fReturn = $false; }
 	}
 	'hp3027' {
 		$Pattern = '^(?<Name>\[[^\-_]+-?)_(?<Year>\d{4})(?<Month>\d{2})(?<Day>\d{2})(?<Hour>\d{2})(?<Minute>\d{2})(?<Second>\d{2})(?<Counter>\d{2})(?<Extension>\..+)$';
@@ -85,8 +81,24 @@ if($Extract -and $fReturn) {
 return $OutputParameter;
 
 } # Test-StringPattern
-Export-ModuleMember -Function Test-StringPattern;
 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Test-StringPattern; } 
+
+#
+# Copyright 2014-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

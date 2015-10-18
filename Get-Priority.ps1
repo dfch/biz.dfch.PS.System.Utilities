@@ -1,163 +1,128 @@
-function Format-IPAddress {
+﻿function Get-Priority {
 <#
 .SYNOPSIS
-
-Formats a given string IPv4 address with either leading or non-leading zeros.
+Gets the current CPU priority of a process.
 
 
 .DESCRIPTION
+Gets the current CPU priority of a process.
 
-Formats a given string IPv4 address with either leading or non-leading zeros.
-Optionally the given address is validated.
+Priority can be one of the following: 
+Idle, BelowNormal, AboveNormal, Normal, High, RealTime
 
 
 .INPUTS
-
-Either an IPv4 address in string format or an array of IPv4 addresses in string format.
+You can query the priority of the currently running process or any other 
+process specified by the PID. Elevated privileges might be needed to return 
+the priority of other processes.
 
 
 .OUTPUTS
-
-[string]
-Either an IPv4 address in string format or an array of IPv4 addresses in string format.
-
-
-.EXAMPLE
-
-Format-IPAddress "10.001.001.001"
-10.1.1.1
-
-Formats the specified address to RFC compliant address format.
+The Cmdlet returns the [System.Diagnostics.ProcessPriorityClass] of the 
+specified process as a string with one of the following values: 
+Idle, BelowNormal, AboveNormal, Normal, High, RealTime
 
 
 .EXAMPLE
+# Retrieves the CPU priority of the current process
+PS > $result = Get-Priority;
+PS > $result
+Normal
 
-'1.1.1.1','2.2.2.2' | Format-IPAddress -ToLeadingZero
-001.001.001.001
-002.002.002.002
 
-Formats the specified addresses to zero-padded addresses.
+.EXAMPLE
+# Retrieves the CPU priority of the process with id 42
+PS > $result = Get-Priority 42;
+PS > $result
+High
+
+
+.EXAMPLE
+# Retrieves the CPU priority of the process with id 42
+PS > $result = Get-Priority -Id 42;
+PS > $result
+High
+
+
+.EXAMPLE
+# Retrieves the CPU priority of these processes 42, 5.
+# Priority is returned in the order they are specified.
+PS > $result = Get-Priority 42, 5;
+PS > $result
+Normal
+High
+
+
+.EXAMPLE
+# Retrieves the CPU priority of these processes 42, 5.
+# Priority is returned in the order they are specified.
+PS > $result = 42, 5 | Get-Priority;
+PS > $result
+Normal
+High
 
 
 .LINK
-
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Format-IPAddress/
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Get-Priority/
 
 
 .NOTES
-
 See module manifest for required software versions and dependencies at: 
 http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+	SupportsShouldProcess = $false
 	,
-    ConfirmImpact = "Low"
+	ConfirmImpact = 'Low'
 	,
-	DefaultParameterSetName = 'short'
-	,
-	HelpURI='http://dfch.biz/PS/System/Utilities/Format-IPAddress/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Get-Priority/'
 )]
-Param 
-(
-	# Specifies the IPv4 address to convert
-	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
-	[ValidateNotNullOrEmpty()]
-	[alias("ip")]
-	[alias("IPv4")]
-	[alias("IPAddress")]
-	$InputObject
-	,
-	# Specifies if the address should formatted with leading zeros, e.g. '010.001.001.001'
-	[Parameter(Mandatory = $false, ParameterSetName = 'zero')]
-	[alias("zero")]
-	[alias("WithLeadingZero")]
-	[switch] $ToLeadingZero = $true
-	,
-	# Specifies if the address should formatted without leading zeros, e.g. '10.1.1.1'
-	[Parameter(Mandatory = $false, ParameterSetName = 'short')]
-	[alias("short")]
-	[alias("NoLeadingZero")]
-	[switch] $ToRfcFormat = $true
-	,
-	# Specifies if the given address should be validated
-	[Parameter(Mandatory = $false)]
-	[switch] $Validate = $true
+PARAM (
+	# Specifies the process id whose priority should be returned
+	# Default is current process ($PID)
+	[ValidateRange(1,[Int32]::MaxValue)]
+	[Parameter(Mandatory = $false, ValueFromPipeline = $true, Position = 0)]
+	[Alias('Id')]
+	$InputObject = $PID 
 )
 
-BEGIN 
+BEGIN
 {
+	# Default test variable for checking function response codes.
+	[Boolean] $fReturn = $false;
+	# Return values are always and only returned via OutputParameter.
+	$OutputParameter = @();
+	$OutputParameterList = New-Object System.Collections.ArrayList;
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
-	$OutputParameter = $null;
-	Log-Debug -fn $fn -msg ("CALL. InputObject.Count: '{0}'" -f $InputObject.Count) -fac 1;
+	# Log-Debug $fn ("CALL.");
 }
 
 PROCESS
 {
-	foreach($Object in $InputObject)
+	foreach($Object in $InputObject) 
 	{
-		if(!$PSCmdlet.ShouldProcess($Object))
-		{
-			continue;
-		}
-		$IpAddress = $Object;
-		$fReturn = $IpAddress -match '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$';
-		if(!$fReturn) 
-		{
-			$IpAddressShort = $null;
-		} 
-		else 
-		{
-			$IpAddressShort = '{0}.{1}.{2}.{3}' -f ($Matches[1] -as [int]), ($Matches[2] -as [int]), ($Matches[3] -as [int]), ($Matches[4] -as [int]);
-		} # if
-
-		if($PSCmdlet.ParameterSetName -eq 'short') 
-		{ 
-			$OutputParameter = $IpAddressShort;
-		} 
-		else 
-		{
-			$fReturn = $IpAddressShort -match '^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$';
-			if(!$fReturn) 
-			{
-				$IpAddressZero = $null;
-			} 
-			else 
-			{
-				$IpAddressZero = '{0}.{1}.{2}.{3}' -f ($Matches[1] -as [int]).ToString('000'), ($Matches[2] -as [int]).ToString('000'), ($Matches[3] -as [int]).ToString('000'), ($Matches[4] -as [int]).ToString('000');
-			} # if
-			$OutputParameter = $IpAddressZero;
-		} # if
-
-		if($Validate) 
-		{
-			[IPAddress] $ip = $IpAddressShort;
-			if($ip.IPAddressToString -ne $IpAddressShort) 
-			{
-				$OutputParameter = $null;
-			} # if
-		} # if
-		$OutputParameter;
+		$process = Get-Process -Id $Object -ErrorAction:Stop;
+		$null = $OutputParameterList.Add($process.PriorityClass.ToString());
 	}
 }
-# PROCESS
 
 END
 {
-	$datEnd = [datetime]::Now;
-	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	$OutputParameter = $OutputParameterList.ToArray();
+	return $OutputParameter;
 }
-#END
 
 } # function
 
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Format-IPAddress; }
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Priority; } 
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2015 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -175,8 +140,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Format-IPAddress; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUirZSKhWgr+AmfMgJE/dUmEPI
-# C1OgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuSgEVAlanlEJcrbFX2asgixw
+# maOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -275,26 +240,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Format-IPAddress; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQ1Z+19SUS7cZiq
-# m1vpWtjBEtZFujANBgkqhkiG9w0BAQEFAASCAQCdkTFt3RTghTpqsPg7kOLJF0ff
-# N4NheH51u0efDEHv2GmWuZ6gS5RN9Z+8U6wIuyRUEXyZ9Qpqi3IvcGlh90eumUS6
-# HZjhDM4LyAIkv5IvrQ1Lj/9ZJGwK9nuDj+Q43dL+cPbQypNxprdemMzzE/1NZchm
-# hbFH0eYTPl6it1r9T0dorl+NFnBYecNgNpKhVHNu11oumBR/HItuvMI+BSrzkMXE
-# LOeETf3yQYm60wOfd9+msNAMHtTgCohC42vAzIKYAq/8kYpBWPx8X0yJuzyIQtMO
-# r/LvN6KrZQoAUtf8Pe2BeJCCuLoeCNTnKo9ddb19B8DBalDl8Y/OCIjD9MSPoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS0RSX/WEl+EXPE
+# 3cF0wt0FzXLvtjANBgkqhkiG9w0BAQEFAASCAQCuz8HQq8KrxqcOb8rf7QUK5qti
+# n5lYSYBXKje8zKoVv5dSUrzqZkCJWtxJgQ9Xc5OcEfdm1G5Z7xlPeNTAEx6IK9Kl
+# aDku6DDc/b1QeD3awsj9RZ93vyaG/ZmJ1n9gr+G6SeDcwHk5F5YFtcoeiRYySe5T
+# dfYc7ITzPsfwjRLDAY97bvGonTWJV1mDaAw24BUK6TwzZqA8ntCXvLXIZOxiWaiQ
+# I6SakIHvioEtc+q7q4wrGtPrBcUMWQBPNhyKnWDBJjZ4qveeJ6r+5KzUIJieGZMV
+# Z7lmZc3WFeoCsRVW2QJOvb6+6mh5BmuayFJnq3XTiFntPyQyfdAStzDBBo78oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MDcwODE1MTIwOVowIwYJKoZIhvcNAQkEMRYEFC3Xrz0vYRtqGz9G6pFJ2gul7k9y
+# MDcyMDA2NDcwMVowIwYJKoZIhvcNAQkEMRYEFBGN3UZ1vj1di0gy5/Zi3AEpMLLf
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCKyMs2Zc1lVOW93gvJ
-# JNhZBwjw7UJhILf3QAHvWmZ0BsyEyrobh4g8megPeZbJjocL5XM3zLDoGcgfECry
-# RRgM0WMVhaCb9+CDfag+H1jIrVbUv7Lx+6skd8P6ODAQXNsZnR3TfJENf7xVaIk1
-# ZshdTRus58D/5gu4pESzkC2G3gNKk3J740ZHQDe4lRebxOW06iOpkDHMCiQesaoX
-# Mmds16+0xZuvTszyKFh7ZkR46KA0MVtmn8uluhsg0wvVIQuPssReGz06dhwhWdtO
-# bj3gL0xezNEKK947y2+JXkI4Is5DVIxLpndctCym77eIWuKxYeqRBXOb0/iaWP7Z
-# rBVn
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCELEVWYeUL2e0Rgmjl
+# 5S+r6xQVYSunVHAd7rKwfFWJHCW/FbwwzkXj/vBRkvsQ3w0iH+7jjIRbQ3p2+Fgk
+# wa3o5AJZN+0jgbIeN//3B2dty6Cln0cCNfMqnMGdGFYQhPBnGeSKipdWpqq5oQ4w
+# SpAh7ByhHiVozIOR9ZbrXMVGVV3R0TGOpRCsZz9Ugjdw4+PE8OG5fE+IzUJe4DPZ
+# FsnwD8iAPilOG1j36ZvzjZEAaSERUosxoUZZd+j54LqXH31btLAhlebllW4CB5we
+# SO3ZyoiK0rxG7YA6Sx5KQjJgQOxzMgHaLTAcr4KG3IeaL3nR/T1FKpbhm2BihPEV
+# Mj3+
 # SIG # End signature block

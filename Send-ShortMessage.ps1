@@ -28,7 +28,7 @@ code           error code if sending failed
 description    error description if sending message failed
 
 .EXAMPLE
-Send-ShortMessage 27999112345 'hello, world!' e2c479178dd741aabe4d05c25db9b9b3
+Send-ShortMessage 27999112345 'hello, world!' -Credential e2c479178dd741aabe4d05c25db9b9b3
 Name                           Value
 ----                           -----
 apiMessageId                   2249157aa12e410398ce8e72f6108a36
@@ -59,14 +59,14 @@ Content-Type: application/json
 {"data":{"message":[{"accepted":true,"to":"27999112345","apiMessageId":"2249157aa12e410398ce8e72f6108a36"}]}}
 
 .EXAMPLE
-'27999112345','27999112346' | Send-ShortMessage -Message 'hello, world!' e2c479178dd741aabe4d05c25db9b9b3
+'27999112345','27999112346' | Send-ShortMessage -Message 'hello, world!' -Credential e2c479178dd741aabe4d05c25db9b9b3
 
 Send an SMS to '27999112345' and '27999112346' with the message text 'hello, world!' 
 and the authentication token 'e2c479178dd741aabe4d05c25db9b9b3'.
 
 
 .EXAMPLE
-'333' | Send-ShortMessage -Message 'hello, world!' e2c479178dd741aabe4d05c25db9b9b3
+'333' | Send-ShortMessage -Message 'hello, world!' -Credential e2c479178dd741aabe4d05c25db9b9b3
 Name                           Value
 ----                           -----
 apiMessageId                   
@@ -102,7 +102,7 @@ Content-Type: application/json
 
 
 .EXAMPLE
-Send-ShortMessage 27999112345 'hello, world!' e2c479178dd741aabe4d05c25db9b9b3 -From mySenderID
+Send-ShortMessage 27999112345 'hello, world!' -Credential e2c479178dd741aabe4d05c25db9b9b3 -From mySenderID
 Name                           Value
 ----                           -----
 apiMessageId                   2249157aa12e410398ce8e72f6108a36
@@ -240,7 +240,7 @@ PROCESS
 			# Clickatell specific basic number normalisation
 			$Object = $Object.ToString().Replace('+', '').Replace('-','').Replace(' ','');
 			# escape new line etc
-			$Object = $Object.Replace("`n", '\r\n\r\n');
+			$Object = $Object.Replace("`n", '\n\n');
 			
 			if($PSCmdlet.ShouldProcess( (("{0}: {1}" -f $Object, $Message)) ))
 			{
@@ -320,26 +320,24 @@ END
 }
 
 } # function
+
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Send-ShortMessage; } 
 
-##
- #
- #
- # Copyright 2015 Ronald Rink, d-fens GmbH
- #
- # Licensed under the Apache License, Version 2.0 (the "License");
- # you may not use this file except in compliance with the License.
- # You may obtain a copy of the License at
- #
- # http://www.apache.org/licenses/LICENSE-2.0
- #
- # Unless required by applicable law or agreed to in writing, software
- # distributed under the License is distributed on an "AS IS" BASIS,
- # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- # See the License for the specific language governing permissions and
- # limitations under the License.
- #
- #
+#
+# Copyright 2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB

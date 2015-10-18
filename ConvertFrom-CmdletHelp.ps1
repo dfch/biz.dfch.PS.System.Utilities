@@ -211,16 +211,21 @@ END
 } # function
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
-<#
-2014-11-25; rrink; ADD: ExcludeDefaultCommandPrefix parameter
-2014-11-24; rrink; ADD: input validation of command names
-2014-11-24; rrink; ADD: SupportsShouldProcess/ConfirmImpact
-2014-11-24; rrink; ADD: file output return format
-2014-11-24; rrink; ADD: pipeline input for multiple commands
-2014-11-24; rrink; ADD: examples and inline help
-2014-11-12; rrink; ADD: handling of EXAMPLE sections
-2014-11-10; rrink; ADD: ConvertFrom-CmdletHelp
-#>
+#
+# Copyright 2014-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
