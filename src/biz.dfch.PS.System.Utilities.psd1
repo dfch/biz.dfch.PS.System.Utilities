@@ -1,189 +1,193 @@
-<#
-.SYNOPSIS
-Installs the module into a path inside $ENV:PSModulePath.
+# Module manifest for module 'biz.dfch.PS.System.Utilities'
 
+@{
 
-.DESCRIPTION
-Installs the module into a path inside $ENV:PSModulePath. 
-Any existing module customisations are overwritten by the 
-installation routine (such as <module>.xml).
+# Script module or binary module file associated with this manifest.
+RootModule = 'biz.dfch.PS.System.Utilities.psm1'
 
-.EXAMPLE
-Installs the module into the default directory.
+# Version number of this module.
+ModuleVersion = '1.0.9.20151029'
 
-PS > .\Install.ps1
+# ID used to uniquely identify this module
+GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
 
-.EXAMPLE
-Installs the module into the C:\PSModules directory.
+# Author of this module
+Author = 'Ronald Rink'
 
-PS > .\Install.ps1 -ModulePath C:\PSModules
-#>
-[CmdletBinding()]
-PARAM
-( 
-	# Specifies the module name. Leave as is.
-	[string] $ModuleName = 'biz.dfch.PS.System.Utilities'
-	,
-	# Specifies the target base directory into which to install the module.
-    [string] $ModulePath = (Join-Path $env:ProgramFiles WindowsPowerShell\Modules)
+# Company or vendor of this module
+CompanyName = 'd-fens GmbH'
+
+# Copyright statement for this module
+Copyright = '(c) 2014-2015 d-fens GmbH. Distributed under Apache 2.0 license.'
+
+# Description of the functionality provided by this module
+Description = 'This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.'
+
+# Minimum version of the Windows PowerShell engine required by this module
+PowerShellVersion = '3.0'
+
+# Name of the Windows PowerShell host required by this module
+# PowerShellHostName = ''
+
+# Minimum version of the Windows PowerShell host required by this module
+# PowerShellHostVersion = ''
+
+# Minimum version of the .NET Framework required by this module
+DotNetFrameworkVersion = '4.5'
+
+# Minimum version of the common language runtime (CLR) required by this module
+# CLRVersion = ''
+
+# Processor architecture (None, X86, Amd64) required by this module
+# ProcessorArchitecture = ''
+
+# Modules that must be imported into the global environment prior to importing this module
+RequiredModules = @(
+	'biz.dfch.PS.System.Logging'
 )
 
-end
-{
-    $targetDirectory = Join-Path $ModulePath $ModuleName
-    $scriptRoot      = Split-Path $MyInvocation.MyCommand.Path -Parent
-    $sourceDirectory = Join-Path $scriptRoot Tools
+# Assemblies that must be loaded prior to importing this module
+RequiredAssemblies = @(
+	'System.Net'
+	,
+	'System.Web'
+	,
+	'System.Web.Extensions'
+)
 
-    if ($PSVersionTable.PSVersion.Major -ge 5)
-    {
-        $manifestFile    = Join-Path $sourceDirectory ('{0}.psd1' -f $ModuleName)
-        $manifest        = Test-ModuleManifest -Path $manifestFile -WarningAction Ignore -ErrorAction Stop
-        $targetDirectory = Join-Path $targetDirectory $manifest.Version.ToString()
-    }
+# Script files (.ps1) that are run in the caller's environment prior to importing this module.
+ScriptsToProcess = @(
+	'Import-Module.ps1'
+)
 
-    Update-Directory -Source $sourceDirectory -Destination $targetDirectory
+# Type files (.ps1xml) to be loaded when importing this module
+# TypesToProcess = @()
 
-    if ($PSVersionTable.PSVersion.Major -lt 4)
-    {
-        $ModulePaths = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine') -split ';'
-        if ($ModulePaths -notcontains $ModulePath)
-        {
-            Write-Verbose "Adding '$ModulePath' to PSModulePath."
+# Format files (.ps1xml) to be loaded when importing this module
+# FormatsToProcess = @()
 
-            $ModulePaths = @(
-                $ModulePath
-                $ModulePaths
-            )
+# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
+NestedModules = @(
+	'New-CustomErrorRecord.ps1'
+	,
+	'Format-Xml.ps1'
+	,
+	'ConvertFrom-UnicodeHexEncoding.ps1'
+	,
+	'ConvertFrom-SecureStringDF.ps1'
+	,
+	'New-SecurePassword.ps1'
+	,
+	'ConvertTo-UrlEncoded.ps1'
+	,
+	'ConvertFrom-UrlEncoded.ps1'
+	,
+	'ConvertTo-Base64.ps1'
+	,
+	'ConvertFrom-Base64.ps1'
+	,
+	'Get-ComObjectType.ps1'
+	,
+	'Test-StringPattern.ps1'
+	,
+	'Import-Credential.ps1'
+	,
+	'Export-Credential.ps1'
+	,
+	'Get-Constructor.ps1'
+	,
+	'Set-SslSecurityPolicy.ps1'
+	,
+	'New-ActivityProgress.ps1'
+	,
+	'Set-ActivityProgress.ps1'
+	,
+	'Remove-ActivityProgress.ps1'
+	,
+	'ConvertFrom-CmdletHelp.ps1'
+	,
+	'Expand-CompressedItem.ps1'
+	,
+	'Format-IpAddress.ps1'
+	,
+	'ConvertFrom-PSCustomObject.ps1'
+	,
+	'ConvertFrom-Hashtable.ps1'
+	,
+	'Test-CmdletDocumentation.ps1'
+	,
+	'Assert-CmdletDocumentation.ps1'
+	,
+	'Send-ShortMessage.ps1'
+	,
+	'Merge-Hashtable.ps1'
+	,
+	'Update-Signature.ps1'
+)
 
-            $newModulePath = $ModulePaths -join ';'
+# Functions to export from this module
+FunctionsToExport = '*'
 
-            [Environment]::SetEnvironmentVariable('PSModulePath', $newModulePath, 'Machine')
-            $env:PSModulePath += ";$ModulePath"
-        }
-    }
+# Cmdlets to export from this module
+CmdletsToExport = '*'
+
+# Variables to export from this module
+VariablesToExport = '*'
+
+# Aliases to export from this module
+AliasesToExport = '*'
+
+# List of all modules packaged with this module.
+# ModuleList = @()
+
+# List of all files packaged with this module
+FileList = @(
+	'biz.dfch.PS.System.Utilities.xml'
+	,
+	'LICENSE'
+	,
+	'NOTICE'
+	,
+	'README.md'
+	,
+	'Import-Module.ps1'
+)
+
+# Private data to pass to the module specified in RootModule/ModuleToProcess
+PrivateData = @{
+
+	"MODULEVAR" = "biz_dfch_PS_System_Utilities"
 }
 
-begin
-{
-    function Update-Directory
-    {
-        [CmdletBinding()]
-        param (
-            [Parameter(Mandatory = $true)]
-            [string] $Source,
+# HelpInfo URI of this module
+HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 
-            [Parameter(Mandatory = $true)]
-            [string] $Destination
-        )
+# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
+# DefaultCommandPrefix = ''
 
-        $Source = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Source)
-        $Destination = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Destination)
-
-        if (-not (Test-Path -LiteralPath $Destination))
-        {
-            $null = New-Item -Path $Destination -ItemType Directory -ErrorAction Stop
-        }
-
-        try
-        {
-            $sourceItem = Get-Item -LiteralPath $Source -ErrorAction Stop
-            $destItem = Get-Item -LiteralPath $Destination -ErrorAction Stop
-
-            if ($sourceItem -isnot [System.IO.DirectoryInfo] -or $destItem -isnot [System.IO.DirectoryInfo])
-            {
-                throw 'Not Directory Info'
-            }
-        }
-        catch
-        {
-            throw 'Both Source and Destination must be directory paths.'
-        }
-
-        $sourceFiles = Get-ChildItem -Path $Source -Recurse |
-                       Where-Object { -not $_.PSIsContainer }
-
-        foreach ($sourceFile in $sourceFiles)
-        {
-            $relativePath = Get-RelativePath $sourceFile.FullName -RelativeTo $Source
-            $targetPath = Join-Path $Destination $relativePath
-
-            $sourceHash = Get-FileHash -Path $sourceFile.FullName
-            $destHash = Get-FileHash -Path $targetPath
-
-            if ($sourceHash -ne $destHash)
-            {
-                $targetParent = Split-Path $targetPath -Parent
-
-                if (-not (Test-Path -Path $targetParent -PathType Container))
-                {
-                    $null = New-Item -Path $targetParent -ItemType Directory -ErrorAction Stop
-                }
-
-                Write-Verbose "Updating file $relativePath to new version."
-                Copy-Item $sourceFile.FullName -Destination $targetPath -Force -ErrorAction Stop
-            }
-        }
-
-        $targetFiles = Get-ChildItem -Path $Destination -Recurse |
-                       Where-Object { -not $_.PSIsContainer }
-
-        foreach ($targetFile in $targetFiles)
-        {
-            $relativePath = Get-RelativePath $targetFile.FullName -RelativeTo $Destination
-            $sourcePath = Join-Path $Source $relativePath
-
-            if (-not (Test-Path $sourcePath -PathType Leaf))
-            {
-                Write-Verbose "Removing unknown file $relativePath from module folder."
-                Remove-Item -LiteralPath $targetFile.FullName -Force -ErrorAction Stop
-            }
-        }
-
-    }
-
-    function Get-RelativePath
-    {
-        param ( [string] $Path, [string] $RelativeTo )
-        return $Path -replace "^$([regex]::Escape($RelativeTo))\\?"
-    }
-
-    function Get-FileHash
-    {
-        param ([string] $Path)
-
-        if (-not (Test-Path -LiteralPath $Path -PathType Leaf))
-        {
-            return $null
-        }
-
-        $item = Get-Item -LiteralPath $Path
-        if ($item -isnot [System.IO.FileSystemInfo])
-        {
-            return $null
-        }
-
-        $stream = $null
-
-        try
-        {
-            $sha = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider
-            $stream = $item.OpenRead()
-            $bytes = $sha.ComputeHash($stream)
-            return [convert]::ToBase64String($bytes)
-        }
-        finally
-        {
-            if ($null -ne $stream) { $stream.Close() }
-            if ($null -ne $sha)    { $sha.Clear() }
-        }
-    }
 }
+
+#
+# Copyright 2014-2015 d-fens GmbH
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNI1DIfXPTyN0kb2A39fif2Gq
-# 5RWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFyv1Hd0iirKqafs/deCPlc8r
+# DlugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -282,26 +286,26 @@ begin
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSf9Hjjh0Q4Dwid
-# fky1wbVTmpKZxTANBgkqhkiG9w0BAQEFAASCAQDFe8NPqqjRZPcBcdoYtAqiNbJ2
-# xB0tkzBtTABDIkeUIXYJ5Vxs3busRdXw22/3flx/U5jBz9gC3GrHUt9SmkSGdZi6
-# GlqbOMG2C2ChQq2z+WS8GI0tMDc5Yr/wveJQ0PViNO5MAyS2D5jUC3WtnZrj2R6m
-# iARKpVMbpNg4Ykfrxl6t9Yv00Cv1oUPbh7PTvjzVMmr/nPQLY5Z2jCE2RHLPG3Bp
-# d+/emXgyupeq1raK/xQ5JTarbEXOq5+tR3GePpmdj/Z/RC+7JqyfSEjC/BN9ZYAD
-# MzNDq845tkoeOgihILB6y8WpAUNrSZG+1LFJ1WML3DBiOUmm2C8+5vkUe7aKoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSvqImt8Zdzt0QN
+# 8vIhUffIcjsXUjANBgkqhkiG9w0BAQEFAASCAQATcYFwacd1NfRnVRUJ4vj9HJed
+# f/9iHm8u67lin/i0GYoLZyHRw8ckEypFh8jgnReAYzkA/ZWQ88e/CuWNlh3/srW5
+# 8ukA0avX4/v22IEVKtCzx+9cHQ+1vwaJVCeEIHVqLIV/mFyt0K3jS/rPMvpCqx1r
+# ro0pRMupdSqSLiwXrfmrkUs6HD3qlc9f6g2XG9STGvdxtJVVMsopf9d+nZTe9vD9
+# 1FjfdUfrVTuiDcJ3co9sRuYV0Bi3QhFDhSRi/ORwUVZfdABg0kRVCNkiof4Eqk/q
+# fd7+Hibhcx0vptNzEyJBt+rEoNbAw6qtjDEWPgMTqCCq1ptZIj5ciyvtcl1LoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAyOTA0MzQyNlowIwYJKoZIhvcNAQkEMRYEFIhZV6t5gk/F1/ymgTEly9Pi4Uro
+# MTAyOTA1MDMwMlowIwYJKoZIhvcNAQkEMRYEFLJ8oSTDQ3ZAqvML1tWMyQNWerm5
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAwvmYr/VZ2y8ll+YM9
-# dp/LDaAQVDp4+mTICW+lqRosQteSS43YXMzAXBn7vDxgMG6V14pI2ECE2gvlWRDg
-# kDeHzsl6HbIzHlHoOsJvuWu3aUuoAXdwu9u4tUQRsHbMEdu38/7EovmOdwgXY/R/
-# LVGtjsD85V+TGuiRmRM/eWNiCQPoEk222cRRk2gUYy/jqqadu8XCuFAJauh0jHL/
-# hoO8LV+7IdhjUjlfrB0exQtqxfd7eu6ul41T/IbxjPjb/TFdp2rOpP24d5+hIase
-# uM5SR8NXthTLg4jIDiy7D4cQRMtNcXwvToixv7EpAhamAGv+bs1/EyLCUj7Nrga/
-# 8c8R
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQA7X2CeRg+3cjTpIT9X
+# b/yejL/NlrsVXDY3A25JdRnbEgfTJp94Q1f6Y6ob1tsk8/Wvw/j8u0yRrnGm+XSd
+# THqnJ0x0d+7fgvOIAjADy4JZsMVCxuJpMihdIcNg3mqvpnEqU2O6t4FJHSK80dKb
+# Yx8eiHnJEt71c4xxq55hyI1sKYIvjpMTUiEsY6jCKFj5lHk4L0RkexdXhPMjRlp4
+# 8k70Z8lRY9WVMSn/fsV12s5LSsGktcGOUnCTSlxe51XtS8hVadrsCDkycY20er/A
+# VLKVuOoVRJV1h6YlFssVUpgHNWYA87uThA1A6ziERhJSEh35g8xQ3AYS6pdZOgTd
+# w8EI
 # SIG # End signature block
