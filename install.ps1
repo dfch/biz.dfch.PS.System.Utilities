@@ -1,65 +1,87 @@
+<#
+.SYNOPSIS
+Installs the module into a path inside $ENV:PSModulePath.
+
+
+.DESCRIPTION
+Installs the module into a path inside $ENV:PSModulePath. 
+Any existing module customisations are overwritten by the 
+installation routine (such as <module>.xml).
+
+.EXAMPLE
+Installs the module into the default directory.
+
+PS > .\Install.ps1
+
+.EXAMPLE
+Installs the module into the C:\PSModules directory.
+
+PS > .\Install.ps1 -ModulePath C:\PSModules
+#>
 [CmdletBinding()]
 PARAM
 ( 
-	[string] $ModuleName = ([regex]::Match((Get-Item $PSScriptRoot).Name, '^(.+)\.\d\.\d\.\d$')).Groups[1].Value
+	# Specifies the module name. Leave as is.
+	[string] $ModuleName = 'biz.dfch.PS.System.Utilities'
+	,
+	# Specifies the target base directory into which to install the module.
+    [string] $ModulePath = (Join-Path $env:ProgramFiles WindowsPowerShell\Modules)
 )
 
-END
+end
 {
-	if([String]::IsNullOrWhiteSpace($ModuleName))
-	{
-		$ex = New-Object System.ArgumentNullException('ModuleName', 'ModuleName: Parameter validation FAILED. Parameter must not be null or empty. Please choose a module name.');
-		throw $ex;
-	}
-    $modulePath = Join-Path -Path $env:ProgramFiles -ChildPath "WindowsPowerShell\Modules";
-    $targetDirectory = Join-Path -Path $modulePath -ChildPath $ModuleName;
+    $targetDirectory = Join-Path $ModulePath $ModuleName
+    $scriptRoot      = Split-Path $MyInvocation.MyCommand.Path -Parent
+    $sourceDirectory = Join-Path $scriptRoot Tools
 
-    $scriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent;
-    $sourceDirectory = Join-Path -Path $scriptRoot -ChildPath Tools;
+    if ($PSVersionTable.PSVersion.Major -ge 5)
+    {
+        $manifestFile    = Join-Path $sourceDirectory ('{0}.psd1' -f $ModuleName)
+        $manifest        = Test-ModuleManifest -Path $manifestFile -WarningAction Ignore -ErrorAction Stop
+        $targetDirectory = Join-Path $targetDirectory $manifest.Version.ToString()
+    }
 
-	Write-Verbose ("Creating/updating module '{0}' in '{1}' ..." -f $ModuleName, $targetDirectory);
-    Update-Directory -Source $sourceDirectory -Destination $targetDirectory;
+    Update-Directory -Source $sourceDirectory -Destination $targetDirectory
 
     if ($PSVersionTable.PSVersion.Major -lt 4)
     {
-        $modulePaths = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine') -split ';'
-        if ($modulePaths -notcontains $modulePath)
+        $ModulePaths = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine') -split ';'
+        if ($ModulePaths -notcontains $ModulePath)
         {
-            Write-Verbose "Adding '$modulePath' to PSModulePath."
+            Write-Verbose "Adding '$ModulePath' to PSModulePath."
 
-            $modulePaths = @(
-                $modulePath
-                $modulePaths
+            $ModulePaths = @(
+                $ModulePath
+                $ModulePaths
             )
 
-            $newModulePath = $modulePaths -join ';'
+            $newModulePath = $ModulePaths -join ';'
 
-            [Environment]::SetEnvironmentVariable('PSModulePath', $newModulePath, 'Machine');
-            $env:PSModulePath += ";$modulePath";
+            [Environment]::SetEnvironmentVariable('PSModulePath', $newModulePath, 'Machine')
+            $env:PSModulePath += ";$ModulePath"
         }
     }
 }
 
-BEGIN
+begin
 {
     function Update-Directory
     {
         [CmdletBinding()]
-        PARAM
-		(
+        param (
             [Parameter(Mandatory = $true)]
-            [string] $Source
-			,
+            [string] $Source,
+
             [Parameter(Mandatory = $true)]
             [string] $Destination
         )
 
-        $Source = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Source);
-        $Destination = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Destination);
+        $Source = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Source)
+        $Destination = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Destination)
 
-        if (!(Test-Path -LiteralPath $Destination))
+        if (-not (Test-Path -LiteralPath $Destination))
         {
-            $null = New-Item -Path $Destination -ItemType Directory -ErrorAction Stop;
+            $null = New-Item -Path $Destination -ItemType Directory -ErrorAction Stop
         }
 
         try
@@ -69,49 +91,51 @@ BEGIN
 
             if ($sourceItem -isnot [System.IO.DirectoryInfo] -or $destItem -isnot [System.IO.DirectoryInfo])
             {
-                throw ("ERROR: '{0}' and '{1}' are not of type [DirectoryInfo]." -f ($sourceItem | Out-String), ($destItem | Out-String));
+                throw 'Not Directory Info'
             }
         }
         catch
         {
-            throw 'ERROR: Both Source and Destination must be directory paths.';
+            throw 'Both Source and Destination must be directory paths.'
         }
 
-        $sourceFiles = Get-ChildItem -Path $Source -Recurse | Where-Object { -not $_.PSIsContainer };
+        $sourceFiles = Get-ChildItem -Path $Source -Recurse |
+                       Where-Object { -not $_.PSIsContainer }
 
         foreach ($sourceFile in $sourceFiles)
         {
-            $relativePath = Get-RelativePath $sourceFile.FullName -RelativeTo $Source;
-            $targetPath = Join-Path -Path $Destination -ChildPath $relativePath;
+            $relativePath = Get-RelativePath $sourceFile.FullName -RelativeTo $Source
+            $targetPath = Join-Path $Destination $relativePath
 
-            $sourceHash = Get-FileHash -Path $sourceFile.FullName;
-            $destHash = Get-FileHash -Path $targetPath;
+            $sourceHash = Get-FileHash -Path $sourceFile.FullName
+            $destHash = Get-FileHash -Path $targetPath
 
             if ($sourceHash -ne $destHash)
             {
-                $targetParent = Split-Path $targetPath -Parent;
+                $targetParent = Split-Path $targetPath -Parent
 
                 if (-not (Test-Path -Path $targetParent -PathType Container))
                 {
-                    $null = New-Item -Path $targetParent -ItemType Directory -ErrorAction Stop;
+                    $null = New-Item -Path $targetParent -ItemType Directory -ErrorAction Stop
                 }
 
-                Write-Verbose "Updating file $relativePath to new version.";
-                Copy-Item $sourceFile.FullName -Destination $targetPath -Force -ErrorAction Stop;
+                Write-Verbose "Updating file $relativePath to new version."
+                Copy-Item $sourceFile.FullName -Destination $targetPath -Force -ErrorAction Stop
             }
         }
 
-        $targetFiles = Get-ChildItem -Path $Destination -Recurse | Where-Object { -not $_.PSIsContainer };
-    
+        $targetFiles = Get-ChildItem -Path $Destination -Recurse |
+                       Where-Object { -not $_.PSIsContainer }
+
         foreach ($targetFile in $targetFiles)
         {
-            $relativePath = Get-RelativePath $targetFile.FullName -RelativeTo $Destination;
-            $sourcePath = Join-Path -Path $Source -ChildPath $relativePath;
+            $relativePath = Get-RelativePath $targetFile.FullName -RelativeTo $Destination
+            $sourcePath = Join-Path $Source $relativePath
 
             if (-not (Test-Path $sourcePath -PathType Leaf))
             {
-                Write-Verbose "Removing unknown file $relativePath from module folder.";
-                Remove-Item -LiteralPath $targetFile.FullName -Force -ErrorAction Stop;
+                Write-Verbose "Removing unknown file $relativePath from module folder."
+                Remove-Item -LiteralPath $targetFile.FullName -Force -ErrorAction Stop
             }
         }
 
@@ -119,71 +143,47 @@ BEGIN
 
     function Get-RelativePath
     {
-        PARAM
-		(
-			[string] $Path
-			,
-			[string] $RelativeTo 
-		)
+        param ( [string] $Path, [string] $RelativeTo )
         return $Path -replace "^$([regex]::Escape($RelativeTo))\\?"
     }
 
     function Get-FileHash
     {
-        PARAM
-		(
-			[string] $Path
-		)
+        param ([string] $Path)
 
         if (-not (Test-Path -LiteralPath $Path -PathType Leaf))
         {
-            return $null;
+            return $null
         }
 
-        $item = Get-Item -LiteralPath $Path;
+        $item = Get-Item -LiteralPath $Path
         if ($item -isnot [System.IO.FileSystemInfo])
         {
-            return $null;
+            return $null
         }
 
-        $stream = $null;
+        $stream = $null
 
         try
         {
-            $sha = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider;
-            $stream = $item.OpenRead();
-            $bytes = $sha.ComputeHash($stream);
-            return [convert]::ToBase64String($bytes);
+            $sha = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider
+            $stream = $item.OpenRead()
+            $bytes = $sha.ComputeHash($stream)
+            return [convert]::ToBase64String($bytes)
         }
         finally
         {
-            if ($null -ne $stream) { $stream.Close() };
-            if ($null -ne $sha)    { $sha.Clear() };
+            if ($null -ne $stream) { $stream.Close() }
+            if ($null -ne $sha)    { $sha.Clear() }
         }
     }
 }
 
-#
-# Copyright 2014-2015 d-fens GmbH
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUcLrDiahVJjgo467/FIpVopuB
-# CtegghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUNI1DIfXPTyN0kb2A39fif2Gq
+# 5RWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -282,26 +282,26 @@ BEGIN
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBT8rm/qCXlDeO38
-# gsmpBZQMoi/R1DANBgkqhkiG9w0BAQEFAASCAQAqxzoX5CT0R039KHNaPgZGYF2l
-# O95oF3Y2tzg1yT1oD/xdCPEyiY5Mdk9nKC9gp84wzo7OqjNQ4pvxWeId4OYcrzxP
-# j45pWRqpxHS8atpG3OlV2VdnyyiaAmOkNBpfgVtGDulxSFpmRdOiVkTk1AncJKdg
-# dWFBtDKaOUc3d78KaqOpRQJTCzgL5nvVZ3LWiHwTuBdAK8tJstqfA7m03tnfBJdh
-# K15dPgVo/OYPB24b9AqE1UXbn7rpCXW4Pq2ZBHWYaEAZcMIujG7mTK4CM0+q4yVQ
-# Y9qLlGcqCbB+vYrvCYYrFdJ6mq90djuh64U+GvA0uTBaijAPQh3zsbVPNfhloYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSf9Hjjh0Q4Dwid
+# fky1wbVTmpKZxTANBgkqhkiG9w0BAQEFAASCAQDFe8NPqqjRZPcBcdoYtAqiNbJ2
+# xB0tkzBtTABDIkeUIXYJ5Vxs3busRdXw22/3flx/U5jBz9gC3GrHUt9SmkSGdZi6
+# GlqbOMG2C2ChQq2z+WS8GI0tMDc5Yr/wveJQ0PViNO5MAyS2D5jUC3WtnZrj2R6m
+# iARKpVMbpNg4Ykfrxl6t9Yv00Cv1oUPbh7PTvjzVMmr/nPQLY5Z2jCE2RHLPG3Bp
+# d+/emXgyupeq1raK/xQ5JTarbEXOq5+tR3GePpmdj/Z/RC+7JqyfSEjC/BN9ZYAD
+# MzNDq845tkoeOgihILB6y8WpAUNrSZG+1LFJ1WML3DBiOUmm2C8+5vkUe7aKoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMwNVowIwYJKoZIhvcNAQkEMRYEFEHIruJsd+Vs7sOYHwPOtOXfmUEp
+# MTAyOTA0MzQyNlowIwYJKoZIhvcNAQkEMRYEFIhZV6t5gk/F1/ymgTEly9Pi4Uro
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCneT9IkXgn3BU0nAQ2
-# Qye78E17/Bm/O9Drb24yKz0yLH6Os21ZWKi8C6viepvY43ZOz30wCA6ffrhksIvt
-# tojSZTNiSm5G+GFKmhdqmV+24AGSdRNIsi4j4D0KnHV9zFTGa6fDrl7/ugPN2odv
-# 9on/rI6nnJdPYK4snc68iV79K1kal4zyEE42g8othiLRq/R/RwQ7o6xYDQLVu1Zd
-# dIZatpxWQy3VgEuS2mMh/QH2De/FghJh2C/ZKfdVytbFoA+igQ9gRMHiNVOvwVwa
-# +x4A1Q3TfThFhnyIbGSSRQKy5m9zrfe7Snv4LJeqCQllcKz61JKoXFXj9Cbnn8Tl
-# 0NZq
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAwvmYr/VZ2y8ll+YM9
+# dp/LDaAQVDp4+mTICW+lqRosQteSS43YXMzAXBn7vDxgMG6V14pI2ECE2gvlWRDg
+# kDeHzsl6HbIzHlHoOsJvuWu3aUuoAXdwu9u4tUQRsHbMEdu38/7EovmOdwgXY/R/
+# LVGtjsD85V+TGuiRmRM/eWNiCQPoEk222cRRk2gUYy/jqqadu8XCuFAJauh0jHL/
+# hoO8LV+7IdhjUjlfrB0exQtqxfd7eu6ul41T/IbxjPjb/TFdp2rOpP24d5+hIase
+# uM5SR8NXthTLg4jIDiy7D4cQRMtNcXwvToixv7EpAhamAGv+bs1/EyLCUj7Nrga/
+# 8c8R
 # SIG # End signature block
