@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>biz.dfch.PS.System.Utilities</id>
-        <version>1.0.8</version>
+        <version>1.0.9</version>
         <title>biz.dfch.PS.System.Utilities</title>
         <authors>d-fens GmbH</authors>
         <owners>Ronald Rink</owners>
@@ -23,10 +23,10 @@ You can download this module via [NuGet](http://nuget.org) with [Install-Package
 
 See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utilities/) or check the [Wiki](https://github.com/dfch/biz.dfch.PS.System.Utilities/wiki) for further description and examples on how to use the module.</description>
         <summary>This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.</summary>
-        <releaseNotes>20151018
+        <releaseNotes>20151029
 
-* Added Update-Signature
-* Added newline support in Send-ShortMessage
+* Fixed install.ps1 script
+* Added -Force parameter to Update-Signature
 </releaseNotes>
         <copyright>(c) 2014-2015 d-fens GmbH</copyright>
         <language>en-US</language>
@@ -36,9 +36,10 @@ See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utili
         </dependencies>
     </metadata>
     <files>
-        <file src="LICENSE" target="content\LICENSE" />
-        <file src="NOTICE" target="content\NOTICE" />
-        <file src="README.md" target="content\README.md" />
+		<file src="Install.ps1" target="Install.ps1" />
+		<file src="..\LICENSE" target="tools\LICENSE" />
+		<file src="..\NOTICE" target="tools\NOTICE" />
+		<file src="..\README.md" target="tools\README.md" />
         <file src="Assert-CmdletDocumentation.ps1" target="tools\Assert-CmdletDocumentation.ps1" />
         <file src="biz.dfch.PS.System.Utilities.psd1" target="tools\biz.dfch.PS.System.Utilities.psd1" />
         <file src="biz.dfch.PS.System.Utilities.psm1" target="tools\biz.dfch.PS.System.Utilities.psm1" />
@@ -60,13 +61,10 @@ See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utili
         <file src="Get-Constructor.ps1" target="tools\Get-Constructor.ps1" />
         <file src="Import-Credential.ps1" target="tools\Import-Credential.ps1" />
         <file src="Import-Module.ps1" target="tools\Import-Module.ps1" />
-        <file src="LICENSE" target="tools\LICENSE" />
         <file src="Merge-Hashtable.ps1" target="tools\Merge-Hashtable.ps1" />
         <file src="New-ActivityProgress.ps1" target="tools\New-ActivityProgress.ps1" />
         <file src="New-CustomErrorRecord.ps1" target="tools\New-CustomErrorRecord.ps1" />
         <file src="New-SecurePassword.ps1" target="tools\New-SecurePassword.ps1" />
-        <file src="NOTICE" target="tools\NOTICE" />
-        <file src="README.md" target="tools\README.md" />
         <file src="Remove-ActivityProgress.ps1" target="tools\Remove-ActivityProgress.ps1" />
         <file src="Send-ShortMessage.ps1" target="tools\Send-ShortMessage.ps1" />
         <file src="Set-ActivityProgress.ps1" target="tools\Set-ActivityProgress.ps1" />
@@ -74,6 +72,5 @@ See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utili
         <file src="Test-CmdletDocumentation.ps1" target="tools\Test-CmdletDocumentation.ps1" />
         <file src="Test-StringPattern.ps1" target="tools\Test-StringPattern.ps1" />
         <file src="Update-Signature.ps1" target="tools\Update-Signature.ps1" />
-        <file src="install.ps1" target="install.ps1" />
     </files>
 </package>

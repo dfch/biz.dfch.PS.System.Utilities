@@ -1,123 +1,188 @@
-#Requires -Modules Microsoft.PowerShell.Security
-function Update-Signature {
 <#
 .SYNOPSIS
-
-Updates the digital signature of PowerShell scripts.
-
+Installs the module into a path inside $ENV:PSModulePath.
 
 .DESCRIPTION
-
-Updates the digital signature of PowerShell scripts.
-
-You can either sign all scripts in a given folder or only individual files.
-
+Installs the module into a path inside $ENV:PSModulePath. 
+Any existing module customisations are overwritten by the 
+installation routine (such as <module>.xml).
 
 .EXAMPLE
+Installs the module into the default directory.
 
-Update-Signature C:\scripts\myScript.ps1
-
-Signs the specified script with the default certificate and timestamps it.
-
+PS > .\Install.ps1
 
 .EXAMPLE
+Installs the module into the C:\PSModules directory.
 
-Update-Signature C:\scripts\*.*
-
-Signs the all scripts in the specified folder with the default certificate and timestamps it.
-
-
+PS > .\Install.ps1 -ModulePath C:\PSModules
 #>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	DefaultParameterSetName = 'path'
-)]
+[CmdletBinding()]
 PARAM
-(
-	# The path to script files to sign
-	[ValidateScript( { Test-Path($_) -PathType Container; } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'path')]
-	[System.IO.DirectoryInfo] $Path = $PWD.Path
+( 
+	# Specifies the module name. Leave as is.
+	[string] $ModuleName = 'biz.dfch.PS.System.Utilities'
 	,
-	# A script file or array of script files to sign
-	[ValidateScript( { if($_) { foreach($item in $_) {Test-Path($item) -PathType Leaf -Include $IncludeExtensions; } } else { $true } } )]
-	[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ParameterSetName = 'file')]
-	[AllowNull()]
-	[Alias('File')]
-	$InputObject
-	,
-	# The certificate to use for signing the specified scripts
-	[Parameter(Mandatory = $false, Position = 1)]
-	# $Cert = (Select-Object -First 1 -InputObject (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert))
-	$Cert = (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert | Select-Object -First 1)
-	,
-	# Specify wheter to timestamp (countersign) the script files
-	[Parameter(Mandatory = $false)]
-	[Alias('TimeStamp')]
-	[switch] $CounterSign = $true
-	,
-	# The timestamp server url
-	[Parameter(Mandatory = $false, Position = 2)]
-	[Uri] $TimestampServer = 'http://timestamp.globalsign.com/scripts/timstamp.dll'
-	,
-	# File extensions of the script files to sign
-	[Parameter(Mandatory = $false)]
-	$IncludeExtensions = @('*.ps1','*.psm1','*.psd1','*.dll','*.exe')
+	# Specifies the target base directory into which to install the module.
+    [string] $ModulePath = (Join-Path $env:ProgramFiles WindowsPowerShell\Modules)
 )
 
-if($PSCmdlet.ParameterSetName -eq 'path')
+end
 {
-	$InputObjectTemp = (Get-ChildItem $Path -Include $IncludeExtensions -Recurse | Get-AuthenticodeSignature |? { ($_.Status -eq 'HashMismatch') -Or (($_.TimeStamperCertificate -eq $null) -And ($_.Status -eq 'Valid')) }).Path;
-	if($InputObjectTemp)
-	{
-		$InputObject = $InputObjectTemp;
-		Remove-Variable InputObjectTemp;
-	}
+    $targetDirectory = Join-Path $ModulePath $ModuleName
+    $scriptRoot      = Split-Path $MyInvocation.MyCommand.Path -Parent
+    $sourceDirectory = Join-Path $scriptRoot Tools
+
+    if ($PSVersionTable.PSVersion.Major -ge 5)
+    {
+        $manifestFile    = Join-Path $sourceDirectory ('{0}.psd1' -f $ModuleName)
+        $manifest        = Test-ModuleManifest -Path $manifestFile -WarningAction Ignore -ErrorAction Stop
+        $targetDirectory = Join-Path $targetDirectory $manifest.Version.ToString()
+    }
+
+    Update-Directory -Source $sourceDirectory -Destination $targetDirectory
+
+    if ($PSVersionTable.PSVersion.Major -lt 4)
+    {
+        $ModulePaths = [Environment]::GetEnvironmentVariable('PSModulePath', 'Machine') -split ';'
+        if ($ModulePaths -notcontains $ModulePath)
+        {
+            Write-Verbose "Adding '$ModulePath' to PSModulePath."
+
+            $ModulePaths = @(
+                $ModulePath
+                $ModulePaths
+            )
+
+            $newModulePath = $ModulePaths -join ';'
+
+            [Environment]::SetEnvironmentVariable('PSModulePath', $newModulePath, 'Machine')
+            $env:PSModulePath += ";$ModulePath"
+        }
+    }
 }
-foreach($Object in $InputObject)
+
+begin
 {
-	if(!$PSCmdlet.ShouldProcess($Object))
-	{
-		continue;
-	}
-	if($CounterSign)
-	{
-		Set-AuthenticodeSignature $Object -Certificate $cert -TimestampServer $TimestampServer -Confirm:$false;
-	}
-	else
-	{
-		Set-AuthenticodeSignature $Object -Certificate $cert -Confirm:$false;
-	}
+    function Update-Directory
+    {
+        [CmdletBinding()]
+        param (
+            [Parameter(Mandatory = $true)]
+            [string] $Source,
+
+            [Parameter(Mandatory = $true)]
+            [string] $Destination
+        )
+
+        $Source = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Source)
+        $Destination = $PSCmdlet.GetUnresolvedProviderPathFromPSPath($Destination)
+
+        if (-not (Test-Path -LiteralPath $Destination))
+        {
+            $null = New-Item -Path $Destination -ItemType Directory -ErrorAction Stop
+        }
+
+        try
+        {
+            $sourceItem = Get-Item -LiteralPath $Source -ErrorAction Stop
+            $destItem = Get-Item -LiteralPath $Destination -ErrorAction Stop
+
+            if ($sourceItem -isnot [System.IO.DirectoryInfo] -or $destItem -isnot [System.IO.DirectoryInfo])
+            {
+                throw 'Not Directory Info'
+            }
+        }
+        catch
+        {
+            throw 'Both Source and Destination must be directory paths.'
+        }
+
+        $sourceFiles = Get-ChildItem -Path $Source -Recurse |
+                       Where-Object { -not $_.PSIsContainer }
+
+        foreach ($sourceFile in $sourceFiles)
+        {
+            $relativePath = Get-RelativePath $sourceFile.FullName -RelativeTo $Source
+            $targetPath = Join-Path $Destination $relativePath
+
+            $sourceHash = Get-FileHash -Path $sourceFile.FullName
+            $destHash = Get-FileHash -Path $targetPath
+
+            if ($sourceHash -ne $destHash)
+            {
+                $targetParent = Split-Path $targetPath -Parent
+
+                if (-not (Test-Path -Path $targetParent -PathType Container))
+                {
+                    $null = New-Item -Path $targetParent -ItemType Directory -ErrorAction Stop
+                }
+
+                Write-Verbose "Updating file $relativePath to new version."
+                Copy-Item $sourceFile.FullName -Destination $targetPath -Force -ErrorAction Stop
+            }
+        }
+
+        $targetFiles = Get-ChildItem -Path $Destination -Recurse |
+                       Where-Object { -not $_.PSIsContainer }
+
+        foreach ($targetFile in $targetFiles)
+        {
+            $relativePath = Get-RelativePath $targetFile.FullName -RelativeTo $Destination
+            $sourcePath = Join-Path $Source $relativePath
+
+            if (-not (Test-Path $sourcePath -PathType Leaf))
+            {
+                Write-Verbose "Removing unknown file $relativePath from module folder."
+                Remove-Item -LiteralPath $targetFile.FullName -Force -ErrorAction Stop
+            }
+        }
+
+    }
+
+    function Get-RelativePath
+    {
+        param ( [string] $Path, [string] $RelativeTo )
+        return $Path -replace "^$([regex]::Escape($RelativeTo))\\?"
+    }
+
+    function Get-FileHash
+    {
+        param ([string] $Path)
+
+        if (-not (Test-Path -LiteralPath $Path -PathType Leaf))
+        {
+            return $null
+        }
+
+        $item = Get-Item -LiteralPath $Path
+        if ($item -isnot [System.IO.FileSystemInfo])
+        {
+            return $null
+        }
+
+        $stream = $null
+
+        try
+        {
+            $sha = New-Object System.Security.Cryptography.SHA256CryptoServiceProvider
+            $stream = $item.OpenRead()
+            $bytes = $sha.ComputeHash($stream)
+            return [convert]::ToBase64String($bytes)
+        }
+        finally
+        {
+            if ($null -ne $stream) { $stream.Close() }
+            if ($null -ne $sha)    { $sha.Clear() }
+        }
+    }
 }
-
-} # function
-
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; } 
-
-# 
-# Copyright 2014-2015 d-fens GmbH
-# 
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-# 
-# http://www.apache.org/licenses/LICENSE-2.0
-# 
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# 
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUnReLkphf8jjgJwDQHjD5iOOK
-# Q7mgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUfJgiOGUm8+2kkfIAPwl0hK3N
+# H+qgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -216,26 +281,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRlvIbCKh6iB/yV
-# 598qjEpwUQGhJDANBgkqhkiG9w0BAQEFAASCAQB7bU76OrueIaC2y47BhbVopmlx
-# 2XuGKmRcac5viI3EkLpCQ2tKPpblsFOeT28PSwpcjhKaxJuHPLBxOqz9kT0q8WS+
-# nOa00LtH6+IvhpsDNUoXdZUvOvx2cCj02g2T8a00ozX0d9D7M9Fam3SSwEZ0ig80
-# bra1OxLaMXxAk/InRHpj6/SkN5o9ueWFKhAEH1cGcJn6bskzfL5osjJxRkBjhZ3m
-# subyP83tdK3swn+2TiJWdgdFWaBu82ZxcRiIsi8CDtdnx1X987yHK/GWhpEnkoeO
-# W3FFnHN4ZTMRN8+5n03e7EAYme3IOn2p73SXQclGQOWDnDMWMyanjuPeQT3HoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSq/hQnuA0ZdiI2
+# bTY1mDZcSeLzsjANBgkqhkiG9w0BAQEFAASCAQABv7HKUCXAc3kd23x+U0qCMCLr
+# T2sujCsqJm6ESwmJsZYCtiVvYWTlOwOdVXcBP4KrWleo7jGkkE2qL6iTzwjd0osv
+# Fw7YOqpHdTkTyXLXxmY62I6+pOt3UVS57usudiT9+UHKzTfgnI+ogH/qFs3haOqa
+# iL0zgn3dHkAjK6uSbYXcApd3zmPSWNOrwX9CDoaN/z1EwxWMAVjak4WYHRSZvzQ1
+# TdQKFxOycafdJwzXkMyM453Ns27ezMGmLq/m2UcbL1DPldwaAoN+JYDkp47WxMtK
+# 1Z79OBpDzuUPlZrCNqcbpL93YJyKO5f/9gFm4l8bvYQ9ZzlrPxAT7XrzXFDooYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMyMlowIwYJKoZIhvcNAQkEMRYEFHg8FRoAMa6FGyy3le36Je+KbQPP
+# MTAyOTA0NTkzMlowIwYJKoZIhvcNAQkEMRYEFGAcWYmgoMOFkslPTL77130bqDlc
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBxp6TWwhrRpAmAWtnz
-# slFbDClmf8EokpZ8wXK/vUGinyT4DYJnWZZvFfqF+r5T/UyKP/ntPBiK4Oyy4fDT
-# HLzmTj0pvcDBK9tXRjMiIdHf9YyG/7OA+N2j8gRc5GSKwE1dFa0Tx50CFvof0lrz
-# hf3XGFLQrLwmJlFLpzLhhwoIdaVqeo7qDOkcw2s+sl2rgiPFgzQE85fqoeehZcSv
-# DUqe9/zSvTDYq+rJHo/VjR8f4iZ6dB6fdJZs/GjeFWK5g1wTnbABTfdWDqOQr/bn
-# lpFWRhYj/DrRyEHmRgu7VXKPmRoxU0zlet5FvphfEaoZVBmhIp7rYktUy1B9q652
-# 16Nt
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBeuPEEiEUJh7CUUVOY
+# qfO0jNoNFo7oHwJS08bMNHtHFDgzZOdTLvr6nRSk17deBPlYErY3G8PduWCY13v3
+# Ko2pVcLtcOGOjQbyz5IQxH1ZqUBEP09fIaSC9DBJcPAs6C6tpnifk0RA1H5tnew5
+# tC3AhUMxazHkWN+4dQ3hWwLr8b2/r03st6ceJKdp3urCIkIVEZppvfI3k+zwmapd
+# 1XyzstiOK1FATbfJNES9N8SkLZXowFcVqi10F77sedtQ0Dqy5enlxqglmyDszACZ
+# gc1miYx1rjcSvlbKQU/79YpC40dhyHDvE1K3tOE8YFhOg0pKLPwAzIxbuNz2lBzE
+# TMTR
 # SIG # End signature block
