@@ -75,7 +75,7 @@ PARAM
 
 if($PSCmdlet.ParameterSetName -eq 'path')
 {
-	$InputObjectTemp = (Get-ChildItem $Path -Include $IncludeExtensions -Recurse | Get-AuthenticodeSignature |? { ($_.Status -eq 'HashMismatch') -Or (($_.TimeStamperCertificate -eq $null) -And ($_.Status -eq 'Valid')) }).Path;
+	$InputObjectTemp = (Get-ChildItem $Path -Include $IncludeExtensions -Recurse | Get-AuthenticodeSignature |? { ($_.Exception.Status -eq 'HashMismatch') -Or (($_.TimeStamperCertificate -eq $null) -And ($_.Exception.Status -eq 'Valid')) }).Path;
 	if($InputObjectTemp)
 	{
 		$InputObject = $InputObjectTemp;
