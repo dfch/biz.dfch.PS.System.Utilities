@@ -1,5 +1,7 @@
 $fn = $MyInvocation.MyCommand.Name;
 
+trap { Log-Exception $_; break; }
+
 Set-Variable gotoSuccess -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoSuccess';
 Set-Variable gotoError -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoError';
 Set-Variable gotoFailure -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoFailure';
@@ -34,6 +36,8 @@ if( Test-Path -Path $ManifestPathAndFile)
 		}
 	}
 }
+
+Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version] '1.1.4'))
 
 #
 # Copyright 2013-2015 d-fens GmbH
