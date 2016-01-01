@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>biz.dfch.PS.System.Utilities</id>
-        <version>1.0.9</version>
+        <version>1.0.10</version>
         <title>biz.dfch.PS.System.Utilities</title>
         <authors>d-fens GmbH</authors>
         <owners>Ronald Rink</owners>
@@ -25,14 +25,13 @@ See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utili
         <summary>This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.</summary>
         <releaseNotes>20151029
 
-* Fixed install.ps1 script
-* Added -Force parameter to Update-Signature
+* Added Invoke-WithRetry Cmdlet
 </releaseNotes>
-        <copyright>(c) 2014-2015 d-fens GmbH</copyright>
+        <copyright>(c) 2014-2016 d-fens GmbH</copyright>
         <language>en-US</language>
         <tags>PowerShell dfch</tags>
         <dependencies>
-            <dependency id="biz.dfch.PS.System.Logging" version="1.0.3" />
+            <dependency id="biz.dfch.PS.System.Logging" version="1.1.4" />
         </dependencies>
     </metadata>
     <files>
@@ -72,5 +71,6 @@ See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utili
         <file src="Test-CmdletDocumentation.ps1" target="tools\Test-CmdletDocumentation.ps1" />
         <file src="Test-StringPattern.ps1" target="tools\Test-StringPattern.ps1" />
         <file src="Update-Signature.ps1" target="tools\Update-Signature.ps1" />
+        <file src="Invoke-WithRetry.ps1" target="tools\Invoke-WithRetry.ps1" />
     </files>
 </package>

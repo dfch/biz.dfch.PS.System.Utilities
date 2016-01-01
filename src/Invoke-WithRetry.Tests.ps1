@@ -1,177 +1,48 @@
-# Module manifest for module 'biz.dfch.PS.System.Utilities'
 
-@{
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-# Script module or binary module file associated with this manifest.
-RootModule = 'biz.dfch.PS.System.Utilities.psm1'
+Describe -Tags "Invoke-WithRetry.Tests" "Invoke-WithRetry.Tests" {
 
-# Version number of this module.
-ModuleVersion = '1.0.10.20160101'
+	Mock Export-ModuleMember { return $null; }
 
-# ID used to uniquely identify this module
-GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
+	. "$here\$sut"
 
-# Author of this module
-Author = 'Ronald Rink'
+	Context "Invoke-WithRetry.Tests" {
 
-# Company or vendor of this module
-CompanyName = 'd-fens GmbH'
+		It 'Invoke-WithRetryReturnsResult' {
+			[scriptblock] $scriptblock = { return 42; }
+			$result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed;
+			
+			$result | Should Be 42;
+		}
 
-# Copyright statement for this module
-Copyright = '(c) 2014-2016 d-fens GmbH. Distributed under Apache 2.0 license.'
+		It 'Invoke-WithRetryReturnsNull' {
+			[scriptblock] $scriptblock = { return 1/0; }
+			$result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed -MaxAttempts 3;
+			
+			$result | Should Be $null;
+		}
 
-# Description of the functionality provided by this module
-Description = 'This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.'
+		It 'Invoke-WithRetryInvalidScriptBlockReturnsNull' {
+			[scriptblock] $scriptblock = { invalid expression 1010101; }
+			$result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed -MaxAttempts 3;
+			
+			$result | Should Be $null;
+		}
+	}
 
-# Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '3.0'
+	Context "Test-CmdletExists" {
 
-# Name of the Windows PowerShell host required by this module
-# PowerShellHostName = ''
-
-# Minimum version of the Windows PowerShell host required by this module
-# PowerShellHostVersion = ''
-
-# Minimum version of the .NET Framework required by this module
-DotNetFrameworkVersion = '4.5'
-
-# Minimum version of the common language runtime (CLR) required by this module
-# CLRVersion = ''
-
-# Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
-
-# Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-	'biz.dfch.PS.System.Logging'
-)
-
-# Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @(
-	'System.Net'
-	,
-	'System.Web'
-	,
-	'System.Web.Extensions'
-)
-
-# Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @(
-	'Import-Module.ps1'
-)
-
-# Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
-
-# Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
-
-# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(
-	'New-CustomErrorRecord.ps1'
-	,
-	'Format-Xml.ps1'
-	,
-	'ConvertFrom-UnicodeHexEncoding.ps1'
-	,
-	'ConvertFrom-SecureStringDF.ps1'
-	,
-	'New-SecurePassword.ps1'
-	,
-	'ConvertTo-UrlEncoded.ps1'
-	,
-	'ConvertFrom-UrlEncoded.ps1'
-	,
-	'ConvertTo-Base64.ps1'
-	,
-	'ConvertFrom-Base64.ps1'
-	,
-	'Get-ComObjectType.ps1'
-	,
-	'Test-StringPattern.ps1'
-	,
-	'Import-Credential.ps1'
-	,
-	'Export-Credential.ps1'
-	,
-	'Get-Constructor.ps1'
-	,
-	'Set-SslSecurityPolicy.ps1'
-	,
-	'New-ActivityProgress.ps1'
-	,
-	'Set-ActivityProgress.ps1'
-	,
-	'Remove-ActivityProgress.ps1'
-	,
-	'ConvertFrom-CmdletHelp.ps1'
-	,
-	'Expand-CompressedItem.ps1'
-	,
-	'Format-IpAddress.ps1'
-	,
-	'ConvertFrom-PSCustomObject.ps1'
-	,
-	'ConvertFrom-Hashtable.ps1'
-	,
-	'Test-CmdletDocumentation.ps1'
-	,
-	'Assert-CmdletDocumentation.ps1'
-	,
-	'Send-ShortMessage.ps1'
-	,
-	'Merge-Hashtable.ps1'
-	,
-	'Update-Signature.ps1'
-	,
-	'Invoke-WithRetry.ps1'
-)
-
-# Functions to export from this module
-FunctionsToExport = '*'
-
-# Cmdlets to export from this module
-CmdletsToExport = '*'
-
-# Variables to export from this module
-VariablesToExport = '*'
-
-# Aliases to export from this module
-AliasesToExport = '*'
-
-# List of all modules packaged with this module.
-# ModuleList = @()
-
-# List of all files packaged with this module
-FileList = @(
-	'biz.dfch.PS.System.Utilities.xml'
-	,
-	'LICENSE'
-	,
-	'NOTICE'
-	,
-	'README.md'
-	,
-	'Import-Module.ps1'
-)
-
-# Private data to pass to the module specified in RootModule/ModuleToProcess
-PrivateData = @{
-	'MODULEVAR' = 'biz_dfch_PS_System_Utilities'
-	;
-	'LicenseUri' = 'https://github.com/dfch/biz.dfch.PS.System.Utilities/blob/master/LICENSE'
-}
-
-# HelpInfo URI of this module
-HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
-
-# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-# DefaultCommandPrefix = ''
-
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Invoke-WithRetry | Should Not Be $Null;
+		}
+    }
 }
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -189,8 +60,8 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUuDRKR35ctHJLgvciy2lX9pZL
-# XSGgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3uYVR1wCjDznS+5XD0xdmxW5
+# 65WgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -289,26 +160,26 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTpXdr9ucUsZqIr
-# EKKgpDK9TFJK4TANBgkqhkiG9w0BAQEFAASCAQCvdspE4EM/phlLefIKPNU9r1vg
-# p6PfREe3a0R8sXfp7yKMjGgYe4OPd/6Nco5pHsrzMKv6f8XmLBHQQLB3RrjSZdKm
-# Dux43JvrLEvFYL0YZyAApBlcXdhS+Az1b4qW7RYs0ZBpV75hpN4eJmj0RqlNbMKr
-# OfHkQLCM2yj5DBHaVtllE46JoiyF9XOP6a/roNVPAqEnm7V11naB+6YGzSr/EKf8
-# Qme8RB+K+TGy8rUqwYyDsMvgOwBkmGc5ggkZzTAEt1ZCJdlt7iS8XWEQY6dBA4pq
-# pbYf8/cb9w8HaBL/Nl1phFa47okLRJ9JmiXwEK3/uHXqKrN8CLGDtIDg3vXloYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS3pn+Bvm8hxhyh
+# zuiiLxqTVYMDiTANBgkqhkiG9w0BAQEFAASCAQA/fuCFJV0cXosYfMMs64B8l4hC
+# kVOM2fbtdI3h4MX+62hgPkaXOWB12VPlaZXAPHqPcsPo1TrJDoLR2tLSIwFbJINw
+# qj/d9G7CQlniJ/r/FJ6GwBrLsuG/7kVFdbSp3EHqsFUhtaOVGHsVUSMX/UGOCwSW
+# R9ZkYe1zuXYdPaKxfdHYM90TdG+SZcXj09HoAdgv5WPmp7bGx+MoAiJ6vxiznTdd
+# QrIsEMbCOlAyBqGN6ZHp609dPwrRkArHVa6NIYshBIpDMTrWS9h4r/EOIc6qKq7M
+# 1vzO8gOQ9c4vq11NpZ+kd1qLoy7pqaEJJbs8JhrG/3zpf8pS36h9rHjUSsSgoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDEwMTIyMDcwOVowIwYJKoZIhvcNAQkEMRYEFGRbfnhgxi4yBtskoj8EbpJ7mhmJ
+# MDEwMTIyMDMyMFowIwYJKoZIhvcNAQkEMRYEFGV5j5fCCw+/tjSOpVyyygPDRARY
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAVLsxQ5ykkQlQxPLPZ
-# 4XfkHtTVftpZdrbQGCgYYfpQ6bKEtnAwMsl7mx2eDBf2LvNf4ZRba65mnmlaIlWP
-# Q0tmZdPj1lAuPUZS9948BhGLNW7GSSwbg3yaSoW9uLYfutY66s4B766HevHdpC2/
-# ytqCdoBa/7a6Y1ebLx3wdFIXAsVF9hSuAVOXeYxGNPLOYoeAaZ37Ude+syJ+cUVZ
-# WKoMC5+MMPROCeYd1K12pp30BcWloeut+ooQPQUIoO59BGGHCmcPFMnsSM5beXGU
-# 3P9+pbBscyAs5tZRn7gvAsETkuYjLM60nn/WO7zYXrv68lSX2Xqe8eBJvK5tar7M
-# P/Xi
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCAmk5DEWveihvEmJ9K
+# 0PDjPZzLErOzmpDLqfVgyEzp07fNRnrY25OYtJ0MsYxYskZk8ptVqPxIN9UGiIOa
+# AFLy42JivvGsU1tlEM5lSnSLWtK4pv7oGg/hDvvxSBobTzzpv3y6KEnjcnsJWoMC
+# 2uZMUY9acahaNtdFdrbZE5jUOVRqnovEczX5EYnrl5xVhWFhRRKB4a2PB+PvVcgf
+# eF0/hjvi/9xk+0J2uC6nURkgxUypqCw/uvZPx0bgn2LAng+mChU3C7HnQRBJwgGt
+# RqKemBx9UxZ5u+0o+sTfQ8IgljxeHcZ0BChPTbmKTZQBRX9TwUGo/XMuVoejAUVZ
+# gdYV
 # SIG # End signature block
