@@ -1,46 +1,48 @@
-$fn = $MyInvocation.MyCommand.Name;
 
-trap { Log-Exception $_; break; }
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Set-Variable gotoSuccess -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoSuccess';
-Set-Variable gotoError -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoError';
-Set-Variable gotoFailure -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoFailure';
-Set-Variable gotoNotFound -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoNotFound';
+Describe -Tags "Invoke-WithRetry.Tests" "Invoke-WithRetry.Tests" {
 
-[string] $ModuleConfigFile = '{0}.xml' -f (Get-Item $PSCommandPath).BaseName;
-[string] $ModuleConfigurationPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ModuleConfigFile;
-$mvar = $ModuleConfigFile.Replace('.xml', '').Replace('.', '_');
-if($true -eq (Test-Path -Path $ModuleConfigurationPathAndFile)) {
-	if($true -ne (Test-Path variable:$($mvar))) {
-		Log-Debug $fn ("Loading module configuration file from: '{0}' ..." -f $ModuleConfigurationPathAndFile);
-		Set-Variable -Name $mvar -Value (Import-Clixml -Path $ModuleConfigurationPathAndFile);
-	} # if()
-} # if()
-if($true -ne (Test-Path variable:$($mvar))) {
-	Write-Error "Could not find module configuration file '$ModuleConfigFile' in 'ENV:PSModulePath'.`nAborting module import...";
-	break; # Aborts loading module.
-} # if()
-Export-ModuleMember -Variable $mvar;
+	Mock Export-ModuleMember { return $null; }
 
-[string] $ManifestFile = '{0}.psd1' -f (Get-Item $PSCommandPath).BaseName;
-$ManifestPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ManifestFile;
-if( Test-Path -Path $ManifestPathAndFile)
-{
-	$Manifest = (Get-Content -raw $ManifestPathAndFile) | iex;
-	foreach( $ScriptToProcess in $Manifest.ScriptsToProcess) 
-	{ 
-		$ModuleToRemove = (Get-Item (Join-Path -Path $PSScriptRoot -ChildPath $ScriptToProcess)).BaseName;
-		if(Get-Module $ModuleToRemove)
-		{ 
-			Remove-Module $ModuleToRemove -ErrorAction:SilentlyContinue;
+	. "$here\$sut"
+
+	Context "Invoke-WithRetry.Tests" {
+
+		It 'Invoke-WithRetryReturnsResult' {
+			[scriptblock] $scriptblock = { return 42; }
+			$result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed;
+			
+			$result | Should Be 42;
+		}
+
+		It 'Invoke-WithRetryReturnsNull' {
+			[scriptblock] $scriptblock = { return 1/0; }
+			$result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed -MaxAttempts 3;
+			
+			$result | Should Be $null;
+		}
+
+		It 'Invoke-WithRetryInvalidScriptBlockReturnsNull' {
+			[scriptblock] $scriptblock = { invalid expression 1010101; }
+			$result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed -MaxAttempts 3;
+			
+			$result | Should Be $null;
 		}
 	}
+
+	Context "Test-CmdletExists" {
+
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Invoke-WithRetry | Should Not Be $Null;
+		}
+    }
 }
 
-Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version] '1.1.4'))
-
 #
-# Copyright 2013-2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,8 +60,8 @@ Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMLXJe8tBLLo7sILbA+aDTTzY
-# GAagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU3uYVR1wCjDznS+5XD0xdmxW5
+# 65WgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -158,26 +160,26 @@ Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRfI8s5abUd6Zio
-# rss/w6ucH8OrVzANBgkqhkiG9w0BAQEFAASCAQBs4INk+dHFktdiRbKZqBidxHOl
-# 1H37ZOx8TyL6IjLcekz07QTtKSvc7zaraZzmnBIk7TOEzQQTA33c7EvKfS+wX4/k
-# zb6glETZyn5NxE7Y5/9dGRzM0rqanfcMYMs7SpOqrrgaKLzyI96WEyQrAhMFyV58
-# 0AbQQjJolnPoGs0q3L6RxVoSNUyyC/fHEOlkY7WzRZ5OrtBGe2tMHoZA1oN/Kdx/
-# 1fxwyX4fSuOOCNW42GDCxWu0wwMsEZqQjH958KhVYeHEy/6977ucP0s9eM/X6Q52
-# qdmwGAzoNAmNmYC9SJZnggquE4f4ZMLiEowvfkoRBlzSKi7JPFXfaeeXHNe5oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS3pn+Bvm8hxhyh
+# zuiiLxqTVYMDiTANBgkqhkiG9w0BAQEFAASCAQA/fuCFJV0cXosYfMMs64B8l4hC
+# kVOM2fbtdI3h4MX+62hgPkaXOWB12VPlaZXAPHqPcsPo1TrJDoLR2tLSIwFbJINw
+# qj/d9G7CQlniJ/r/FJ6GwBrLsuG/7kVFdbSp3EHqsFUhtaOVGHsVUSMX/UGOCwSW
+# R9ZkYe1zuXYdPaKxfdHYM90TdG+SZcXj09HoAdgv5WPmp7bGx+MoAiJ6vxiznTdd
+# QrIsEMbCOlAyBqGN6ZHp609dPwrRkArHVa6NIYshBIpDMTrWS9h4r/EOIc6qKq7M
+# 1vzO8gOQ9c4vq11NpZ+kd1qLoy7pqaEJJbs8JhrG/3zpf8pS36h9rHjUSsSgoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDUxNjA4NDM1N1owIwYJKoZIhvcNAQkEMRYEFBX8NtFZoRR7bIIblGw2ArHO2w61
+# MDEwMTIyMDMyMFowIwYJKoZIhvcNAQkEMRYEFGV5j5fCCw+/tjSOpVyyygPDRARY
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBqH814X8kD4K2/NDMN
-# 5rX+VvOrRiIdxDJXsowk6uFTfLMBU9eHN26cDNN7ROtEZ0nUnHWda8bmcJ67W/MI
-# cr8vnbGy2ljM3FybUNbIoY59RWa8VYJ7RWbnz/2T9Rd528OQgwhQeZVlRvKGqBGQ
-# +gDAzw8IH9Cuoeyg7VfxR9lHOSF50tTSCPUTQNLjZRo64RU2vdH8HcciJMNfqwOd
-# gJaGlvnpoT9aZhe+iz31hw9i2opGBJ+LumgIdEZhzRtDr/mAqTECqyF9Eh2RUBVw
-# KtY+SqQaUD6QQ55zXvdVQH9uS9zTbJQiGZquibXRicBvolC66VbhUN7FmZP/sMww
-# 3Gsq
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCAmk5DEWveihvEmJ9K
+# 0PDjPZzLErOzmpDLqfVgyEzp07fNRnrY25OYtJ0MsYxYskZk8ptVqPxIN9UGiIOa
+# AFLy42JivvGsU1tlEM5lSnSLWtK4pv7oGg/hDvvxSBobTzzpv3y6KEnjcnsJWoMC
+# 2uZMUY9acahaNtdFdrbZE5jUOVRqnovEczX5EYnrl5xVhWFhRRKB4a2PB+PvVcgf
+# eF0/hjvi/9xk+0J2uC6nURkgxUypqCw/uvZPx0bgn2LAng+mChU3C7HnQRBJwgGt
+# RqKemBx9UxZ5u+0o+sTfQ8IgljxeHcZ0BChPTbmKTZQBRX9TwUGo/XMuVoejAUVZ
+# gdYV
 # SIG # End signature block

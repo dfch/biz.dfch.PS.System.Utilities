@@ -1,167 +1,143 @@
 Function New-CustomErrorRecord {
 <#
-
 .SYNOPSIS
-
 Creates a custom error record.
-
-
 
 .DESCRIPTION
-
 Creates a custom error record.
 
-
-
 .OUTPUTS
-
 This Cmdlet returns a [System.Management.Automation.ErrorRecord] parameter. On failure it returns $null.
 
 For more information about output parameters see 'help about_Functions_OutputTypeAttribute'.
 
-
-
 .INPUTS
-
 See PARAMETER section for a description of input parameters.
 
 For more information about input parameters see 'help about_Functions_Advanced_Parameters'.
 
-
-
 .PARAMETER ExceptionString
-
 The name of the semaphore.
 
-
-
 .PARAMETER idError
-
 An optional switch parameter with which to create the semaphore in the global namespace.
 
-
-
 .PARAMETER ErrorCategory
-
 A number of milliseconds the Cmdlet should try to acquire the resource before giving up. By default this value is -1, which describes an infinite timeout.
 
-
-
 .PARAMETER TargetObject
-
 An optional count of times the semaphore should have initialls free (thus initially reserving a number of instances). By default all instances are "free" and thus not reserved.
 
-
-
 .EXAMPLE
-
 Creates
 
 New-CustomErrorRecord -Name "biz-dfch-MySemaphore"
 
-
-
 .EXAMPLE
-
 Perform a login to a StoreBox server with username and encrypted password.
 
 New-CustomErrorRecord -UriPortal 'https://promo.ds01.swisscom.com' -Username 'PeterLustig' -Credentials [PSCredentials]
 
-
-
 .LINK
-
 Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/New-CustomErrorRecord/
 
-
-
 .NOTES
-
 Requires Powershell v3.
 
 Requires module 'biz.dfch.PS.System.Logging'.
-
 #>
-	#This function is used to create a PowerShell ErrorRecord
-	[CmdletBinding(
-		HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/New-CustomErrorRecord/'
-    )]
-	[OutputType([System.Management.Automation.ErrorRecord])]
-	PARAM (
-		[Parameter(Mandatory = $false, Position = 0)]
-		[alias("msg")]
-		[alias("m")]
-		[String]
-		$ExceptionString = 'Unspecified CustomError encountered.'
-		,
-		[Parameter(Mandatory = $false, Position = 1)]
-		[alias("id")]
-		[String]
-		$idError = 1
-		,
-		[Parameter(Mandatory = $false, Position = 2)]
-		[alias("cat")]
-		[alias("c")]
-		[System.Management.Automation.ErrorCategory]
-		$ErrorCategory = [System.Management.Automation.ErrorCategory]::NotSpecified
-		,
-		[Parameter(Mandatory = $false, Position = 3)]
-		[alias("obj")]
-		[alias("o")]
-		[PSObject]
-		$TargetObject = $PsCmdlet
-	)
-	BEGIN {
-		$datBegin = [datetime]::Now;
-		[string] $fn = $MyInvocation.MyCommand.Name;
-		Log-Debug -fn $fn -msg ("CALL. ExceptionString: '{0}'; idError: '{1}'; ErrorCategory: '{2}'; " -f $ExceptionString, $idError, $ErrorCategory) -fac 1;
+[CmdletBinding(
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/New-CustomErrorRecord/'
+)]
+[OutputType([System.Management.Automation.ErrorRecord])]
+PARAM 
+(
+	[Parameter(Mandatory = $false, Position = 0)]
+	[alias("msg")]
+	[alias("m")]
+	[String]
+	$ExceptionString = 'Unspecified CustomError encountered.'
+	,
+	[Parameter(Mandatory = $false, Position = 1)]
+	[alias("id")]
+	[String]
+	$idError = 1
+	,
+	[Parameter(Mandatory = $false, Position = 2)]
+	[alias("cat")]
+	[alias("c")]
+	[System.Management.Automation.ErrorCategory]
+	$ErrorCategory = [System.Management.Automation.ErrorCategory]::NotSpecified
+	,
+	[Parameter(Mandatory = $false, Position = 3)]
+	[alias("obj")]
+	[alias("o")]
+	[PSObject]
+	$TargetObject = $PsCmdlet
+)
+BEGIN 
+{
+	# N/A
+}
+PROCESS 
+{
+	[boolean] $fReturn = $false;
+
+	try 
+	{
+		# Parameter validation
+		# N/A
+
+		$exception = New-Object System.Management.Automation.RuntimeException($ExceptionString);
+		$customError = New-Object System.Management.Automation.ErrorRecord($exception, $idError, $ErrorCategory, $TargetObject);
+		$OutputParameter = $customError;
+		
 	}
-	PROCESS {
-		[boolean] $fReturn = $false;
-
-		try {
-			# Parameter validation
-			# N/A
-
-			$exception = New-Object System.Management.Automation.RuntimeException($ExceptionString);
-			$customError = New-Object System.Management.Automation.ErrorRecord($exception, $idError, $ErrorCategory, $TargetObject);
-			$OutputParameter = $customError;
+	catch 
+	{
+		if($gotoSuccess -eq $_.Exception.Message) 
+		{
+			$fReturn = $true;
+		}
+		elseif($gotoNotFound -eq $_.Exception.Message) 
+		{
+			$fReturn = $false;
+			$OutputParameter = $null;
+		}
+		else 
+		{
+			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
+			$ErrorText += (($_ | fl * -Force) | Out-String);
+			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
+			$ErrorText += (Get-PSCallStack | Out-String);
 			
-		} # try
-		catch {
-			if($gotoSuccess -eq $_.Exception.Message) {
-				$fReturn = $true;
-			} elseif($gotoNotFound -eq $_.Exception.Message) {
-				$fReturn = $false;
-				$OutputParameter = $null;
-			} else {
-				[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-				$ErrorText += (($_ | fl * -Force) | Out-String);
-				$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-				$ErrorText += (Get-PSCallStack | Out-String);
-				
-				if($_.Exception.InnerException -is [System.Net.WebException]) {
-					Log-Critical $fn "Operation '$Method' '$Api' with UriServer '$UriServer' FAILED [$_].";
-					Log-Debug $fn $ErrorText -fac 3;
-				} # [System.Net.WebException]
-				else {
-					Log-Error $fn $ErrorText -fac 3;
-					if($gotoFailure -ne $_.Exception.Message) { Write-Verbose ("$fn`n$ErrorText"); }
-				} # other exceptions
-				$fReturn = $false;
-				$OutputParameter = $null;
-			} # !$gotoSuccess
-		} # catch
-		finally {
-			# Clean up
-		} # finally
-		return $OutputParameter;
-	} # PROCESS
-	END {
-		$datEnd = [datetime]::Now;
-		Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
-	} # END
-} # New-CustomErrorRecord
+			if($_.Exception.InnerException -is [System.Net.WebException]) 
+			{
+				Log-Critical $fn "Operation '$Method' '$Api' with UriServer '$UriServer' FAILED [$_].";
+				Log-Debug $fn $ErrorText -fac 3;
+			}
+			else 
+			{
+				Log-Error $fn $ErrorText -fac 3;
+				if($gotoFailure -ne $_.Exception.Message) { Write-Verbose ("$fn`n$ErrorText"); }
+			}
+			$fReturn = $false;
+			$OutputParameter = $null;
+		}
+	}
+	finally 
+	{
+		# Clean up
+	}
+	return $OutputParameter;
+}
+
+END 
+{
+	# N/A
+}
+
+} # function
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-CustomErrorRecord; } 
 
@@ -184,8 +160,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-CustomErrorReco
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUPYR18CvzJaUaTfwSL1gi+Vgl
-# qeygghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUIxAQcwpULFowzEjNt4IOG2hO
+# rL6gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -284,26 +260,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function New-CustomErrorReco
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBREXygWne+SsNUc
-# g0AcuHbWBDHPGDANBgkqhkiG9w0BAQEFAASCAQBSxUaFkPnrXdXDW6QiXr9AcHDl
-# x1cgyPnm42Z0cfblJUmGrzCodsRr63kkfFwddCgbS4lzUNUpCsgQb/ZzdjjAv5Q8
-# f0NtTkWiwNQyKp7KPhqZJvlwSGz0ZSjndZv5SnJXM8dqjVlAzEEpnEL9Y8e/kTR+
-# XhfB+bMGGQ3uFvHtwD26x4FJw0DbTYlGG2n5/MljRbwRgswQVliQhglUSpwjYH+Z
-# axe2to2jSEtWJgSTorkYSb5dXw43axqpaIMcnGh3tNbnqcJouG4SG+c3sbunHyhn
-# nEFQb73GZHFhNWLVWEZfIs5dqAfDb/KJPq2PhQYRr/TCxZF/oSL79Tm7iBC2oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQzxnqUdxq8ZAsZ
+# CC12fZnu8W1B5DANBgkqhkiG9w0BAQEFAASCAQDHegf36ESo35hGVS38MwfQAM1n
+# JlznkI9WF+u2g7/rG1E0i7HirLmEXTufivrFO5GXGMGnfWvkxB0ziTKMznog6NWN
+# nqpqDa3NGtxm1TJ2Gfr1yv2364e6j3ZFybeEb0DCOrkFzcZTs4ikovKahDcDl+0O
+# WGCM6JFI9jurqc9pj/liBxwdTpsq9e2k3AVlXBQwYpOuOElS3ZmwQzJHcuwS00dD
+# ugvOiZQF2YHsoPJdixwi7M1FG1w+ccmjmZlturQeRXP8cKoUXrRjsCM9XJlL3Ewb
+# ACqP/q1xoRJVymUi6D8FE+MedrCaQX9j/YDmTnt3LN6dPG3uQdoNBVlsfZbeoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
-# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMxMFowIwYJKoZIhvcNAQkEMRYEFJarcUUpvV8+8vqxlaX+DCCQ/4Be
+# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
+# MDUxNjA4NDQwMVowIwYJKoZIhvcNAQkEMRYEFKAeO9J+15Rsxh+Xe2nP/DFP9kwX
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCN2+hICbCx0PLfXTNl
-# fkdfwf4o+jseAnt8fM0lmMl0FWeUJxhVwiV34/HzPZuLdNcmFXaSplR7L5LnR0tn
-# vN4zcALjHaN0E88xKzkExfyvoOfCQOttwFsRCcq59KGhtCrLjWMtE8GEieIpdlUU
-# wK+LpvuB4BahKwLxHjG3hOQjd/vvTwwRtiGUqIh1umGYv3ydHzyjYt0XBm8lDj8k
-# U5V91xIvM6ay3xTrLRJou8w9jhfR7soshfQy3NL51LWb4Gd4VYwYWYBimSgIuJ0T
-# Tv14dMI1xhJTSQLkI6CAIpNw84hbBK4c3LNkvpY/vDd0s5YfQaX07zsGuAFZA0iP
-# PPYC
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAJvjTHykR9Ab7LGZTo
+# lO3o3xUv8iq6Bj/tmpCtmymNLE+BRkRcHao4T+U2IMazzqJrZOLj+6tcb6ZWgRWG
+# eprBzqpsjcKMjtuqaBU/8xDy05uYYcvwsGdfhq5L203bIrFkiafOrfplvSyY+gA9
+# ZhB04ZaSvdwBD+yXKVgLTJtvxgH2Zot0UMacXjTi9XOCbfq0ojW9OkE9AIB5vYzq
+# HXs3yNYpsG48vgAo5VcsVQOtOJlxJy151CToHck2sNCmgwDyiSpTDzwhdBYhAyQY
+# RggpSVb5Tu4HrbP5nqpykwW0QyCVlGCD5PHF1BehRwkDtrrwV1LTlnklri/y5dj1
+# 2Dsk
 # SIG # End signature block

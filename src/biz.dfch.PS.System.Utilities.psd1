@@ -6,7 +6,7 @@
 RootModule = 'biz.dfch.PS.System.Utilities.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.0.9.20151029'
+ModuleVersion = '1.0.10.20160516'
 
 # ID used to uniquely identify this module
 GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
@@ -18,7 +18,7 @@ Author = 'Ronald Rink'
 CompanyName = 'd-fens GmbH'
 
 # Copyright statement for this module
-Copyright = '(c) 2014-2015 d-fens GmbH. Distributed under Apache 2.0 license.'
+Copyright = '(c) 2014-2016 d-fens GmbH. Distributed under Apache 2.0 license.'
 
 # Description of the functionality provided by this module
 Description = 'This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.'
@@ -123,6 +123,10 @@ NestedModules = @(
 	'Merge-Hashtable.ps1'
 	,
 	'Update-Signature.ps1'
+	,
+	'Invoke-WithRetry.ps1'
+	,
+	'Invoke-GenericMethod.ps1'
 )
 
 # Functions to export from this module
@@ -155,8 +159,9 @@ FileList = @(
 
 # Private data to pass to the module specified in RootModule/ModuleToProcess
 PrivateData = @{
-
-	"MODULEVAR" = "biz_dfch_PS_System_Utilities"
+	'MODULEVAR' = 'biz_dfch_PS_System_Utilities'
+	;
+	'LicenseUri' = 'https://github.com/dfch/biz.dfch.PS.System.Utilities/blob/master/LICENSE'
 }
 
 # HelpInfo URI of this module
@@ -168,7 +173,7 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 }
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2014-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -186,8 +191,8 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFyv1Hd0iirKqafs/deCPlc8r
-# DlugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt61XElmL7TbEGsCsGXWDyb0Y
+# GsSgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -286,26 +291,26 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBSvqImt8Zdzt0QN
-# 8vIhUffIcjsXUjANBgkqhkiG9w0BAQEFAASCAQATcYFwacd1NfRnVRUJ4vj9HJed
-# f/9iHm8u67lin/i0GYoLZyHRw8ckEypFh8jgnReAYzkA/ZWQ88e/CuWNlh3/srW5
-# 8ukA0avX4/v22IEVKtCzx+9cHQ+1vwaJVCeEIHVqLIV/mFyt0K3jS/rPMvpCqx1r
-# ro0pRMupdSqSLiwXrfmrkUs6HD3qlc9f6g2XG9STGvdxtJVVMsopf9d+nZTe9vD9
-# 1FjfdUfrVTuiDcJ3co9sRuYV0Bi3QhFDhSRi/ORwUVZfdABg0kRVCNkiof4Eqk/q
-# fd7+Hibhcx0vptNzEyJBt+rEoNbAw6qtjDEWPgMTqCCq1ptZIj5ciyvtcl1LoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBR+h4D2xDfEhLzv
+# 2A0GOjQAytDFiDANBgkqhkiG9w0BAQEFAASCAQBpA+2/tNcYgqJkgKqtCVUflYkF
+# fCvqHSqBQoGIC6Rvc02Orzo084No7ioKwVlBlh1QAbI8vc5c7ByufhT9r0qIWZ+o
+# 4nwcz6ko5gXwWgAq4kYZtsR/+CKMTY3FeT0EsGujTm17nv331HjXno4Ey0w8eV/7
+# p6KRmWy56fkVQbOluAjfOkNWVdM9Tra+2TONRgXqdLo7s98kQUF1CzFJdwzU2kxR
+# OfX3AGqh/vfZTGJL6/3Ck7JrmtFMghql70fIlQ6DE9u+dPpHTIpDtWiDOSt+KvJN
+# kpOUc8oqfwBBwgBJtlttpVe1E5xj2xGQisPsOT56G12ybZKNpy05Gq1bu+QFoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
-# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAyOTA1MDMwMlowIwYJKoZIhvcNAQkEMRYEFLJ8oSTDQ3ZAqvML1tWMyQNWerm5
+# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
+# MDUxNjA4NDM1N1owIwYJKoZIhvcNAQkEMRYEFA3OmW7nodoiTaI0hRtSb7JbvaN6
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQA7X2CeRg+3cjTpIT9X
-# b/yejL/NlrsVXDY3A25JdRnbEgfTJp94Q1f6Y6ob1tsk8/Wvw/j8u0yRrnGm+XSd
-# THqnJ0x0d+7fgvOIAjADy4JZsMVCxuJpMihdIcNg3mqvpnEqU2O6t4FJHSK80dKb
-# Yx8eiHnJEt71c4xxq55hyI1sKYIvjpMTUiEsY6jCKFj5lHk4L0RkexdXhPMjRlp4
-# 8k70Z8lRY9WVMSn/fsV12s5LSsGktcGOUnCTSlxe51XtS8hVadrsCDkycY20er/A
-# VLKVuOoVRJV1h6YlFssVUpgHNWYA87uThA1A6ziERhJSEh35g8xQ3AYS6pdZOgTd
-# w8EI
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCBwhUq/Icvm6fIc4dt
+# 0Q0Bh4viF7f44o0nHYiY1cqke29R/Ls10iNvnpQKc9WpslDUsD3k/wfjY7E0J4z2
+# QtnuhZ5u209miABoLzaP54wFyC6os2jeq7nxoQiOI/UgNrqa3QHkrXTA3Sh8llYC
+# ElBqxgiHcqKWK9JKc3Q5k1+AUbuludZEsJuuQN58BMFUQe8GLh+hh5Xug7GBp+JI
+# Jvg8e6WnF/3UkQLNecYThMYuMubb6/mbjdf2fa9owlkkL1AD130rxTDpnnluzJ57
+# OLhpiFRMMNvhsXtib1Ss6FpTNo7TPlWDIazNPCZAyCFeplQrFlbiQlb2JeKnRakF
+# aulg
 # SIG # End signature block

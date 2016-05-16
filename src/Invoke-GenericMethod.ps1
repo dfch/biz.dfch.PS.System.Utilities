@@ -1,46 +1,132 @@
-$fn = $MyInvocation.MyCommand.Name;
+﻿function Invoke-GenericMethod {
+<#
+.SYNOPSIS
+Invokes a generic method and returns its value.
 
-trap { Log-Exception $_; break; }
 
-Set-Variable gotoSuccess -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoSuccess';
-Set-Variable gotoError -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoError';
-Set-Variable gotoFailure -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoFailure';
-Set-Variable gotoNotFound -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoNotFound';
+.DESCRIPTION
+Invokes a generic method and returns its value.
 
-[string] $ModuleConfigFile = '{0}.xml' -f (Get-Item $PSCommandPath).BaseName;
-[string] $ModuleConfigurationPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ModuleConfigFile;
-$mvar = $ModuleConfigFile.Replace('.xml', '').Replace('.', '_');
-if($true -eq (Test-Path -Path $ModuleConfigurationPathAndFile)) {
-	if($true -ne (Test-Path variable:$($mvar))) {
-		Log-Debug $fn ("Loading module configuration file from: '{0}' ..." -f $ModuleConfigurationPathAndFile);
-		Set-Variable -Name $mvar -Value (Import-Clixml -Path $ModuleConfigurationPathAndFile);
-	} # if()
-} # if()
-if($true -ne (Test-Path variable:$($mvar))) {
-	Write-Error "Could not find module configuration file '$ModuleConfigFile' in 'ENV:PSModulePath'.`nAborting module import...";
-	break; # Aborts loading module.
-} # if()
-Export-ModuleMember -Variable $mvar;
+The method will be looked up via reflection and converted to a typed 
+non-generic method.
+The return value of the method will be returned to the caller.
 
-[string] $ManifestFile = '{0}.psd1' -f (Get-Item $PSCommandPath).BaseName;
-$ManifestPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ManifestFile;
-if( Test-Path -Path $ManifestPathAndFile)
+Note: the Cmdlet currently does not support resolving method names with 
+overloads.
+
+
+.INPUTS
+You must specify a class instance of an object with a generic method, the 
+generic method name along with its type and optionally a number of parameters 
+to be passed to the method.
+
+
+.OUTPUTS
+The Cmdlet returns the return value of the generic method to be invoked.
+
+
+.EXAMPLE
+# Invoke the "biz.dfch.PS.Testing.TestGenericMethod.Create" method with 
+# type [TestGenericMethod]. C# definition would then look similar to this: 
+# public TestGenericMethod Create<TestGenericMethod>() { /* ... */ }
+PS > $object = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+PS > $result = Invoke-GenericMethod -InputObject $object -Name "Create" -Type $object.GetType() -Parameters $null;
+PS > # same as : $result = Invoke-GenericMethod -InputObject $object -Name "Create";
+PS > $result.GetType()
+
+IsPublic IsSerial Name                                     BaseType
+-------- -------- ----                                     --------
+True     False    GenericMethod                              GenericMethodBase
+
+
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Invoke-GenericMethod/
+
+
+.NOTES
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
+[CmdletBinding(
+	SupportsShouldProcess = $true
+	,
+	ConfirmImpact = 'Low'
+	,
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Invoke-GenericMethod/'
+)]
+PARAM (
+	# Class instance on which to invoke the generic method
+	[Parameter(Mandatory = $true, Position = 0)]
+	[object] $InputObject
+	,
+	# Name of non-generic method to invoke
+	[ValidateNotNullOrEmpty()]
+	[Parameter(Mandatory = $true, Position = 1)]
+	[string] $Name
+	,
+	# The type of the non-generic method to invoke
+	# Defaults to the type of the class instance
+	[Parameter(Mandatory = $false)]
+	[Type] $Type = $InputObject.GetType()
+	,
+	# The type of the non-generic method to invoke
+	[Parameter(Mandatory = $false)]
+	[object[]] $Parameters
+)
+
+BEGIN
 {
-	$Manifest = (Get-Content -raw $ManifestPathAndFile) | iex;
-	foreach( $ScriptToProcess in $Manifest.ScriptsToProcess) 
+	# Default test variable for checking function response codes.
+	[Boolean] $fReturn = $false;
+	# Return values are always and only returned via OutputParameter.
+	$OutputParameter = $null;
+	$datBegin = [datetime]::Now;
+	[string] $fn = $MyInvocation.MyCommand.Name;
+	# Log-Debug $fn ("CALL.");
+}
+
+PROCESS
+{
+	trap { Log-Exception $_; break; }
+
+	$instanceType = $InputObject.GetType();
+	$nonGenericMethod = $instanceType.GetMethod($Name);
+	Contract-Assert (!!$nonGenericMethod)
+	
+	$genericMethod = $nonGenericMethod.MakeGenericMethod($Type);
+	Contract-Assert (!!$genericMethod)
+	
+	$count = 0;
+	$parametersList = ""
+	foreach($p in $Parameters) 
 	{ 
-		$ModuleToRemove = (Get-Item (Join-Path -Path $PSScriptRoot -ChildPath $ScriptToProcess)).BaseName;
-		if(Get-Module $ModuleToRemove)
-		{ 
-			Remove-Module $ModuleToRemove -ErrorAction:SilentlyContinue;
-		}
+		$parametersList += "p{0}, " -f $count;
+		$count++;
+	}
+	$parametersList = $parametersList.TrimEnd(", ")
+	
+	if($PSCmdlet.ShouldProcess(("{0}.{1}[{2}]({3})" -f $InputObject.GetType().FullName, $Name, $Type.FullName, $parametersList)))
+	{
+		$result = $genericMethod.Invoke($InputObject, $Parameters);
 	}
 }
 
-Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version] '1.1.4'))
+END
+{
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	$OutputParameter = $result;
+	return $OutputParameter;
+}
+
+} # function
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Invoke-GenericMethod; } 
 
 #
-# Copyright 2013-2015 d-fens GmbH
+# Copyright 2015-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -58,8 +144,8 @@ Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMLXJe8tBLLo7sILbA+aDTTzY
-# GAagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/3en4/S+c4S+6I1X8sPMrrIH
+# Bm+gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -158,26 +244,26 @@ Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRfI8s5abUd6Zio
-# rss/w6ucH8OrVzANBgkqhkiG9w0BAQEFAASCAQBs4INk+dHFktdiRbKZqBidxHOl
-# 1H37ZOx8TyL6IjLcekz07QTtKSvc7zaraZzmnBIk7TOEzQQTA33c7EvKfS+wX4/k
-# zb6glETZyn5NxE7Y5/9dGRzM0rqanfcMYMs7SpOqrrgaKLzyI96WEyQrAhMFyV58
-# 0AbQQjJolnPoGs0q3L6RxVoSNUyyC/fHEOlkY7WzRZ5OrtBGe2tMHoZA1oN/Kdx/
-# 1fxwyX4fSuOOCNW42GDCxWu0wwMsEZqQjH958KhVYeHEy/6977ucP0s9eM/X6Q52
-# qdmwGAzoNAmNmYC9SJZnggquE4f4ZMLiEowvfkoRBlzSKi7JPFXfaeeXHNe5oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQOfISlWZeAQexY
+# 9GT8uFSgzaFToTANBgkqhkiG9w0BAQEFAASCAQAaK8az6Le84BUJMMVk9or5/Maf
+# PKln6awSo+yAIqLq20OBygyI4I6XElLMvDyBG2Y/z6htlQrYHDjaPDML05qznNGI
+# yNtRCIvDxD8rYLqXnAnr1ZkklvcegRAM247eVOXqW4HhXTYALqJA/RmvBDl3mGcI
+# R6Tz0Dx6/y+kGcOEcvpHch71b28srWZiasqAo6+nOGuhF74RMjlydwebEOrim6PG
+# lABCm69pJMZKOJZXjOfDC9oVekCfKQ+ar4kwJw6ZLWry5SHIJJMf0L333dogBzr6
+# FHmPDYcGpOrtvlBppsaFRpZw2wjmyT2O/fZ/xXiTaoNmA0Pu+mgrE+g3Mj11oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDUxNjA4NDM1N1owIwYJKoZIhvcNAQkEMRYEFBX8NtFZoRR7bIIblGw2ArHO2w61
+# MDUxNjA4NDM1OVowIwYJKoZIhvcNAQkEMRYEFNSQCYJFOAjIG7tOwRX8gpwK0Ot6
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBqH814X8kD4K2/NDMN
-# 5rX+VvOrRiIdxDJXsowk6uFTfLMBU9eHN26cDNN7ROtEZ0nUnHWda8bmcJ67W/MI
-# cr8vnbGy2ljM3FybUNbIoY59RWa8VYJ7RWbnz/2T9Rd528OQgwhQeZVlRvKGqBGQ
-# +gDAzw8IH9Cuoeyg7VfxR9lHOSF50tTSCPUTQNLjZRo64RU2vdH8HcciJMNfqwOd
-# gJaGlvnpoT9aZhe+iz31hw9i2opGBJ+LumgIdEZhzRtDr/mAqTECqyF9Eh2RUBVw
-# KtY+SqQaUD6QQ55zXvdVQH9uS9zTbJQiGZquibXRicBvolC66VbhUN7FmZP/sMww
-# 3Gsq
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAjAyN02bUnrpyjBtXK
+# M0pXDLoJAc8sNQMWHwx/qwKvK0bILfOS2PiJ89P9RDmcALhGp/jMVbjMaHk2TPNm
+# Bg6rg/Bas1czwL1P52XGNIh/jiCk+S1PaXxz0k9ZwE0VEoLkc36Yaec40ZQ9ipkC
+# cdVuTGWlqjfjq+P7lR7ixQXmC+QjkhBMVTLFr3I6pkgoK/pDSmzLlrQLHUUnGdgP
+# dtUT/lVwKZ6tVeAx4+IbPUMZr42MtN54Nh3jHXHIEUgh6V5vzD+BYfNy8AdnVS6D
+# j2Tw8OuhtJLe2si+99UqIh+bGjduEOPuWIvJkyXfDMJKxcDURnlRK9izkT2xJors
+# oB2+
 # SIG # End signature block

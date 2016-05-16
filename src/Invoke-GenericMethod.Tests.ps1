@@ -1,46 +1,147 @@
-$fn = $MyInvocation.MyCommand.Name;
+﻿
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-trap { Log-Exception $_; break; }
+Describe -Tags "Invoke-GenericMethod.Tests" "Invoke-GenericMethod.Tests" {
 
-Set-Variable gotoSuccess -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoSuccess';
-Set-Variable gotoError -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoError';
-Set-Variable gotoFailure -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoFailure';
-Set-Variable gotoNotFound -Option 'Constant' -Value 'biz.dfch.System.Exception.gotoNotFound';
+	$Source = @" 
 
-[string] $ModuleConfigFile = '{0}.xml' -f (Get-Item $PSCommandPath).BaseName;
-[string] $ModuleConfigurationPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ModuleConfigFile;
-$mvar = $ModuleConfigFile.Replace('.xml', '').Replace('.', '_');
-if($true -eq (Test-Path -Path $ModuleConfigurationPathAndFile)) {
-	if($true -ne (Test-Path variable:$($mvar))) {
-		Log-Debug $fn ("Loading module configuration file from: '{0}' ..." -f $ModuleConfigurationPathAndFile);
-		Set-Variable -Name $mvar -Value (Import-Clixml -Path $ModuleConfigurationPathAndFile);
-	} # if()
-} # if()
-if($true -ne (Test-Path variable:$($mvar))) {
-	Write-Error "Could not find module configuration file '$ModuleConfigFile' in 'ENV:PSModulePath'.`nAborting module import...";
-	break; # Aborts loading module.
-} # if()
-Export-ModuleMember -Variable $mvar;
-
-[string] $ManifestFile = '{0}.psd1' -f (Get-Item $PSCommandPath).BaseName;
-$ManifestPathAndFile = Join-Path -Path $PSScriptRoot -ChildPath $ManifestFile;
-if( Test-Path -Path $ManifestPathAndFile)
+namespace biz.dfch.PS.Testing 
 {
-	$Manifest = (Get-Content -raw $ManifestPathAndFile) | iex;
-	foreach( $ScriptToProcess in $Manifest.ScriptsToProcess) 
-	{ 
-		$ModuleToRemove = (Get-Item (Join-Path -Path $PSScriptRoot -ChildPath $ScriptToProcess)).BaseName;
-		if(Get-Module $ModuleToRemove)
-		{ 
-			Remove-Module $ModuleToRemove -ErrorAction:SilentlyContinue;
+	public class TestGenericMethodBase
+	{
+		public T Create<T>()
+			where T : TestGenericMethodBase, new()
+		{
+			var t = new T();
+			return t;
+		}
+		
+		public T CreateWithParameters<T>( int id, string name )
+			where T : TestGenericMethodBase, new()
+		{
+			var t = new T();
+			
+			t.Id = id;
+			t.Name = name;
+			
+			return t;
+		}
+		
+		public static T StaticCreate<T>()
+			where T : TestGenericMethodBase, new()
+		{
+			var t = new T();
+			return t;
+		}
+		
+		public int Id { get; set; }
+		public string Name { get; set; }
+	}
+
+	public class TestGenericMethod : TestGenericMethodBase
+	{
+		public string AdditionalProperty { get; set; }
+	}
+}
+
+"@ 
+
+	Add-Type -TypeDefinition $Source -Language CSharp 
+
+	Mock Export-ModuleMember { return $null; }
+
+	. "$here\$sut"
+
+	Context "Test-CmdletExists" {
+
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Invoke-GenericMethod | Should Not Be $Null;
+		}
+    }
+
+	Context "Test-InvalidInput" {
+
+		It "InvalidInput-ShouldThrow" {
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "Create";
+			$type = $instanceWithGenericMethod.GetType();
+			
+			# Act / Assert
+			{ Invoke-GenericMethod -InputObject $null $methodName } | Should Throw;
+			{ Invoke-GenericMethod -InputObject $instanceWithGenericMethod "" } | Should Throw;
+			{ Invoke-GenericMethod -InputObject $instanceWithGenericMethod $methodName -Type "".GetType() } | Should Throw;
+			{ Invoke-GenericMethod -InputObject $instanceWithGenericMethod $methodName -Type $type -Parameters @("p1", "p2") } | Should Throw;
+		}
+	}
+
+	Context "Test-ValidInput" {
+
+		It "InvokeGenericMethod-ReturnsNewObject" {
+
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "Create";
+			$type = $instanceWithGenericMethod.GetType();
+			$additionalProperty = "arbitrary-string";
+			
+			# Act
+			$result = Invoke-GenericMethod $instanceWithGenericMethod $methodName -Type $type -Parameters $null;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethod] | Should Be $true;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethodBase] | Should Be $true;
+			$result.GetType().FullName | Should Be "biz.dfch.PS.Testing.TestGenericMethod";
+			
+			$result.AdditionalProperty = $additionalProperty;
+			$result.AdditionalProperty | Should Be $additionalProperty;
+		}
+		It "InvokeGenericMethod-ReturnsNewBaseObject" {
+
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "Create";
+			$type = (New-Object biz.dfch.PS.Testing.TestGenericMethodBase).GetType();
+			
+			# Act
+			$result = Invoke-GenericMethod $instanceWithGenericMethod $methodName -Type $type -Parameters $null;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -isnot [biz.dfch.PS.Testing.TestGenericMethod] | Should Be $true;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethodBase] | Should Be $true;
+			$result.GetType().FullName | Should Be "biz.dfch.PS.Testing.TestGenericMethodBase";
+		}
+
+		It "InvokeGenericMethodWithParameters-ReturnsNewBaseObject" {
+
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "CreateWithParameters";
+			$type = (New-Object biz.dfch.PS.Testing.TestGenericMethodBase).GetType();
+			$p1 = 42;
+			$p2 = "hello, world!";
+			$parameters = @($p1, $p2);
+			
+			# Act
+			$result = Invoke-GenericMethod $instanceWithGenericMethod $methodName -Type $type -Parameters $parameters;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -isnot [biz.dfch.PS.Testing.TestGenericMethod] | Should Be $true;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethodBase] | Should Be $true;
+			$result.GetType().FullName | Should Be "biz.dfch.PS.Testing.TestGenericMethodBase";
+			$result.Id | Should Be $p1;
+			$result.Name | Should Be $p2;
 		}
 	}
 }
 
-Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version] '1.1.4'))
-
 #
-# Copyright 2013-2015 d-fens GmbH
+# Copyright 2015-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -55,11 +156,12 @@ Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version
 # limitations under the License.
 #
 
+
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUMLXJe8tBLLo7sILbA+aDTTzY
-# GAagghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVcdwF+MBf8KjMSBGUrXlo5PY
+# KPqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -158,26 +260,26 @@ Contract-Requires ((Get-Module biz.dfch.PS.System.Logging).Version -ge ([Version
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRfI8s5abUd6Zio
-# rss/w6ucH8OrVzANBgkqhkiG9w0BAQEFAASCAQBs4INk+dHFktdiRbKZqBidxHOl
-# 1H37ZOx8TyL6IjLcekz07QTtKSvc7zaraZzmnBIk7TOEzQQTA33c7EvKfS+wX4/k
-# zb6glETZyn5NxE7Y5/9dGRzM0rqanfcMYMs7SpOqrrgaKLzyI96WEyQrAhMFyV58
-# 0AbQQjJolnPoGs0q3L6RxVoSNUyyC/fHEOlkY7WzRZ5OrtBGe2tMHoZA1oN/Kdx/
-# 1fxwyX4fSuOOCNW42GDCxWu0wwMsEZqQjH958KhVYeHEy/6977ucP0s9eM/X6Q52
-# qdmwGAzoNAmNmYC9SJZnggquE4f4ZMLiEowvfkoRBlzSKi7JPFXfaeeXHNe5oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQiqudWN+39BMZ1
+# xk2V2lTPvSx1sjANBgkqhkiG9w0BAQEFAASCAQBeq5nP37guH5If8oHlpZ6FWXUf
+# kTkvtlgPArm3d67VqyhxUIU1qxTEd7PV+4bIXW0Xo54pESxiA6fJZIliz5IcvRHH
+# OfQcnAboYXqElQgPS7H9QBbwaIyrVSnqg91JmxRq/+O5Crfy6GD0dwi0wvcylwYi
+# L2EQ/jbjJXxT43dZa1rp1ca2h5Pf5EEp6LX4aN+RUCXWgUCvYlidWltqmg3tEspj
+# UqjUVVRsPmqmd0ylF3Wfu+IEh1VIF4CIMgNCbu007RCfd5hixOVvpCFJhVHXk3vm
+# f/fCZizqz7CNzvxMVCWrgTWLR5yYUunzBjGkVQNCSf4lQSF4P14lOdMApIC5oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDUxNjA4NDM1N1owIwYJKoZIhvcNAQkEMRYEFBX8NtFZoRR7bIIblGw2ArHO2w61
+# MDUxNjA4NDQwMFowIwYJKoZIhvcNAQkEMRYEFByxseDUDFhFiQznpFM+gP9fEKS/
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBqH814X8kD4K2/NDMN
-# 5rX+VvOrRiIdxDJXsowk6uFTfLMBU9eHN26cDNN7ROtEZ0nUnHWda8bmcJ67W/MI
-# cr8vnbGy2ljM3FybUNbIoY59RWa8VYJ7RWbnz/2T9Rd528OQgwhQeZVlRvKGqBGQ
-# +gDAzw8IH9Cuoeyg7VfxR9lHOSF50tTSCPUTQNLjZRo64RU2vdH8HcciJMNfqwOd
-# gJaGlvnpoT9aZhe+iz31hw9i2opGBJ+LumgIdEZhzRtDr/mAqTECqyF9Eh2RUBVw
-# KtY+SqQaUD6QQ55zXvdVQH9uS9zTbJQiGZquibXRicBvolC66VbhUN7FmZP/sMww
-# 3Gsq
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAHjrbx7KdlHFtMH/OZ
+# tPVQA5E86Xn7Ugb5G+Zjd1iLAmKuFCdqDFrLmS1XF1w8e45GwSn34BnUjhoEWzr5
+# nktH9Bljhv/04QMnjLK1C0CpkOdV2tjSvqplN90eygq1vCpAxsDw1GbgPFZ/CFF3
+# 2PoDFe3qRNTyj+lTXTxd9y00v5T72QUUDNtfPZu7xNK0wqDWH4WvA6m27l7uPYxy
+# yZnzBMXAR6CRFEz4i3jFLThC36QpeBpo9w271DU1y+JFv8KNjsDBj88w09onU6zO
+# dTlTGt9gN0VjSiKlcqXZhkfUnlRFIuf3jMS5kQqcKRi70HsFIRgk5Yu+4MvaaXKV
+# bFoL
 # SIG # End signature block

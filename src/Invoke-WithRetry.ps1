@@ -1,163 +1,245 @@
-function Export-Credential {
+Function Invoke-WithRetry {
 <#
 .SYNOPSIS
-
-Export and encrypt a credential object with a static keyphrase
+Invokes a given scriptblock and retries upon failure.
 
 .DESCRIPTION
+Invokes a given scriptblock and retries upon failure.
 
-Export and encrypt a credential object with a static keyphrase
+The specified scriptblock is executed via Invoke-Command. If the scriptblock 
+throws an error the scriptblock will be executed again until it succeeds or 
+the specified maximum number of attempts has been reached.
+If the scriptblock succeeds its value is returned.
 
-This Cmdlet lets you save credentials via a static password to a text file.
-In contrast to Export-CliXml the SecureString in the Credential object is 
-not encrypted with the identity of the current user nbut with a static 
-keyphrase and thus can be read by any other user (on any other machine) that 
-also has access to the keyphrase.
-
-.INPUTS
-
-You can pipe a credential object to the Cmdlet.
+You can optionally pass parameters to the scriptblock.
 
 .EXAMPLE
-$cred.GetType()
-IsPublic IsSerial Name         BaseType
--------- -------- ----         --------
-True     True     PSCredential System.Object
-$cred | Export-Credential .\Credential.xml -KeyPhrase P@ssw0rd
+In this example we define a scriptblock that returns the current time to the 
+caller.
 
-Encrypts the PSCredential object with the keyphrase 'P@ssw0rd' to a file in the 
-currenty directory.
+This scriptblock is then executed via the 'Fixed' RetryStrategy. The returned 
+value is then saved to the '$result' variable and written to the console.
+
+PS > [scriptblock] $scriptblock = { 
+	return [System.DateTimeOffset]::Now.ToString('yyyy-MM-dd HH:mm:ss.fff');
+}
+
+PS > $result = $scriptblock | Invoke-WithRetry -RetryStrategy Fixed;
+PS > $result
+2016-01-01 22:48:48.849
+
+.EXAMPLE
+In this example we define a scriptblock that outputs a string and the current 
+time. To simulate an error the scriptblock also throws an exception. 
+
+This scriptblock is then executed via the 'Fixed' RetryStrategy as you can see 
+from the time stamps.
+
+PS > [scriptblock] $scriptblock = { 
+	Write-Host ("arbitrary string {0}" -f [System.DateTimeOffset]::Now.ToString('yyyy-MM-dd HH:mm:ss.fff'));
+	throw 
+}
+
+PS > $scriptblock | Invoke-WithRetry -RetryStrategy Fixed;
+arbitrary string 2016-01-01 22:43:04.147
+arbitrary string 2016-01-01 22:43:04.375
+arbitrary string 2016-01-01 22:43:04.596
+arbitrary string 2016-01-01 22:43:04.804
+arbitrary string 2016-01-01 22:43:05.017
+
+.EXAMPLE
+In this example we define a scriptblock that outputs a string and the current 
+time. To simulate an error the scriptblock also throws an exception. 
+
+This scriptblock is then executed via the 'Incremental' RetryStrategy as you can see 
+from the time stamps.
+
+PS > [scriptblock] $scriptblock = { 
+	Write-Host ("arbitrary string {0}" -f [System.DateTimeOffset]::Now.ToString('yyyy-MM-dd HH:mm:ss.fff'));
+	throw 
+}
+
+PS > $scriptblock | Invoke-WithRetry -RetryStrategy Incremental -Step 2000 -MaxAttempts 3;
+arbitrary string 2016-01-01 22:46:16.979
+arbitrary string 2016-01-01 22:46:18.995
+arbitrary string 2016-01-01 22:46:23.003
+
+.EXAMPLE
+In this example we define a scriptblock that accepts an input parameter and 
+throws an assertion if the input is 1. The scriptblock itself will output an 
+arbitrary string and the specified input.
+
+In the example you see how the wait time between each interval doubles.
+
+PS > [scriptblock] $scriptblock = { 
+	PARAM
+	(
+		$count
+	)
+	Write-Host ("arbitrary string {0} {1}" -f $count, [System.DateTimeOffset]::Now.ToString('yyyy-MM-dd HH:mm:ss.fff')); 
+	Contract-Assert ($count -ne 1)
+}
+
+PS > $scriptblock | Invoke-WithRetry -RetryStrategy Exponential -ArgumentList 1 -MaxAttempts 6;
+arbitrary string 1 2016-01-01 22:42:39.394
+WARNING: : Assertion failed: ($count -ne 1)
+arbitrary string 1 2016-01-01 22:42:39.615
+WARNING: : Assertion failed: ($count -ne 1)
+arbitrary string 1 2016-01-01 22:42:40.032
+WARNING: : Assertion failed: ($count -ne 1)
+arbitrary string 1 2016-01-01 22:42:40.860
+WARNING: : Assertion failed: ($count -ne 1)
+arbitrary string 1 2016-01-01 22:42:42.482
+WARNING: : Assertion failed: ($count -ne 1)
+arbitrary string 1 2016-01-01 22:42:45.709
+WARNING: : Assertion failed: ($count -ne 1)
 
 .LINK
-
-Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Export-Credential/
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Invoke-WithRetry/
 
 .NOTES
-
-See module manifest for required software versions and dependencies at: 
-http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+See module manifest for required software versions and dependencies at: http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
 
 #>
 [CmdletBinding(
-	SupportsShouldProcess = $true
+    SupportsShouldProcess = $true
 	,
-	ConfirmImpact= 'Low'
-	,
-	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Export-Credential/'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Invoke-WithRetry/'
 )]
-Param (
-	# Specifies the  full path and file name of the encrypted credential object
-	[Parameter(Mandatory = $true, Position = 0)]
-	[string] $Path
+PARAM
+(
+	# Specifies the scriptblock to execute
+	[ValidateNotNull()]
+	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0)]
+	[Alias('InputObject')]
+	[scriptblock] $ScriptBlock
 	,
-	# Specifies the credential object to encrypt
-	[Parameter(Mandatory = $true, ValueFromPipeline = $True, Position = 1)]
-	[Alias('Credential')]
-	[PSCredential] $InputObject
+	# Specifies optional arguments for the scriptblock
+	[Parameter(Mandatory = $false, Position = 1)]
+	[Object[]] $ArgumentList
 	,
-	# Specifies a keyphrase of the encrypted credential object
-	[Parameter(Mandatory = $false, Position = 2)]
-	[Alias('Password')]
-	[string] $KeyPhrase = [NullString]::Value
+	# Specifies the total number of attempty to execute the scriptblock
+	# Default is 5
+	[ValidateRange(1,[int]::MaxValue)]
+	[Parameter(Mandatory = $false)]
+	[int] $MaxAttempts = 5
+	,
+	# Specifies the base wait time for retry operations in milliseconds
+	# Default is 200
+	[Parameter(Mandatory = $false)]
+	[Alias('Step')]
+	[int] $InitialWaitTimeInMilliseconds = 200
+	,
+	# Specifies the retry strategy
+	# Default is exponential.
+	[ValidateSet('Exponential', 'Fixed', 'Incremental')]
+	[Parameter(Mandatory = $false)]
+	[string] $RetryStrategy = 'Exponential'
+	,
+	# Specifies if the scriptblock should be defined as a new closure
+	[Parameter(Mandatory = $false)]
+	[switch] $NewClosure = $false
 )
 
-BEGIN
+Begin 
 {
+	trap { Log-Exception $_; break; }
+
 	$datBegin = [datetime]::Now;
 	[string] $fn = $MyInvocation.MyCommand.Name;
-	Log-Debug -fn $fn -msg ("CALL. Path '{0}'. KeyPhrase.Count '{1}'." -f $Path, $KeyPhrase.Count) -fac 1;
-	# Default test variable for checking function response codes.
-	[Boolean] $fReturn = $false;
-	# Return values are always and only returned via OutputParameter.
-	$OutputParameter = $null;
-}
-PROCESS
-{
-	try 
+	Log-Debug -fn $fn -msg ("CALL. RetryStrategy: {0}; MaxAttempts: {1}. InitialWaitTimeInMilliseconds: {2}." -f $RetryStrategy, $MaxAttempts, $InitialWaitTimeInMilliseconds) -fac 1;
+	
+	if($NewClosure)
 	{
-
-		# Parameter validation
-		if($KeyPhrase) 
-		{
-			Log-Debug $fn ("Creating KeyPattern from Keyphrase ...");
-			$KeyPhrase = $KeyPhrase.PadRight(32, '0').Substring(0, 32);
-			$Enc = [System.Text.Encoding]::UTF8;
-			$k = $Enc.GetBytes($KeyPhrase);
-			
-			Log-Debug $fn ("Encrypting password  ...");
-			$Cred = Select-Object -Property '*' -InputObject $InputObject;
-			$Cred.Password = ConvertFrom-SecureString -SecureString $Cred.Password -Key $k;
-		} 
-		else 
-		{
-			$Cred = $InputObject;
-		}
-		if($PSCmdlet.ShouldProcess( ("Cred.Username '{0}' to '{1}'" -f $Cred.Username, $Path) )) 
-		{
-			Log-Debug $fn ("Saving PSCredential ...");
-			$OutputParameter = Export-CliXml -Path $Path -InputObject $Cred -WhatIf:$false -Confirm:$false;
-			$fReturn = $true;
-		}
-		
+		$ScriptBlock = $ScriptBlock.GetNewClosure();
 	}
-	catch 
+	
+	$currentAttempt = 0;
+	$currentWaitTimeMs = $InitialWaitTimeInMilliseconds;
+	$fCompleted = $false;
+}
+
+Process 
+{
+	trap { Log-Exception $_; break; }
+
+	$OutputParameter = $null;
+	$fReturn = $false;
+
+	do
 	{
-		if($gotoSuccess -eq $_.Exception.Message) 
+		$currentAttempt++;
+
+		if($PSCmdlet.ShouldProcess(('{0}: {1}/{2} @{3}ms' -f $RetryStrategy, $currentAttempt, $MaxAttempts, $currentWaitTimeMs)))
 		{
-			$fReturn = $true;
-		} 
-		else 
-		{
-			[string] $ErrorText = "catch [$($_.FullyQualifiedErrorId)]";
-			$ErrorText += (($_ | fl * -Force) | Out-String);
-			$ErrorText += (($_.Exception | fl * -Force) | Out-String);
-			$ErrorText += (Get-PSCallStack | Out-String);
-			
-			if($_.Exception -is [System.Net.WebException]) 
+			Log-Debug $fn ("Executing scriptblock ... [{0}/{1}]" -f $currentAttempt, $MaxAttempts);
+			try
 			{
-				Log-Critical $fn ("[WebException] Request FAILED with Status '{0}'. [{1}]." -f $_.Exception.Status, $_);
-				Log-Debug $fn $ErrorText -fac 3;
+				if($ArgumentList)
+				{
+					$result = Invoke-Command -ScriptBlock $ScriptBlock -ArgumentList $ArgumentList;
+				}
+				else
+				{
+					$result = Invoke-Command -ScriptBlock $ScriptBlock;
+				}
+				Log-Info $fn ("Executing scriptblock COMPLETED. [{0}/{1}]" -f $currentAttempt, $MaxAttempts);
+				$fReturn = $true;
+				break;
 			}
-			else 
+			catch
 			{
-				Log-Error $fn $ErrorText -fac 3;
-				if($gotoError -eq $_.Exception.Message) 
+				Log-Exception $_;
+				if($currentAttempt -lt $MaxAttempts)
 				{
-					Log-Error $fn $e.Exception.Message;
-					$PSCmdlet.ThrowTerminatingError($e);
-				} 
-				elseif($gotoFailure -eq $_.Exception.Message) 
-				{ 
-					Write-Verbose ("$fn`n$ErrorText"); 
-				} 
-				else 
+					Log-Warning $fn ("Executing scriptblock FAILED. Will retry in {2}ms ... [{0}/{1}]" -f $currentAttempt, $MaxAttempts, $currentWaitTimeMs);
+					Start-Sleep -Milliseconds $currentWaitTimeMs;
+				}
+				else
 				{
-					throw($_);
+					Log-Error $fn ("Executing scriptblock FAILED. Exceeded maximum retries. [{0}/{1}]" -f $currentAttempt, $MaxAttempts);
 				}
 			}
-			$fReturn = $false;
-			$OutputParameter = $null;
+		}
+
+		switch($RetryStrategy)
+		{
+			"Exponential"
+			{
+				$currentWaitTimeMs *= 2;
+			}
+			"Incremental"
+			{
+				$currentWaitTimeMs += $InitialWaitTimeInMilliseconds;
+			}
+			"Fixed"
+			{
+				# do not change wait time
+			}
+			Default
+			{
+				Contract-Assert (!$RetryStrategy) 'Invalid value'
+			}
 		}
 	}
-	finally 
-	{
-		# Clean up
-		# N/A
-	}
+	while($currentAttempt -lt $MaxAttempts);
+	
+	$OutputParameter = $result;
 	return $OutputParameter;
 }
-END
+
+End 
 {
 	$datEnd = [datetime]::Now;
 	Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
 }
 
-} # function
+}
 
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; } 
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Invoke-WithRetry; } 
 
 #
-# Copyright 2015 d-fens GmbH
+# Copyright 2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -175,8 +257,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVxKhp7wX05H4KOyjS+R+ouVV
-# zOOgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUutrYXv0p89AYg21vSjngEJnr
+# 6BGgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -275,26 +357,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Export-Credential; 
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTMSjZNVEE7sDup
-# tOfxJP/9xBS2vjANBgkqhkiG9w0BAQEFAASCAQAuOwx58HMP5b3JHJr+6xJc+rSz
-# fdXeyH7HNSqRe5B+nIMMRNSup5VtBGryZ0vwVKDMXnhEKkQ6i1gdeG2AEtqW3HyB
-# AvvGF+aMS852B6VWLoU78JoYyJl5tpmc4NjnI3q529JaB8rxotXOzrz/pELS6za9
-# AlxCXmkO58vP6/GF66JAia6zJH0gSpNwZQzUuXoREsppCaPYU9GPSRlTCDw4sbM2
-# 8h1AentD/IJWodZrmDEnVbXwuVmi7DDxXzOwh9usS51kpLl8xKKRJndRmw0Yjacf
-# Z6AxVYuwYu0EPly7vE1sJnurMPq3cf48lMepeJxegRseP6idYHdEU8054BGToYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRKWuVKivM4xffM
+# 0OmCxWa7ngRtSTANBgkqhkiG9w0BAQEFAASCAQADezROid6fpnMgnpnitW9B1BNs
+# jLvVjvsLimwNM3hrWoqRj39qGpPAdWlKN5PZiTEshdjrF1/ybINhUfAHKu5OTbVZ
+# YAMuI7of72k5PxYTAgh8xO6g40bhKbZj7hI5kSO8XAo3sQGzc+L+cbYxPNFzG2O4
+# Y/LY1yIv0WVAJSzkkNCLZdBg6OXm4s2NjEbhVVyP1rHbgl4xDhUkESukmjWAlABb
+# hhGNsquPxOoAMoP07PAX7oE7q55tlViAlmlTLvXesZhPiJfPk147pfq0SHotz42J
+# K1x+60nXg2nrGQYzNNOKWyI3Z1+L9DD0WPNpOuQPtIj9Q9vSr6WdNV9JC8L1oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDUxNjA4NDM1OFowIwYJKoZIhvcNAQkEMRYEFLj9vUYthfdF2s2I2mooLbfm9lBX
+# MDEwMTIyMjcxN1owIwYJKoZIhvcNAQkEMRYEFEcXRfxQHf717xlC4IBimSkumiJw
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBrIEkSH4XhiWDUW2pc
-# XcLehb3F1HYKhUkwtqpsD5PxFduPK0Yy7SXiOtKpGzLFGoiGVi7L6Vb0SAXmEIEs
-# 3symh4pjUqRshFCXOK9vs9HqXmI+e18MwsBUSecp/Wc/Iiwf+h5YVtNxqhJQ5hi8
-# +cHnoGpQrWpF8NZapqbL/2ds6pblzHBG/qK1Fp5os9AiuS4P5uzT/uRwl92J6E2y
-# JiaRbH1PZr3DjuC5fVd9xfQSbbk1pKDbChdi3LLo1vRNHccz7c3tGI94akfH2xVC
-# pg7qzL8JMv+aw50pUK7Wv3HyWSS4vrscj73dHVvsoHhxUZcEbkwc7qWDt2QGd3e2
-# 44eW
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQACBG9Q5z0S6Gsa2j7+
+# 0XbUtfdhady3qHESKTwqC3GAtS4+BGMJrNDtjASuLvcxTAF8dlp8U+Tblp6eIIqS
+# NZ3YBYKEPQRC+NHT+co9LhlIayEIEiGDd9Hzcl9yYwMyg/qsE07MLHOYRS8YHGjd
+# FczN/+jbC/UZPNtT06m+0Bbn4JAxyU8B8dQ2dE6ntfu6U3mpONB6cevQL+tjik58
+# WUADMpph18Ev3/7xDmYE5QzI1EZisCQiwu+L53/+rpsDgGQ1ZwjlkAJ4ZpI8oGLl
+# 1YhYUYnpTe6jhqRnOYxsEO5WsW4bAfA/4uhFKdj7rnAOecWGYzGVOuWuwsgR/v3X
+# UXu8
 # SIG # End signature block
