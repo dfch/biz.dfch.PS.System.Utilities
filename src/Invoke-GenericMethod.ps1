@@ -1,179 +1,132 @@
-# Module manifest for module 'biz.dfch.PS.System.Utilities'
+﻿function Invoke-GenericMethod {
+<#
+.SYNOPSIS
+Invokes a generic method and returns its value.
 
-@{
 
-# Script module or binary module file associated with this manifest.
-RootModule = 'biz.dfch.PS.System.Utilities.psm1'
+.DESCRIPTION
+Invokes a generic method and returns its value.
 
-# Version number of this module.
-ModuleVersion = '1.0.10.20160516'
+The method will be looked up via reflection and converted to a typed 
+non-generic method.
+The return value of the method will be returned to the caller.
 
-# ID used to uniquely identify this module
-GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
+Note: the Cmdlet currently does not support resolving method names with 
+overloads.
 
-# Author of this module
-Author = 'Ronald Rink'
 
-# Company or vendor of this module
-CompanyName = 'd-fens GmbH'
+.INPUTS
+You must specify a class instance of an object with a generic method, the 
+generic method name along with its type and optionally a number of parameters 
+to be passed to the method.
 
-# Copyright statement for this module
-Copyright = '(c) 2014-2016 d-fens GmbH. Distributed under Apache 2.0 license.'
 
-# Description of the functionality provided by this module
-Description = 'This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.'
+.OUTPUTS
+The Cmdlet returns the return value of the generic method to be invoked.
 
-# Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '3.0'
 
-# Name of the Windows PowerShell host required by this module
-# PowerShellHostName = ''
+.EXAMPLE
+# Invoke the "biz.dfch.PS.Testing.TestGenericMethod.Create" method with 
+# type [TestGenericMethod]. C# definition would then look similar to this: 
+# public TestGenericMethod Create<TestGenericMethod>() { /* ... */ }
+PS > $object = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+PS > $result = Invoke-GenericMethod -InputObject $object -Name "Create" -Type $object.GetType() -Parameters $null;
+PS > # same as : $result = Invoke-GenericMethod -InputObject $object -Name "Create";
+PS > $result.GetType()
 
-# Minimum version of the Windows PowerShell host required by this module
-# PowerShellHostVersion = ''
+IsPublic IsSerial Name                                     BaseType
+-------- -------- ----                                     --------
+True     False    GenericMethod                              GenericMethodBase
 
-# Minimum version of the .NET Framework required by this module
-DotNetFrameworkVersion = '4.5'
 
-# Minimum version of the common language runtime (CLR) required by this module
-# CLRVersion = ''
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Invoke-GenericMethod/
 
-# Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
 
-# Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-	'biz.dfch.PS.System.Logging'
+.NOTES
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+
+
+#>
+[CmdletBinding(
+	SupportsShouldProcess = $true
+	,
+	ConfirmImpact = 'Low'
+	,
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Invoke-GenericMethod/'
+)]
+PARAM (
+	# Class instance on which to invoke the generic method
+	[Parameter(Mandatory = $true, Position = 0)]
+	[object] $InputObject
+	,
+	# Name of non-generic method to invoke
+	[ValidateNotNullOrEmpty()]
+	[Parameter(Mandatory = $true, Position = 1)]
+	[string] $Name
+	,
+	# The type of the non-generic method to invoke
+	# Defaults to the type of the class instance
+	[Parameter(Mandatory = $false)]
+	[Type] $Type = $InputObject.GetType()
+	,
+	# The type of the non-generic method to invoke
+	[Parameter(Mandatory = $false)]
+	[object[]] $Parameters
 )
 
-# Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @(
-	'System.Net'
-	,
-	'System.Web'
-	,
-	'System.Web.Extensions'
-)
-
-# Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @(
-	'Import-Module.ps1'
-)
-
-# Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
-
-# Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
-
-# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(
-	'New-CustomErrorRecord.ps1'
-	,
-	'Format-Xml.ps1'
-	,
-	'ConvertFrom-UnicodeHexEncoding.ps1'
-	,
-	'ConvertFrom-SecureStringDF.ps1'
-	,
-	'New-SecurePassword.ps1'
-	,
-	'ConvertTo-UrlEncoded.ps1'
-	,
-	'ConvertFrom-UrlEncoded.ps1'
-	,
-	'ConvertTo-Base64.ps1'
-	,
-	'ConvertFrom-Base64.ps1'
-	,
-	'Get-ComObjectType.ps1'
-	,
-	'Test-StringPattern.ps1'
-	,
-	'Import-Credential.ps1'
-	,
-	'Export-Credential.ps1'
-	,
-	'Get-Constructor.ps1'
-	,
-	'Set-SslSecurityPolicy.ps1'
-	,
-	'New-ActivityProgress.ps1'
-	,
-	'Set-ActivityProgress.ps1'
-	,
-	'Remove-ActivityProgress.ps1'
-	,
-	'ConvertFrom-CmdletHelp.ps1'
-	,
-	'Expand-CompressedItem.ps1'
-	,
-	'Format-IpAddress.ps1'
-	,
-	'ConvertFrom-PSCustomObject.ps1'
-	,
-	'ConvertFrom-Hashtable.ps1'
-	,
-	'Test-CmdletDocumentation.ps1'
-	,
-	'Assert-CmdletDocumentation.ps1'
-	,
-	'Send-ShortMessage.ps1'
-	,
-	'Merge-Hashtable.ps1'
-	,
-	'Update-Signature.ps1'
-	,
-	'Invoke-WithRetry.ps1'
-	,
-	'Invoke-GenericMethod.ps1'
-)
-
-# Functions to export from this module
-FunctionsToExport = '*'
-
-# Cmdlets to export from this module
-CmdletsToExport = '*'
-
-# Variables to export from this module
-VariablesToExport = '*'
-
-# Aliases to export from this module
-AliasesToExport = '*'
-
-# List of all modules packaged with this module.
-# ModuleList = @()
-
-# List of all files packaged with this module
-FileList = @(
-	'biz.dfch.PS.System.Utilities.xml'
-	,
-	'LICENSE'
-	,
-	'NOTICE'
-	,
-	'README.md'
-	,
-	'Import-Module.ps1'
-)
-
-# Private data to pass to the module specified in RootModule/ModuleToProcess
-PrivateData = @{
-	'MODULEVAR' = 'biz_dfch_PS_System_Utilities'
-	;
-	'LicenseUri' = 'https://github.com/dfch/biz.dfch.PS.System.Utilities/blob/master/LICENSE'
+BEGIN
+{
+	# Default test variable for checking function response codes.
+	[Boolean] $fReturn = $false;
+	# Return values are always and only returned via OutputParameter.
+	$OutputParameter = $null;
+	$datBegin = [datetime]::Now;
+	[string] $fn = $MyInvocation.MyCommand.Name;
+	# Log-Debug $fn ("CALL.");
 }
 
-# HelpInfo URI of this module
-HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
+PROCESS
+{
+	trap { Log-Exception $_; break; }
 
-# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-# DefaultCommandPrefix = ''
-
+	$instanceType = $InputObject.GetType();
+	$nonGenericMethod = $instanceType.GetMethod($Name);
+	Contract-Assert (!!$nonGenericMethod)
+	
+	$genericMethod = $nonGenericMethod.MakeGenericMethod($Type);
+	Contract-Assert (!!$genericMethod)
+	
+	$count = 0;
+	$parametersList = ""
+	foreach($p in $Parameters) 
+	{ 
+		$parametersList += "p{0}, " -f $count;
+		$count++;
+	}
+	$parametersList = $parametersList.TrimEnd(", ")
+	
+	if($PSCmdlet.ShouldProcess(("{0}.{1}[{2}]({3})" -f $InputObject.GetType().FullName, $Name, $Type.FullName, $parametersList)))
+	{
+		$result = $genericMethod.Invoke($InputObject, $Parameters);
+	}
 }
+
+END
+{
+	# $datEnd = [datetime]::Now;
+	# Log-Debug -fn $fn -msg ("RET. fReturn: [{0}]. Execution time: [{1}]ms. Started: [{2}]." -f $fReturn, ($datEnd - $datBegin).TotalMilliseconds, $datBegin.ToString('yyyy-MM-dd HH:mm:ss.fffzzz')) -fac 2;
+	$OutputParameter = $result;
+	return $OutputParameter;
+}
+
+} # function
+
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Invoke-GenericMethod; } 
 
 #
-# Copyright 2014-2016 d-fens GmbH
+# Copyright 2015-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -191,8 +144,8 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt61XElmL7TbEGsCsGXWDyb0Y
-# GsSgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU/3en4/S+c4S+6I1X8sPMrrIH
+# Bm+gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -291,26 +244,26 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBR+h4D2xDfEhLzv
-# 2A0GOjQAytDFiDANBgkqhkiG9w0BAQEFAASCAQBpA+2/tNcYgqJkgKqtCVUflYkF
-# fCvqHSqBQoGIC6Rvc02Orzo084No7ioKwVlBlh1QAbI8vc5c7ByufhT9r0qIWZ+o
-# 4nwcz6ko5gXwWgAq4kYZtsR/+CKMTY3FeT0EsGujTm17nv331HjXno4Ey0w8eV/7
-# p6KRmWy56fkVQbOluAjfOkNWVdM9Tra+2TONRgXqdLo7s98kQUF1CzFJdwzU2kxR
-# OfX3AGqh/vfZTGJL6/3Ck7JrmtFMghql70fIlQ6DE9u+dPpHTIpDtWiDOSt+KvJN
-# kpOUc8oqfwBBwgBJtlttpVe1E5xj2xGQisPsOT56G12ybZKNpy05Gq1bu+QFoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQOfISlWZeAQexY
+# 9GT8uFSgzaFToTANBgkqhkiG9w0BAQEFAASCAQAaK8az6Le84BUJMMVk9or5/Maf
+# PKln6awSo+yAIqLq20OBygyI4I6XElLMvDyBG2Y/z6htlQrYHDjaPDML05qznNGI
+# yNtRCIvDxD8rYLqXnAnr1ZkklvcegRAM247eVOXqW4HhXTYALqJA/RmvBDl3mGcI
+# R6Tz0Dx6/y+kGcOEcvpHch71b28srWZiasqAo6+nOGuhF74RMjlydwebEOrim6PG
+# lABCm69pJMZKOJZXjOfDC9oVekCfKQ+ar4kwJw6ZLWry5SHIJJMf0L333dogBzr6
+# FHmPDYcGpOrtvlBppsaFRpZw2wjmyT2O/fZ/xXiTaoNmA0Pu+mgrE+g3Mj11oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDUxNjA4NDM1N1owIwYJKoZIhvcNAQkEMRYEFA3OmW7nodoiTaI0hRtSb7JbvaN6
+# MDUxNjA4NDM1OVowIwYJKoZIhvcNAQkEMRYEFNSQCYJFOAjIG7tOwRX8gpwK0Ot6
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCBwhUq/Icvm6fIc4dt
-# 0Q0Bh4viF7f44o0nHYiY1cqke29R/Ls10iNvnpQKc9WpslDUsD3k/wfjY7E0J4z2
-# QtnuhZ5u209miABoLzaP54wFyC6os2jeq7nxoQiOI/UgNrqa3QHkrXTA3Sh8llYC
-# ElBqxgiHcqKWK9JKc3Q5k1+AUbuludZEsJuuQN58BMFUQe8GLh+hh5Xug7GBp+JI
-# Jvg8e6WnF/3UkQLNecYThMYuMubb6/mbjdf2fa9owlkkL1AD130rxTDpnnluzJ57
-# OLhpiFRMMNvhsXtib1Ss6FpTNo7TPlWDIazNPCZAyCFeplQrFlbiQlb2JeKnRakF
-# aulg
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAjAyN02bUnrpyjBtXK
+# M0pXDLoJAc8sNQMWHwx/qwKvK0bILfOS2PiJ89P9RDmcALhGp/jMVbjMaHk2TPNm
+# Bg6rg/Bas1czwL1P52XGNIh/jiCk+S1PaXxz0k9ZwE0VEoLkc36Yaec40ZQ9ipkC
+# cdVuTGWlqjfjq+P7lR7ixQXmC+QjkhBMVTLFr3I6pkgoK/pDSmzLlrQLHUUnGdgP
+# dtUT/lVwKZ6tVeAx4+IbPUMZr42MtN54Nh3jHXHIEUgh6V5vzD+BYfNy8AdnVS6D
+# j2Tw8OuhtJLe2si+99UqIh+bGjduEOPuWIvJkyXfDMJKxcDURnlRK9izkT2xJors
+# oB2+
 # SIG # End signature block

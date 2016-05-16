@@ -1,179 +1,147 @@
-# Module manifest for module 'biz.dfch.PS.System.Utilities'
+﻿
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-@{
+Describe -Tags "Invoke-GenericMethod.Tests" "Invoke-GenericMethod.Tests" {
 
-# Script module or binary module file associated with this manifest.
-RootModule = 'biz.dfch.PS.System.Utilities.psm1'
+	$Source = @" 
 
-# Version number of this module.
-ModuleVersion = '1.0.10.20160516'
+namespace biz.dfch.PS.Testing 
+{
+	public class TestGenericMethodBase
+	{
+		public T Create<T>()
+			where T : TestGenericMethodBase, new()
+		{
+			var t = new T();
+			return t;
+		}
+		
+		public T CreateWithParameters<T>( int id, string name )
+			where T : TestGenericMethodBase, new()
+		{
+			var t = new T();
+			
+			t.Id = id;
+			t.Name = name;
+			
+			return t;
+		}
+		
+		public static T StaticCreate<T>()
+			where T : TestGenericMethodBase, new()
+		{
+			var t = new T();
+			return t;
+		}
+		
+		public int Id { get; set; }
+		public string Name { get; set; }
+	}
 
-# ID used to uniquely identify this module
-GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
-
-# Author of this module
-Author = 'Ronald Rink'
-
-# Company or vendor of this module
-CompanyName = 'd-fens GmbH'
-
-# Copyright statement for this module
-Copyright = '(c) 2014-2016 d-fens GmbH. Distributed under Apache 2.0 license.'
-
-# Description of the functionality provided by this module
-Description = 'This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.'
-
-# Minimum version of the Windows PowerShell engine required by this module
-PowerShellVersion = '3.0'
-
-# Name of the Windows PowerShell host required by this module
-# PowerShellHostName = ''
-
-# Minimum version of the Windows PowerShell host required by this module
-# PowerShellHostVersion = ''
-
-# Minimum version of the .NET Framework required by this module
-DotNetFrameworkVersion = '4.5'
-
-# Minimum version of the common language runtime (CLR) required by this module
-# CLRVersion = ''
-
-# Processor architecture (None, X86, Amd64) required by this module
-# ProcessorArchitecture = ''
-
-# Modules that must be imported into the global environment prior to importing this module
-RequiredModules = @(
-	'biz.dfch.PS.System.Logging'
-)
-
-# Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @(
-	'System.Net'
-	,
-	'System.Web'
-	,
-	'System.Web.Extensions'
-)
-
-# Script files (.ps1) that are run in the caller's environment prior to importing this module.
-ScriptsToProcess = @(
-	'Import-Module.ps1'
-)
-
-# Type files (.ps1xml) to be loaded when importing this module
-# TypesToProcess = @()
-
-# Format files (.ps1xml) to be loaded when importing this module
-# FormatsToProcess = @()
-
-# Modules to import as nested modules of the module specified in RootModule/ModuleToProcess
-NestedModules = @(
-	'New-CustomErrorRecord.ps1'
-	,
-	'Format-Xml.ps1'
-	,
-	'ConvertFrom-UnicodeHexEncoding.ps1'
-	,
-	'ConvertFrom-SecureStringDF.ps1'
-	,
-	'New-SecurePassword.ps1'
-	,
-	'ConvertTo-UrlEncoded.ps1'
-	,
-	'ConvertFrom-UrlEncoded.ps1'
-	,
-	'ConvertTo-Base64.ps1'
-	,
-	'ConvertFrom-Base64.ps1'
-	,
-	'Get-ComObjectType.ps1'
-	,
-	'Test-StringPattern.ps1'
-	,
-	'Import-Credential.ps1'
-	,
-	'Export-Credential.ps1'
-	,
-	'Get-Constructor.ps1'
-	,
-	'Set-SslSecurityPolicy.ps1'
-	,
-	'New-ActivityProgress.ps1'
-	,
-	'Set-ActivityProgress.ps1'
-	,
-	'Remove-ActivityProgress.ps1'
-	,
-	'ConvertFrom-CmdletHelp.ps1'
-	,
-	'Expand-CompressedItem.ps1'
-	,
-	'Format-IpAddress.ps1'
-	,
-	'ConvertFrom-PSCustomObject.ps1'
-	,
-	'ConvertFrom-Hashtable.ps1'
-	,
-	'Test-CmdletDocumentation.ps1'
-	,
-	'Assert-CmdletDocumentation.ps1'
-	,
-	'Send-ShortMessage.ps1'
-	,
-	'Merge-Hashtable.ps1'
-	,
-	'Update-Signature.ps1'
-	,
-	'Invoke-WithRetry.ps1'
-	,
-	'Invoke-GenericMethod.ps1'
-)
-
-# Functions to export from this module
-FunctionsToExport = '*'
-
-# Cmdlets to export from this module
-CmdletsToExport = '*'
-
-# Variables to export from this module
-VariablesToExport = '*'
-
-# Aliases to export from this module
-AliasesToExport = '*'
-
-# List of all modules packaged with this module.
-# ModuleList = @()
-
-# List of all files packaged with this module
-FileList = @(
-	'biz.dfch.PS.System.Utilities.xml'
-	,
-	'LICENSE'
-	,
-	'NOTICE'
-	,
-	'README.md'
-	,
-	'Import-Module.ps1'
-)
-
-# Private data to pass to the module specified in RootModule/ModuleToProcess
-PrivateData = @{
-	'MODULEVAR' = 'biz_dfch_PS_System_Utilities'
-	;
-	'LicenseUri' = 'https://github.com/dfch/biz.dfch.PS.System.Utilities/blob/master/LICENSE'
+	public class TestGenericMethod : TestGenericMethodBase
+	{
+		public string AdditionalProperty { get; set; }
+	}
 }
 
-# HelpInfo URI of this module
-HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
+"@ 
 
-# Default prefix for commands exported from this module. Override the default prefix using Import-Module -Prefix.
-# DefaultCommandPrefix = ''
+	Add-Type -TypeDefinition $Source -Language CSharp 
 
+	Mock Export-ModuleMember { return $null; }
+
+	. "$here\$sut"
+
+	Context "Test-CmdletExists" {
+
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Invoke-GenericMethod | Should Not Be $Null;
+		}
+    }
+
+	Context "Test-InvalidInput" {
+
+		It "InvalidInput-ShouldThrow" {
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "Create";
+			$type = $instanceWithGenericMethod.GetType();
+			
+			# Act / Assert
+			{ Invoke-GenericMethod -InputObject $null $methodName } | Should Throw;
+			{ Invoke-GenericMethod -InputObject $instanceWithGenericMethod "" } | Should Throw;
+			{ Invoke-GenericMethod -InputObject $instanceWithGenericMethod $methodName -Type "".GetType() } | Should Throw;
+			{ Invoke-GenericMethod -InputObject $instanceWithGenericMethod $methodName -Type $type -Parameters @("p1", "p2") } | Should Throw;
+		}
+	}
+
+	Context "Test-ValidInput" {
+
+		It "InvokeGenericMethod-ReturnsNewObject" {
+
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "Create";
+			$type = $instanceWithGenericMethod.GetType();
+			$additionalProperty = "arbitrary-string";
+			
+			# Act
+			$result = Invoke-GenericMethod $instanceWithGenericMethod $methodName -Type $type -Parameters $null;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethod] | Should Be $true;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethodBase] | Should Be $true;
+			$result.GetType().FullName | Should Be "biz.dfch.PS.Testing.TestGenericMethod";
+			
+			$result.AdditionalProperty = $additionalProperty;
+			$result.AdditionalProperty | Should Be $additionalProperty;
+		}
+		It "InvokeGenericMethod-ReturnsNewBaseObject" {
+
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "Create";
+			$type = (New-Object biz.dfch.PS.Testing.TestGenericMethodBase).GetType();
+			
+			# Act
+			$result = Invoke-GenericMethod $instanceWithGenericMethod $methodName -Type $type -Parameters $null;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -isnot [biz.dfch.PS.Testing.TestGenericMethod] | Should Be $true;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethodBase] | Should Be $true;
+			$result.GetType().FullName | Should Be "biz.dfch.PS.Testing.TestGenericMethodBase";
+		}
+
+		It "InvokeGenericMethodWithParameters-ReturnsNewBaseObject" {
+
+			# Arrange
+			$instanceWithGenericMethod = New-Object biz.dfch.PS.Testing.TestGenericMethod;
+			$methodName = "CreateWithParameters";
+			$type = (New-Object biz.dfch.PS.Testing.TestGenericMethodBase).GetType();
+			$p1 = 42;
+			$p2 = "hello, world!";
+			$parameters = @($p1, $p2);
+			
+			# Act
+			$result = Invoke-GenericMethod $instanceWithGenericMethod $methodName -Type $type -Parameters $parameters;
+			
+			# Assert
+			$result | Should Not Be $null;
+			$result -isnot [biz.dfch.PS.Testing.TestGenericMethod] | Should Be $true;
+			$result -is [biz.dfch.PS.Testing.TestGenericMethodBase] | Should Be $true;
+			$result.GetType().FullName | Should Be "biz.dfch.PS.Testing.TestGenericMethodBase";
+			$result.Id | Should Be $p1;
+			$result.Name | Should Be $p2;
+		}
+	}
 }
 
 #
-# Copyright 2014-2016 d-fens GmbH
+# Copyright 2015-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -188,11 +156,12 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # limitations under the License.
 #
 
+
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt61XElmL7TbEGsCsGXWDyb0Y
-# GsSgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUVcdwF+MBf8KjMSBGUrXlo5PY
+# KPqgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -291,26 +260,26 @@ HelpInfoURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/'
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBR+h4D2xDfEhLzv
-# 2A0GOjQAytDFiDANBgkqhkiG9w0BAQEFAASCAQBpA+2/tNcYgqJkgKqtCVUflYkF
-# fCvqHSqBQoGIC6Rvc02Orzo084No7ioKwVlBlh1QAbI8vc5c7ByufhT9r0qIWZ+o
-# 4nwcz6ko5gXwWgAq4kYZtsR/+CKMTY3FeT0EsGujTm17nv331HjXno4Ey0w8eV/7
-# p6KRmWy56fkVQbOluAjfOkNWVdM9Tra+2TONRgXqdLo7s98kQUF1CzFJdwzU2kxR
-# OfX3AGqh/vfZTGJL6/3Ck7JrmtFMghql70fIlQ6DE9u+dPpHTIpDtWiDOSt+KvJN
-# kpOUc8oqfwBBwgBJtlttpVe1E5xj2xGQisPsOT56G12ybZKNpy05Gq1bu+QFoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQiqudWN+39BMZ1
+# xk2V2lTPvSx1sjANBgkqhkiG9w0BAQEFAASCAQBeq5nP37guH5If8oHlpZ6FWXUf
+# kTkvtlgPArm3d67VqyhxUIU1qxTEd7PV+4bIXW0Xo54pESxiA6fJZIliz5IcvRHH
+# OfQcnAboYXqElQgPS7H9QBbwaIyrVSnqg91JmxRq/+O5Crfy6GD0dwi0wvcylwYi
+# L2EQ/jbjJXxT43dZa1rp1ca2h5Pf5EEp6LX4aN+RUCXWgUCvYlidWltqmg3tEspj
+# UqjUVVRsPmqmd0ylF3Wfu+IEh1VIF4CIMgNCbu007RCfd5hixOVvpCFJhVHXk3vm
+# f/fCZizqz7CNzvxMVCWrgTWLR5yYUunzBjGkVQNCSf4lQSF4P14lOdMApIC5oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDUxNjA4NDM1N1owIwYJKoZIhvcNAQkEMRYEFA3OmW7nodoiTaI0hRtSb7JbvaN6
+# MDUxNjA4NDQwMFowIwYJKoZIhvcNAQkEMRYEFByxseDUDFhFiQznpFM+gP9fEKS/
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQCBwhUq/Icvm6fIc4dt
-# 0Q0Bh4viF7f44o0nHYiY1cqke29R/Ls10iNvnpQKc9WpslDUsD3k/wfjY7E0J4z2
-# QtnuhZ5u209miABoLzaP54wFyC6os2jeq7nxoQiOI/UgNrqa3QHkrXTA3Sh8llYC
-# ElBqxgiHcqKWK9JKc3Q5k1+AUbuludZEsJuuQN58BMFUQe8GLh+hh5Xug7GBp+JI
-# Jvg8e6WnF/3UkQLNecYThMYuMubb6/mbjdf2fa9owlkkL1AD130rxTDpnnluzJ57
-# OLhpiFRMMNvhsXtib1Ss6FpTNo7TPlWDIazNPCZAyCFeplQrFlbiQlb2JeKnRakF
-# aulg
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAHjrbx7KdlHFtMH/OZ
+# tPVQA5E86Xn7Ugb5G+Zjd1iLAmKuFCdqDFrLmS1XF1w8e45GwSn34BnUjhoEWzr5
+# nktH9Bljhv/04QMnjLK1C0CpkOdV2tjSvqplN90eygq1vCpAxsDw1GbgPFZ/CFF3
+# 2PoDFe3qRNTyj+lTXTxd9y00v5T72QUUDNtfPZu7xNK0wqDWH4WvA6m27l7uPYxy
+# yZnzBMXAR6CRFEz4i3jFLThC36QpeBpo9w271DU1y+JFv8KNjsDBj88w09onU6zO
+# dTlTGt9gN0VjSiKlcqXZhkfUnlRFIuf3jMS5kQqcKRi70HsFIRgk5Yu+4MvaaXKV
+# bFoL
 # SIG # End signature block
