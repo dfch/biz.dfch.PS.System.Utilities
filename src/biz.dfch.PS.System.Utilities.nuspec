@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>biz.dfch.PS.System.Utilities</id>
-        <version>1.0.10</version>
+        <version>1.1.0</version>
         <title>biz.dfch.PS.System.Utilities</title>
         <authors>d-fens GmbH</authors>
         <owners>Ronald Rink</owners>
@@ -23,10 +23,9 @@ You can download this module via [NuGet](http://nuget.org) with [Install-Package
 
 See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utilities/) or check the [Wiki](https://github.com/dfch/biz.dfch.PS.System.Utilities/wiki) for further description and examples on how to use the module.</description>
         <summary>This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.</summary>
-        <releaseNotes>20160516
+        <releaseNotes>20160627
 
-* Added Invoke-WithRetry Cmdlet
-* Added Invoke-GenericMethod Cmdlet
+* Updated Set-SslSecurityPolicy Cmdlet (deprecated the 'TrustAllCertificates' switch)
 </releaseNotes>
         <copyright>(c) 2014-2016 d-fens GmbH</copyright>
         <language>en-US</language>
