@@ -1,50 +1,119 @@
 function Set-SslSecurityPolicy {
-	[CmdletBinding(
-    SupportsShouldProcess=$true,
-    ConfirmImpact="High",
-	HelpURI='http://dfch.biz/biz/dfch/PS/System/Utilities/Set-SslSecurityPolicy/'
-    )]
-Param(
-	[Parameter(Mandatory = $false, Position = 0)]
-	[switch] $TrustAllCertificates = $true
-	,
-	[Parameter(Mandatory = $false, Position = 1)]
+<#
+.SYNOPSIS
+Configures the certificate handling in ServicePointManager
+
+.DESCRIPTION
+Configures the certificate handling in ServicePointManager
+
+You can set different options and modify how the .NET ServicePointManager 
+should handle validation and trusting X.509 SSL/TLS certificates.
+
+.EXAMPLE
+PS > Set-SslSecurityPolicy -ServerCertificateValidationCallback
+
+Sets the ServerCertificateValidationCallback return value to $true, which 
+effectively disables all certificate validation checks.
+
+.EXAMPLE
+PS > Set-SslSecurityPolicy -CheckCertificateRevocationList
+
+Disables checks for revoked certificates. Useful in combination with 
+'ServerCertificateValidationCallback'.
+
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Set-SslSecurityPolicy/
+
+.NOTES
+See module manifest for required software versions and dependencies at: 
+http://dfch.biz/biz/dfch/PS/System/Utilities/biz.dfch.PS.System.Utilities.psd1/
+#>
+
+[CmdletBinding(
+    SupportsShouldProcess = $true,
+    ConfirmImpact = 'High',
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Set-SslSecurityPolicy/'
+)]
+
+Param
+(
+	[Parameter(Mandatory = $false)]
 	[switch] $CheckCertificateRevocationList = $false
 	,
-	[Parameter(Mandatory = $false, Position = 2)]
+	[Parameter(Mandatory = $false)]
 	[switch] $ServerCertificateValidationCallback = $true
-	)
+	,
+	[Parameter(Mandatory = $false)]
+	[Alias("TrustAllCertificates")]
+	[switch] $TrustAllCertificatesViaObsoleteICertificatePolicy = $false
+)
 
-	if($PSCmdlet.ShouldProcess("")) {
-	
-		if($TrustAllCertificates) {
+	if(!$PSCmdlet.ShouldProcess("Disabling X.509 SSL/TLS certificate validation")) 
+	{
+		return;
+	}
+
+	if($TrustAllCertificatesViaObsoleteICertificatePolicy) 
+	{
 Add-Type @"
 	using System.Net;
 	using System.Security.Cryptography.X509Certificates;
-	public class TrustAllCertsPolicy : ICertificatePolicy {
-	   public bool CheckValidationResult(
-			ServicePoint srvPoint, X509Certificate certificate,
-			WebRequest request, int certificateProblem) {
+	public class TrustAllCertificatesPolicy : ICertificatePolicy 
+	{
+	   public bool CheckValidationResult
+	   (
+			ServicePoint srvPoint, 
+			X509Certificate certificate,
+			WebRequest request, 
+			int certificateProblem
+		) 
+		{
 			return true;
 		}
 	}
 "@
-			[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertsPolicy;
-		} # if
-		if(!$CheckCertificateRevocationList) {
-			[System.Net.ServicePointManager]::CheckCertificateRevocationList = $false;
-		} # if
-		if($ServerCertificateValidationCallback) {
-			[System.Net.ServicePointManager]::ServerCertificateValidationCallback = { $true; };
-		} #if
-	} # if
+		[System.Net.ServicePointManager]::CertificatePolicy = New-Object TrustAllCertificatesPolicy;
+	}
+	
+	if(!$CheckCertificateRevocationList) 
+	{
+		[System.Net.ServicePointManager]::CheckCertificateRevocationList = $false;
+	}
+	
+	if($ServerCertificateValidationCallback) 
+	{
+Add-Type @"
+	using System;
+	using System.Net;
+	using System.Net.Security;
+	using System.Security.Cryptography.X509Certificates;
+	public class ServerCertificateValidationCallback
+	{
+		public static void Ignore()
+		{
+			ServicePointManager.ServerCertificateValidationCallback += 
+				delegate
+				(
+					Object obj, 
+					X509Certificate certificate, 
+					X509Chain chain, 
+					SslPolicyErrors errors
+				)
+				{
+					return true;
+				};
+		}
+	}
+"@
+		[ServerCertificateValidationCallback]::Ignore();
+	}
 
-} # Set-SslSecurityPolicy
+} # function
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-SslSecurityPolicy; } 
 
 #
-# Copyright 2015 d-fens GmbH
+# Copyright 2015-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -62,8 +131,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-SslSecurityPoli
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU1QBe43OJknCkTeg7pAyAwjpw
-# IwGgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQU9F/MU4Xyodmz86jlk4Kb6uhC
+# 342gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -162,26 +231,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Set-SslSecurityPoli
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRjeYJR6Vo+f6QG
-# Y3KfvOtnq6DSrzANBgkqhkiG9w0BAQEFAASCAQBQY1bZDhTU5cZMjwu/af3SJUAT
-# qJV/za+X4KwPweiaOTnjp8MUafhW+neP8L4ogDx3nXnie8QOfsagyY8CRuobE6c8
-# nWZOEOVMJtBgkwdreKWCgC98BHC3PyKifKTul2TrAcE8zOIVxnr1hJy4HbSiGEcN
-# 8F+F4jMLmHTXMjMkaULoJHQUPdjjnLid5EYH3Xft1v8DNtoWOBqo3LFZByD0MXBy
-# XsuU5DoCu+m0Jo/H27NKzNEdJR9Xv0Af4Lq+CQ+BUOOiduD1fFk8h3jd3IBCZfd9
-# ZQWCXgk5OoqFFa6YHnDSZmaGHt4gvhRIYspcwFJCEZEyEBamiZINfN1urQj4oYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBS0AitIwDMTwtly
+# G7OcoemRwWMv8jANBgkqhkiG9w0BAQEFAASCAQAqlLKHd3pZc12FBkz9DjvS62vy
+# vxzHT6F8x9/JFla/l3YmWID6h5ohDyiaQcbCPr46Bpada0+evozNdPIIuhr3b2cl
+# +LfUWUVsQzPW/yzAtnrInvT8/vng5TJwbovxKKAQLB3Qcwf3QxX4PDk1CH0xVSTz
+# XKZwuqsR6k/kjxTa9KQuf59nW/aqCJsdU68lLHqa23Xxsq9yasuvi3+fZFU2SDa1
+# TKwU3peIzrT3QgA+4icEvclRgVGMB3BmWbfLxrau5GeeXAt+vtEIT/pyq+TVTzFh
+# QRfEDc8PdIm4dPpszWRV8Cw0JGWPrnLARWqpkd7k0eTspZKRwcsk49qoBfvxoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
-# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDMxOVowIwYJKoZIhvcNAQkEMRYEFGFF+OqGAJkcXu8MRYdYa1vDYPOd
+# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
+# MDYyNzA0MTgxNFowIwYJKoZIhvcNAQkEMRYEFBL+kMAwL+fUg1QdEKT/R7YWDKtM
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
 # KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBxbsB77leqtHczKpZj
-# vQxrZnbsGeD51t6Zxqqusb9oQy0jcsknh6wBKUeaFQfM1Yct5uy8rvDhAVIcMmkg
-# rDwIikuDale5tB31tIvsGMNgyQ49ig9euLBb0IjJc+7lJxGaLMMT7sa848vjOpca
-# 5PbBuBPmKp8sJ/B17f6R6s0JC9IvavpLrstzEWGbJ2537oMVgiGrqcnFJ2iSqLl3
-# p+JVhjSZfN4KTYEtp1gnb2LxkR6lPzQDUklAXHiooTzeT90N16M4EV5uMSJC6gSI
-# 93+xgTyYAQ6r1ct4i9rihtBKGjjuRlPrF/YoClUYGA8yQWwG4BDxx2ADg3DPtrpx
-# V3rY
+# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQAh9aaxlHNh/A0HT1tX
+# y1IvB2DABlzAfQK07V3u3OFARudAjh9aWtSu2PsnSjL5+aO0RNVPuInqLg57ejWs
+# YW7MsgGPbdy1yxtfyZXGWIOLCVwSRqHpFn269P00MS2V3zgYMfGgnrRR9AIP5pJU
+# Y4CIYLBUHK/mCzp/gxxQov1j2x91662lSltcNvhBPQeFRCJnNsQ/RLjfFGBZCEZ8
+# /dt4mdyyXo/OTir4oG8fXUq9nYRRYskj3vyJsOKOZcfvk8fW/ms5IPBqpn12wSov
+# lTfa3HDPrdMwboP8odDrb7yleKsx6dUpH+G/WFm99VDOeVg/Wj8XEBeN7sYOEUq9
+# 9Rz8
 # SIG # End signature block
