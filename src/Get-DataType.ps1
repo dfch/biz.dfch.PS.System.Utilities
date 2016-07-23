@@ -136,6 +136,18 @@ Uri(
         Uri relativeUri,
 )
 
+.EXAMPLE
+# Searches for all data types that derive from 
+# System.ValueType
+PS > Get-DataType System.ValueType -base
+System.Enum
+System.Guid
+System.Int16
+System.Int32
+System.Int64
+System.IntPtr
+...
+
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Get-DataType/
 
@@ -176,6 +188,12 @@ PARAM
 	[Parameter(Mandatory = $false)]
 	[Alias('prop')]
 	[switch] $IncludeProperties = $false
+	,
+	# Specifies that InputObject contains the BaseType of the data types 
+	# to return
+	[Parameter(Mandatory = $false)]
+	[Alias('base')]
+	[switch] $BaseType = $false
 )
 	$dataTypes = New-Object System.Collections.ArrayList;
 	$constructors = New-Object System.Collections.ArrayList;
@@ -191,6 +209,10 @@ PARAM
 			}
 			
 			$definedTypeFullName = $definedType.FullName;
+			if($BaseType)
+			{
+				$definedTypeFullName = $definedType.BaseType.FullName;
+			}
 			if($Literal)
 			{
 				if($CaseSensitive)
@@ -226,6 +248,8 @@ PARAM
 				}
 			}
 			
+			$definedTypeFullName = $definedType.FullName;
+
 			if($IncludeProperties)
 			{
 				try
@@ -279,8 +303,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-DataType; }
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUpskYLNmpDSwBSJXsS+9TJ6HW
-# RqugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUKJj0LrpGSsDdlgl78SyUliJV
+# AfCgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -379,26 +403,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-DataType; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRgvFewktJa5qMV
-# 2hXRih5kVXM59jANBgkqhkiG9w0BAQEFAASCAQBPvjPGr0tPCexPxvnegDB1QDV2
-# QuMI/joKteU07K4x63D1s5uZA8sK+gXBPsw9S1FSc04e9wVsz6MjfAxNjOAyPAFM
-# vAnMm0r0DhGmb7Z2gTTxDGh0KYEr2rL5lmA3JsXhKdgM1PXw3JY05Ovthfu0eVG3
-# CYMS5ihiXkHHpo2arOIKbofKhf03rfJpH0N7/gDb//Dw+hJyU8ozTG8haXZ+chaa
-# eexO/jtkPBDwYnlM041NMAwgwW1Elr1P70jp3g5vqcIM/XZcUX2pOz811R/6HQNH
-# VlhMXcKc4Vru35/WSRARj7vuRLsMfEjiGCLnawwvAznzPAutydIryG8HG2aroYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBTwh3ljp4qYq+1W
+# Qu9QIvuVdIhHqjANBgkqhkiG9w0BAQEFAASCAQA4sbBv/FYf14JAVxxc8a+I6uo6
+# 2zXuFYR4kbi7v+kOreW5qyonMmEG8wbJjEwGFn1f0z4Y/4t1EagpZPzRCaKqC9vH
+# YxIbR7emcTYVVgcWMJ9AHFDtmyKIbCVRfQvyjmOI0SBv/ZA2dR4zobzpfRBv2CDj
+# eRa+sK6FabtB4c4rg25baPmSZOsJbhBA7wnBUYWs3kIa8keGVR3ZN+Yyx/TeGmPI
+# 3xxJGfGv8hLB7I2ysBLaHAT1TJlYyytv5jeoUVuoqcVMjW0l0EpEBXREkaTAzAKb
+# hJJQrc3OOhBIawdpXW3K8KWCu70oGFqoCilntpmcOTiHrfLbPgqf/4yclvyqoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyMzEwNDEwNlowIwYJKoZIhvcNAQkEMRYEFHwdmVZpgb2/9Ms3wxrkX+7U60rF
+# MDcyMzE3MzkzN1owIwYJKoZIhvcNAQkEMRYEFBr+O6luJi5AvNKvrHgRHQQIohbN
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBroa76EiclDtWIbret
-# mFrdrFy6lnBceJsrHAPaQV+JZpvyxnc6Ic7uHBzm97WMOkuKvoqdSoxp7kfVKay9
-# hWqQNdzUBOwSVpPx5sAyj07J5vHSy8J+s2QmafJrVfxeJahlnGu6GGnAgcriBzex
-# zBZJtBDPudg1Pa+t8/9DndeZYa1HXNsIGbcEVqhl5ZiZi52c+6wZ3ZDVo1Mfy7yE
-# uQrt+XUB8OKDAQgt+cNZILXBmWri64FQoumAnAc7f2YKzxtRVHRr2spM39ZAF84I
-# ljHtFcW6hlrmOH7iwomVahWVUqV9rleWT7JYDx9sHZASUxfhYk3aRPU7cVN1y8/S
-# AU1a
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCTtkHkhCjgVUdFeLx2
+# 8eqNvbdgttptJ8BXLlCdMey9+VW0yrGLGndGWZtFlPB5HvjKg/EZ5GQnlSXo+xYG
+# Vnu8Z0b7tRZ4m0dnI+5rZkpTC+fMZE+6bWg8LR/MH5N+Jn9iyrhsyc3GaRVLUqBg
+# L16pX5663JmS+0VYSUE94D3pW86JOoBzV9DEqtb4LorZLOPJ42nyiJro02mzxKz0
+# CeOheVLFWfkwWHPSsy9M2FIMQIRJJhOBDhV/f8PpZfvMQmycDhQLGjVpIArtifSJ
+# kGB84mzlZajvmxMmejGl7w4zRtZVZBSuRHl7aorALCeC4BrzmOv8DLSWq+tSa9RZ
+# jzyy
 # SIG # End signature block

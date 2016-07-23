@@ -6,7 +6,7 @@
 RootModule = 'biz.dfch.PS.System.Utilities.psm1'
 
 # Version number of this module.
-ModuleVersion = '2.0.1.20160723'
+ModuleVersion = '2.1.0.20160723'
 
 # ID used to uniquely identify this module
 GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
