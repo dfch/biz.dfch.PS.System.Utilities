@@ -1,4 +1,3 @@
-#requires -Modules biz.dfch.PS.System.Utilities
 function Get-DataType {
 <#
 .SYNOPSIS
