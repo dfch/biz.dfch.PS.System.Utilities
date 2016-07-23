@@ -2,7 +2,7 @@ biz.dfch.PS.System.Utilities
 ============================
 
 [![License](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg)](https://github.com/dfch/biz.dfch.PS.System.Utilities/blob/master/LICENSE)
-![Version](https://img.shields.io/nuget/v/biz.dfch.PS.System.Utilities.svg)
+[![Version](https://img.shields.io/nuget/v/biz.dfch.PS.System.Utilities.svg)](https://www.nuget.org/packages/biz.dfch.PS.System.Utilities/)
 
 Modules: biz.dfch.PS.System.Utilities
 
