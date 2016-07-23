@@ -67,7 +67,6 @@ See module manifest for required software versions and dependencies at: http://d
 
 PARAM 
 (
-	[ValidateScript( { Get-Command($_); } )]
 	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'command')]
 	[ValidateNotNullOrEmpty()]
 	[Alias("CommandName")]
@@ -88,8 +87,8 @@ PARAM
 	[string] $Path = $PWD
 	,
 	[Parameter(Mandatory = $false, ParameterSetName = 'module')]
-	[Alias("Exclude")]
-	[switch] $ExcludeDefaultCommandPrefix = $true
+	[Alias("Include")]
+	[switch] $IncludeDefaultCommandPrefix = $false
 )
 
 BEGIN
@@ -114,36 +113,18 @@ BEGIN
 	
 	if($PSCmdlet.ParameterSetName -eq 'module')
 	{
-		$InputObject = Get-Command -Module $ModuleName;
-		if($ExcludeDefaultCommandPrefix)
+		$module = Get-Module $ModuleName -ListAvailable | Sort -Property Version -Descending | Select -First 1;
+		Contract-Assert (!!$module);
+		$commands = Get-Command -Module $module
+		Contract-Assert (!!$module);
+
+		$DefaultCommandPrefixWithLeadingDash = '-{0}' -f $module.Prefix;
+
+		Remove-Variable InputObject;
+		$InputObject = @();
+		foreach($command in $commands)
 		{
-			foreach($PSModulePath in $ENV:PSModulePath.Split(';')) 
-			{ 
-				$PSModulePathFull = Join-Path -Path $PSModulePath -ChildPath $ModuleName;
-				if( !(Test-Path -Path ($PSModulePathFull)) ) 
-				{ 
-					continue;
-				}
-				$Manifest = Join-Path -Path $PSModulePathFull -ChildPath ('{0}.psd1' -f $ModuleName);
-				if( Test-Path -Path ($Manifest) ) 
-				{ 
-					try
-					{
-						$DefaultCommandPrefix =  ( (Get-Content (Get-Item $Manifest) -Raw) | iex ).DefaultCommandPrefix;
-					}
-					catch
-					{
-						# N/A
-					}
-					if(!$DefaultCommandPrefix)
-					{
-						Write-Warning ("No 'DefaultCommandPrefix' found in Manifest '{0}'." -f $Manifest);
-					}
-					break;
-				}
-			}
-			$PSModulePathFull = $null;
-			$Manifest = $null;
+			$InputObject += $command;
 		}
 	}
 }
@@ -154,8 +135,23 @@ PROCESS
 	{
 		if($PSCmdlet.ShouldProcess($Object))
 		{
+			if($Object -is [System.Management.Automation.FunctionInfo] -Or $Object -is [System.Management.Automation.CmdletInfo])
+			{
+				$Object = $Object.Name
+			}
+			
 			$helpFormatted = @();
-			foreach($line in ((help $Object -Full))) 
+			try
+			{
+				$helpFull = help $Object -Full -ErrorAction:Stop;
+			}
+			catch
+			{
+				Write-Warning ("Cmdlet '{0}' could not retrieve help. Skipping ..." -f $Object);
+				continue;
+			}
+
+			foreach($line in $helpFull) 
 			{ 
 				if( ![string]::IsNullOrWhiteSpace($line) -and $line -ceq $line.ToUpper() ) 
 				{
@@ -180,18 +176,19 @@ PROCESS
 				{ 
 					if(0 -ge $r.Count)
 					{
-						Write-Warning ("Cmdlet '{0}' has no content [{1}]. Skipping ..." -f $Object.Name, $r.Count);
+						Write-Warning ("Cmdlet '{0}' has no content [{1}]. Skipping ..." -f $Object, $r.Count);
 					}
 					else 
 					{
 						$OutputParameter = $null; 
-						if($ExcludeDefaultCommandPrefix)
+						if(!$IncludeDefaultCommandPrefix)
 						{
-							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object.Name.Replace($DefaultCommandPrefix, $null))) -Encoding Default; 
+							$fileName = ("{0}.md" -f $Object.Replace($DefaultCommandPrefixWithLeadingDash, '-'))
+							$r | Out-File (Join-Path -Path $Path -ChildPath $fileName) -Encoding Default; 
 						}
 						else
 						{
-							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object.Name)) -Encoding Default; 
+							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object)) -Encoding Default; 
 						}
 					}
 				}
@@ -212,7 +209,7 @@ END
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2014-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -230,8 +227,8 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUt8jTwYAZ12lSKt0dwl7R8mJW
-# Re+gghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUFtGaiMSQLKmhwbvyEBxJ3kld
+# RaCgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -275,10 +272,10 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # 23580ovvL72zT006rbtibiiTxAzL2ebK4BEClAOwvT+UKFaQHlPCJ9XJPM0aYx6C
 # WRW2QMqngarDVa8z0bV16AnqRwhIIvtdG/Mseml+xddaXlYzPK1X6JMlQsPSXnE7
 # ShxU7alVrCgFx8RsXdw8k/ZpPIJRzhoVPV4Bc/9Aouq0rtOO+u5dbEfHQfXUVlfy
-# GDcy1tTMS/Zx4HYwggSfMIIDh6ADAgECAhIRIQaggdM/2HrlgkzBa1IJTgMwDQYJ
+# GDcy1tTMS/Zx4HYwggSfMIIDh6ADAgECAhIRIdaZp2SXPvH4Qn7pGcxTQRQwDQYJ
 # KoZIhvcNAQEFBQAwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24g
 # bnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzIw
-# HhcNMTUwMjAzMDAwMDAwWhcNMjYwMzAzMDAwMDAwWjBgMQswCQYDVQQGEwJTRzEf
+# HhcNMTYwNTI0MDAwMDAwWhcNMjcwNjI0MDAwMDAwWjBgMQswCQYDVQQGEwJTRzEf
 # MB0GA1UEChMWR01PIEdsb2JhbFNpZ24gUHRlIEx0ZDEwMC4GA1UEAxMnR2xvYmFs
 # U2lnbiBUU0EgZm9yIE1TIEF1dGhlbnRpY29kZSAtIEcyMIIBIjANBgkqhkiG9w0B
 # AQEFAAOCAQ8AMIIBCgKCAQEAsBeuotO2BDBWHlgPse1VpNZUy9j2czrsXV6rJf02
@@ -294,12 +291,12 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # LmNybDBUBggrBgEFBQcBAQRIMEYwRAYIKwYBBQUHMAKGOGh0dHA6Ly9zZWN1cmUu
 # Z2xvYmFsc2lnbi5jb20vY2FjZXJ0L2dzdGltZXN0YW1waW5nZzIuY3J0MB0GA1Ud
 # DgQWBBTUooRKOFoYf7pPMFC9ndV6h9YJ9zAfBgNVHSMEGDAWgBRG2D7/3OO+/4Pm
-# 9IWbsN1q1hSpwTANBgkqhkiG9w0BAQUFAAOCAQEAgDLcB40coJydPCroPSGLWaFN
-# fsxEzgO+fqq8xOZ7c7tL8YjakE51Nyg4Y7nXKw9UqVbOdzmXMHPNm9nZBUUcjaS4
-# A11P2RwumODpiObs1wV+Vip79xZbo62PlyUShBuyXGNKCtLvEFRHgoQ1aSicDOQf
-# FBYk+nXcdHJuTsrjakOvz302SNG96QaRLC+myHH9z73YnSGY/K/b3iKMr6fzd++d
-# 3KNwS0Qa8HiFHvKljDm13IgcN+2tFPUHCya9vm0CXrG4sFhshToN9v9aJwzF3lPn
-# VDxWTMlOTDD28lz7GozCgr6tWZH2G01Ve89bAdz9etNvI1wyR5sB88FRFEaKmzCC
+# 9IWbsN1q1hSpwTANBgkqhkiG9w0BAQUFAAOCAQEAj6kakW0EpjcgDoOW3iPTa24f
+# bt1kPWghIrX4RzZpjuGlRcckoiK3KQnMVFquxrzNY46zPVBI5bTMrs2SjZ4oixNK
+# Eaq9o+/Tsjb8tKFyv22XY3mMRLxwL37zvN2CU6sa9uv6HJe8tjecpBwwvKu8LUc2
+# 35IgA+hxxlj2dQWaNPALWVqCRDSqgOQvhPZHXZbJtsrKnbemuuRQ09Q3uLogDtDT
+# kipbxFm7oW3bPM5EncE4Kq3jjb3NCXcaEL5nCgI2ZIi5sxsm7ueeYMRGqLxhM2zP
+# TrmcuWrwnzf+tT1PmtNN/94gjk6Xpv2fCbxNyhh2ybBNhVDygNIdBvVYBAexGDCC
 # BNYwggO+oAMCAQICEhEhDRayW4wRltP+V8mGEea62TANBgkqhkiG9w0BAQsFADBa
 # MQswCQYDVQQGEwJCRTEZMBcGA1UEChMQR2xvYmFsU2lnbiBudi1zYTEwMC4GA1UE
 # AxMnR2xvYmFsU2lnbiBDb2RlU2lnbmluZyBDQSAtIFNIQTI1NiAtIEcyMB4XDTE1
@@ -330,26 +327,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletH
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQxrUIPFZtbnZOI
-# EsLBeMsnBC16qTANBgkqhkiG9w0BAQEFAASCAQC6st7bH8sEu/XN/OhuUiglEQN4
-# 817mvm5R12VqV1U7UZyATzVy5AnIVyqkkIV/haM4rHOgnxKBqLN94WAbf/OsDV3Z
-# oQUEbBq5eKg2nPFYHrC2hy2GVSO978tObPmlZgzu4cuLB2EkGLStAL+gzusJ9baE
-# y7lQa12FB5MUBzsblxnFxR/UF8Ag1CHihNB6dfWVAmbYO5aA3/oexlZAAleOo74N
-# 69uHbvsjar/5vcNP5GigVscchSQhedJ/AeqDIn8aHmzBGqh7PKtIBVFFR7MK0vri
-# DgbZNtGjP6VaCjvbtUZ8Th/t0DAeRdVXFWgjEO62XnFDYawmVTTaHjOEy/+IoYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRkfLamHaZAHUZn
+# 4Bryfv6OCqdfHzANBgkqhkiG9w0BAQEFAASCAQAnyit3kl3lgiqn9zSRCe/OL+AU
+# vxBPtUZB3nXOivNDrhi5gJiEzpXZG+4Pcsv5xq5FRrPc3ehGi1RbMnym0eYfII7j
+# 2LUcfU7pKSGxGj8yFmWXknYQBTIrlQwSS+I0/qik/uQzD16JG8heZ+FsAmUgtHbX
+# yCA8ak4snpvl8brk0Pv2I28h2iqpQM9v6188sySSmsyDclzqBHUXMh2WQRGFpA/p
+# PYO4tV+ySIwCmafqp9RTCOv2SWg9S1s/tr9AXUQNOIxZC3nB/dxeuE/nbG2PZ4wB
+# /FBdWQXTR7i10HdRdLrnAJ5+0HBKXalu1OGrO5dvkqzadutarr+7aw9ufZx0oYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
-# ZXN0YW1waW5nIENBIC0gRzICEhEhBqCB0z/YeuWCTMFrUglOAzAJBgUrDgMCGgUA
-# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE1
-# MTAxODExMDIzOFowIwYJKoZIhvcNAQkEMRYEFABPYbVuJBrXAIdFfMlkCmvgtI7L
-# MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUs2MItNTN7U/PvWa5Vfrjv7Es
-# KeYwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
+# ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
+# oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
+# MDcyMzEwMTA1OFowIwYJKoZIhvcNAQkEMRYEFBu9HYn3I3RCF1ICnqteZ1t/FY8R
+# MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
+# 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# BqCB0z/YeuWCTMFrUglOAzANBgkqhkiG9w0BAQEFAASCAQBGiDGEO+N2jB1OKIi7
-# wNqi39w1UQxlkj88w9cKqOJJSOcA+rcJ/BAd2RLhOpzeFD5Le5+togR5EgWSPj1B
-# 6L/sFqjtBgS9U4Gq1/bmZD94d7uHlot7u5o3rnNP4rPd5Wnqpbn9StCKdpSgV+hh
-# UR++UgnloTQBCPDzBivJPBEC4ri+URyXmTdxfhvxKn9Mk657f6oEb2/VxLmIWBKG
-# qxaCgs2JejNOdN8kR+8SOcuXrJLipM/Iaqz4lATCZQJIjiDMsjqQNu5xWvF96Uv5
-# M7XC2he9pOEm9ak4fI9qRD0KDws4Dak/Gz5djtEsdVMXDcsJiG6khJVL38Yawbd6
-# ur7x
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBO4iTx8dawbX98AGAO
+# ciUN29UZy6A/KBdKycGCZluaAWOOoIe50bD1uFuszsrhsH4gLkFRlyQnnonK5tl+
+# eRjXtKPpo+viFqu0rNk9yt98A8Nwi3n9FeZqXyc/dlb4VcDxetBUHS93oYQoukJi
+# WIHhvuvcl9q6e4Y7O16NzxxWMGgplusmbyz4MnneTnVaCC/Jew9Ow4PGv/SReON6
+# FvJePFLOFeOn9r1Puqf7O1WserAye5j6XdQ/fE8n3yxHf7GlRPK6qiiJQAD6dhfO
+# WEwFvicwWtP6BJdAmeob76Ii7OtpPGm+dp55wdPFDmRpW7j5U+AWZ5KNpwHMe9HZ
+# N+Y8
 # SIG # End signature block

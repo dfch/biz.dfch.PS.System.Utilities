@@ -1,132 +1,210 @@
-#Requires -Modules Microsoft.PowerShell.Security
-function Update-Signature {
-<#
-.SYNOPSIS
+﻿
+$here = Split-Path -Parent $MyInvocation.MyCommand.Path
+$sut = (Split-Path -Leaf $MyInvocation.MyCommand.Path).Replace(".Tests.", ".")
 
-Updates the digital signature of PowerShell scripts.
+Describe -Tags "Get-DataType.Tests" "Get-DataType.Tests" {
 
+	Mock Export-ModuleMember { return $null; }
 
-.DESCRIPTION
+	. "$here\$sut"
 
-Updates the digital signature of PowerShell scripts.
+	Context "Test-CmdletExists" {
 
-You can either sign all scripts in a given folder or only individual files.
-
-
-.EXAMPLE
-
-Update-Signature C:\scripts\myScript.ps1
-
-Signs the specified script with the default certificate and timestamps it.
-
-
-.EXAMPLE
-
-Update-Signature C:\scripts\*.*
-
-Signs the all scripts in the specified folder with the default certificate and timestamps it.
-
-
-#>
-[CmdletBinding(
-    SupportsShouldProcess = $true
-	,
-    ConfirmImpact = 'Low'
-	,
-	DefaultParameterSetName = 'path'
-)]
-PARAM
-(
-	# The path to script files to sign
-	[ValidateScript( { Test-Path($_) -PathType Container; } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'path')]
-	[System.IO.DirectoryInfo] $Path = $PWD.Path
-	,
-	# A script file or array of script files to sign
-	[ValidateScript( { if($_) { foreach($item in $_) {Test-Path($item) -PathType Leaf -Include $IncludeExtensions; } } else { $true } } )]
-	[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ParameterSetName = 'file')]
-	[AllowNull()]
-	[Alias('File')]
-	$InputObject
-	,
-	# The certificate to use for signing the specified scripts
-	[Parameter(Mandatory = $false, Position = 1)]
-	# $Cert = (Select-Object -First 1 -InputObject (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert))
-	$Cert = (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert | Select-Object -First 1)
-	,
-	# Specify wheter to timestamp (countersign) the script files
-	[Parameter(Mandatory = $false)]
-	[Alias('TimeStamp')]
-	[switch] $CounterSign = $true
-	,
-	# The timestamp server url
-	[Parameter(Mandatory = $false, Position = 2)]
-	[Uri] $TimestampServer = 'http://timestamp.globalsign.com/scripts/timstamp.dll'
-	,
-	# File extensions of the script files to sign
-	[Parameter(Mandatory = $false)]
-	$IncludeExtensions = @('*.ps1','*.psm1','*.psd1','*.dll','*.exe')
-	,
-	# Specifies whether to force an update of the signature 
-	# even if the existing signature is still valid.
-	[Parameter(Mandatory = $false)]
-	[switch] $Force = $false
-)
-
-if($PSCmdlet.ParameterSetName -eq 'path')
-{
-	$InputObjectTemp = (Get-ChildItem $Path -Include $IncludeExtensions -Recurse | Get-AuthenticodeSignature |? { ($_.Exception.Status -eq 'HashMismatch') -Or (($_.TimeStamperCertificate -eq $null) -And ($_.Exception.Status -eq 'Valid')) }).Path;
-	if($InputObjectTemp)
-	{
-		$InputObject = $InputObjectTemp;
-		Remove-Variable InputObjectTemp;
-	}
-}
-foreach($Object in $InputObject)
-{
-	if(!$PSCmdlet.ShouldProcess($Object))
-	{
-		continue;
-	}
-	$IsValid = (Get-AuthenticodeSignature $Object | Select Status).Status -eq 'Valid';
-	if(!$IsValid -Or $Force)
-	{
-		if($CounterSign)
-		{
-			Set-AuthenticodeSignature $Object -Certificate $cert -TimestampServer $TimestampServer -Confirm:$false;
+		It "GettingHelp-ShouldSucceed" {
+			# Act / Assert
+			Get-Help Get-DataType | Should Not Be $Null;
 		}
-		else
-		{
-			Set-AuthenticodeSignature $Object -Certificate $cert -Confirm:$false;
+    }
+
+	Context "Test-WithSingleDataType" {
+
+		It "GettingValidDataTypeViaRegEx-ReturnsSingleItem" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Microsoft.PowerShell.Commands.OutHostCommand'
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count | Should Be 1;
+		}
+
+		It "GettingValidDataTypeViaRegEx-ReturnsSingleItem" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType '^Microsoft.PowerShell.Commands.OutHostCommand$'
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count | Should Be 1;
+		}
+		
+		It "GettingInvalidDataTypeLiteral-ReturnsNull" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Inexistent.Data.Type' -Literal
+
+			# Assert
+			$result | Should Be $null
+		}
+		
+		It "GettingValidDataTypeIncludeProperties-ReturnsProerties" -Test {
+
+			# Arrange
+			$name = '^System.Uri$';
+			
+			# Act 
+			$result = Get-DataType $name -prop -ctor
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count -gt 0 | Should Be $true;
+			$result[0].Name | Should Not Be $null;
+			$result[0].PropertyType | Should Not Be $null;
 		}
 	}
+
+	Context "Test-WithSingleDataTypeIncludeInstructor" {
+
+		It "GettingValidDataTypeIncludeInstructor-ReturnsList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Microsoft.PowerShell.Commands.OutHostCommand' -ctor
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count | Should Be 2;
+			$result[0] | Should Not Be $null
+			$result[0] | Should Be 'Microsoft.PowerShell.Commands.OutHostCommand';
+			$result[1] | Should Not Be $null
+			$result[1] -match 'OutHostCommand' | Should Be $true;
+		}
+
+	}
+	Context "Test-WithMultipleDataTypes" {
+
+		It "GettingValidDataType-ReturnsList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Microsoft.PowerShell.Commands'
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count -gt 1 | Should Be $true;
+		}
+
+		It "GettingValidDataTypeWithRegex-ReturnsList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType '^Microsoft.PowerShell.Commands'
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count -gt 1 | Should Be $true;
+		}
+
+		It "GettingValidDataTypeCase-ReturnsList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Microsoft.PowerShell.Commands' -Case
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count -gt 1 | Should Be $true;
+		}
+
+		It "GettingValidDataTypeWithRegexCase-ReturnsList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType '^Microsoft.PowerShell.Commands' -Case
+
+			# Assert
+			$result | Should Not Be $null
+			$result.Count -gt 1 | Should Be $true;
+		}
+
+		It "GettingInvalidDataTypeLiteral-ReturnsEmptyList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Microsoft.PowerShell.Commands' -Literal
+
+			# Assert
+			$result | Should Be $null
+		}
+
+		It "GettingInvalidDataTypeWithCaseLiteral-ReturnsEmptyList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'Microsoft.PowerShell.Commands' -Literal
+
+			# Assert
+			$result | Should Be $null
+		}
+		
+		It "GettingInvalidDataTypeCase-ReturnsEmptyList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'microsoft.PowerShell.Commands' -Case
+
+			# Assert
+			$result | Should Be $null
+		}
+
+		It "GettingInvalidDataTypeWithRegexCase-ReturnsEmptyList" {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType '^microsoft.PowerShell.Commands' -Case
+
+			# Assert
+			$result | Should Be $null
+		}
+    }
 }
 
-} # function
-
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; } 
-
-# 
-# Copyright 2014-2015 d-fens GmbH
-# 
+#
+# Copyright 2016 d-fens GmbH
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUN9HDMBGpK67sLq2QvgRfdsWI
-# w7KgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUDNFhmPXHyEL/1IdJMV1oR+Ji
+# qcWgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -225,26 +303,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQz2f4d9idT71bI
-# ViZDmKMaPVCDTzANBgkqhkiG9w0BAQEFAASCAQCbBSBzn5fDDKY+kk6N2gIFlkP2
-# QDdPAzboeCgsgKowwCXXxlPJo+wjjSO1ijyD0YP1RYL3VgLCFUxREUz95DYjTcS7
-# YmVEY0MogwAXlwj5f15rt/xKDJHftIm11AojWOc3Yz40qPULNtaxYasMw6OvX/gb
-# gIUApV05+Sxr9DLRz8N5az54NCQwDEaCbMiKeqn8sQsTywD/KuV6r6TVQhnNiKD5
-# 0RrOZsxcjNmcCybPI3b7ceFCh+HlxSlJ2YdXtDOGD4FvlzTctR1pTWdvfUvF4I1s
-# RxV+52to01GFEBARJIGB0WhecxuSOCffgfLLbqFWMmmoWTtp1N496gFMxJ5coYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRw/m5h2VXcGqJ7
+# Y3wIDu20a++WKjANBgkqhkiG9w0BAQEFAASCAQBJz2782gNYS+od7hV6kZ1BiXKk
+# FShla2BIoxZgNdT34Gf8rYeN5Xm9B57iPz4cBUAv3an9FpbdJnqcTHpdRsGjldau
+# 4Ha0nLhdqzH3xd+YTbZTTyg8YjID9AePOw3R1hJz8aGQE8YYgOo7VUAdqK5hLIV4
+# TrM7XBNF+evynktEm/34op9OBIQQWq/94CsWPqKkiLQXtL3erF+s6U25U8CjUzI/
+# tKcLKax+8GiSY9439qZSINToAZY08v9bUkhh/2KGnTuuqltATkjP+OwxFQzZKLJ5
+# Mvx3Rs9RW/rQvY4Y16R08n+jvYvu5J4w8WUerS33CynGt508uDs11BcmenOVoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyMzEwMTExMlowIwYJKoZIhvcNAQkEMRYEFP8PyVTMdySkkeXF5I2OCVtoak11
+# MDcyMzEwMTEwNFowIwYJKoZIhvcNAQkEMRYEFDReZCRkjzBpX0+D4HP88Hia/t6s
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCCEWIEX+9AFfktW+4i
-# KHi8e3by7RwhpqpjYQTaXoddaOBh0hJn/IwWk1LK5vOhoMVgbdzGPXSLmYjScdn6
-# 6EMaxjn4neFOvNQOYhbEHqnQyURxP/t3avjn8VY8nUsodBhtTYWlJTstsXjJBtFQ
-# JVH4ykzztKQMjIJbXATixIAnw+0Iq4oD25/w+QCOno+AsuaCnB6PvEzcVe4ehuAG
-# oXt1K3ZJ2mCm0Ph7OUFgyQWPPiD1i1YtzaE5/au9uCZ05loXN/hMZsqKlFYNMJUp
-# hGJdzhgyKZCdrthlVsUjNlKfUpacGdClO47VrMajXegilrKBHu/AwA0Rf/DF2yau
-# jQLM
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCoTlo/sdcuSFxNzXxn
+# /GO6HAZdkKLrWw7lnAEYCbsG4eGlRs/2RneK7jAntWO8mclDkvt275CZAD+G/AQu
+# 7L3hN2lz3UyZk4lDt6AtmIkxOVIjF9/ypIoLfRNbPlcK2bwQ3Z+qYgRzXxw93Dub
+# RBwWi4oqw2gi5NYcsf7nLMzA31p+0WqTBniLtODhNaBttcbWvW2FEa8k7uimPW0W
+# ypy4ESBDQ38KUi7Ad+L3sX/X2nW+Z7f6ZvNnzVCBJHU57uJUm6eGZpyf0gLklRoB
+# El5yH5a2Bl5RtpDAE5012fNxY4edLXXbyyZZ95ZLDQEbQR9KoImQIJHe/8i8PWq/
+# 5iv6
 # SIG # End signature block

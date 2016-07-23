@@ -1,132 +1,287 @@
-#Requires -Modules Microsoft.PowerShell.Security
-function Update-Signature {
+#requires -Modules biz.dfch.PS.System.Utilities
+function Get-DataType {
 <#
 .SYNOPSIS
-
-Updates the digital signature of PowerShell scripts.
-
+Retrieves information about a .NET data type.
 
 .DESCRIPTION
+Retrieves information about a .NET data type.
 
-Updates the digital signature of PowerShell scripts.
+You can search for arbitrary data types that loaded in the current PowerShell 
+session via exact name or regex search patterns (default).
+In addition you can also display the constructor of all found data types.
 
-You can either sign all scripts in a given folder or only individual files.
+.INPUTS
+See PARAMETERS section on possible inputs.
 
+.OUTPUTS
+default | json | json-pretty | xml | xml-pretty
+
+In addition output can be filtered on specified properties.
 
 .EXAMPLE
-
-Update-Signature C:\scripts\myScript.ps1
-
-Signs the specified script with the default certificate and timestamps it.
-
+# Searches for all data types that contain 'System.Uri'
+PS > Get-DataType System.Uri
+System.Uri
+System.UriBuilder
+System.UriComponents
+System.UriFormat
+System.UriFormatException
+System.UriHostNameType
+System.UriIdnScope
+System.UriKind
+System.UriParser
+System.UriPartial
+System.UriTemplate
+System.UriTemplateEquivalenceComparer
+System.UriTemplateMatch
+System.UriTemplateMatchException
+System.UriTemplateTable
+System.UriTypeConverter
 
 .EXAMPLE
+# Searches for a data type that is exactly called 'System.Uri'
+PS > Get-DataType System.Uri -Literal
+System.Uri
 
-Update-Signature C:\scripts\*.*
+.EXAMPLE
+# Searches for all data types that end with 'System.Uri'
+PS > Get-DataType System.Uri$
+System.Uri
 
-Signs the all scripts in the specified folder with the default certificate and timestamps it.
+.EXAMPLE
+# Searches for all data types that end with 'System.Uri' (case sensitive)
+PS > Get-DataType System.Uri$ -Case
+System.Uri
 
+.EXAMPLE
+# Searches for a data type that is exactly called 'System.Uri' 
+# and also display their public constructors
+PS > Get-DataType System.Uri -Literal -IncludeConstructor
+System.Uri
+Uri(
+        String uriString,
+)
+Uri(
+        String uriString,
+        Boolean dontEscape,
+)
+Uri(
+        Uri baseUri,
+        String relativeUri,
+        Boolean dontEscape,
+)
+Uri(
+        String uriString,
+        UriKind uriKind,
+)
+Uri(
+        Uri baseUri,
+        String relativeUri,
+)
+Uri(
+        Uri baseUri,
+        Uri relativeUri,
+)
+
+.EXAMPLE
+# Searches for a data type that is exactly called 'System.Uri' 
+# and also display their public constructors
+PS > Get-DataType System.Uri -prop -ctor
+Name           PropertyType
+----           ------------
+AbsolutePath   System.String
+AbsoluteUri    System.String
+LocalPath      System.String
+Authority      System.String
+HostNameType   System.UriHostNameType
+IsDefaultPort  System.Boolean
+IsFile         System.Boolean
+IsLoopback     System.Boolean
+PathAndQuery   System.String
+Segments       System.String[]
+IsUnc          System.Boolean
+Host           System.String
+Port           System.Int32
+Query          System.String
+Fragment       System.String
+Scheme         System.String
+OriginalString System.String
+DnsSafeHost    System.String
+IdnHost        System.String
+IsAbsoluteUri  System.Boolean
+UserEscaped    System.Boolean
+UserInfo       System.String
+Uri(
+        String uriString,
+)
+Uri(
+        String uriString,
+        Boolean dontEscape,
+)
+Uri(
+        Uri baseUri,
+        String relativeUri,
+        Boolean dontEscape,
+)
+Uri(
+        String uriString,
+        UriKind uriKind,
+)
+Uri(
+        Uri baseUri,
+        String relativeUri,
+)
+Uri(
+        Uri baseUri,
+        Uri relativeUri,
+)
+
+.LINK
+Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Get-DataType/
+
+.NOTES
+See module manifest for required software versions and dependencies.
 
 #>
 [CmdletBinding(
-    SupportsShouldProcess = $true
+	SupportsShouldProcess = $false
 	,
-    ConfirmImpact = 'Low'
+	ConfirmImpact = 'Low'
 	,
-	DefaultParameterSetName = 'path'
+	HelpURI = 'http://dfch.biz/biz/dfch/PS/System/Utilities/Get-DataType/'
 )]
 PARAM
 (
-	# The path to script files to sign
-	[ValidateScript( { Test-Path($_) -PathType Container; } )]
-	[Parameter(Mandatory = $false, ParameterSetName = 'path')]
-	[System.IO.DirectoryInfo] $Path = $PWD.Path
+	# Data Type to search for. Input is treated as regular expression
+	# unlesse otherwise specified in '-Literal'
+	[Parameter(Mandatory = $false, Position = 0)]
+	[string] $InputObject = '.*'
 	,
-	# A script file or array of script files to sign
-	[ValidateScript( { if($_) { foreach($item in $_) {Test-Path($item) -PathType Leaf -Include $IncludeExtensions; } } else { $true } } )]
-	[Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ParameterSetName = 'file')]
-	[AllowNull()]
-	[Alias('File')]
-	$InputObject
-	,
-	# The certificate to use for signing the specified scripts
-	[Parameter(Mandatory = $false, Position = 1)]
-	# $Cert = (Select-Object -First 1 -InputObject (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert))
-	$Cert = (Get-ChildItem -Path cert:\CurrentUser\my -CodeSigningCert | Select-Object -First 1)
-	,
-	# Specify wheter to timestamp (countersign) the script files
+	# perform case sensitive search if specified
 	[Parameter(Mandatory = $false)]
-	[Alias('TimeStamp')]
-	[switch] $CounterSign = $true
+	[Alias('case')]
+	[switch] $CaseSensitive = $false
 	,
-	# The timestamp server url
-	[Parameter(Mandatory = $false, Position = 2)]
-	[Uri] $TimestampServer = 'http://timestamp.globalsign.com/scripts/timstamp.dll'
-	,
-	# File extensions of the script files to sign
+	# perform literal search (i.e. not regex) if specified
 	[Parameter(Mandatory = $false)]
-	$IncludeExtensions = @('*.ps1','*.psm1','*.psd1','*.dll','*.exe')
+	[Alias('noregex')]
+	[switch] $Literal = $false
 	,
-	# Specifies whether to force an update of the signature 
-	# even if the existing signature is still valid.
+	# also show the constructor of the data type
 	[Parameter(Mandatory = $false)]
-	[switch] $Force = $false
+	[Alias('ctor')]
+	[switch] $IncludeConstructor = $false
+	,
+	# returns an instantiated object of the types found
+	[Parameter(Mandatory = $false)]
+	[Alias('prop')]
+	[switch] $IncludeProperties = $false
 )
-
-if($PSCmdlet.ParameterSetName -eq 'path')
-{
-	$InputObjectTemp = (Get-ChildItem $Path -Include $IncludeExtensions -Recurse | Get-AuthenticodeSignature |? { ($_.Exception.Status -eq 'HashMismatch') -Or (($_.TimeStamperCertificate -eq $null) -And ($_.Exception.Status -eq 'Valid')) }).Path;
-	if($InputObjectTemp)
+	$dataTypes = New-Object System.Collections.ArrayList;
+	$constructors = New-Object System.Collections.ArrayList;
+	
+	$assemblies = [System.AppDomain]::CurrentDomain.GetAssemblies();
+	foreach($assembly in $assemblies)
 	{
-		$InputObject = $InputObjectTemp;
-		Remove-Variable InputObjectTemp;
+		foreach($definedType in $assembly.DefinedTypes)
+		{
+			if(!(($definedType.IsPublic -eq $true -Or $definedType.IsNestedPublic -eq $true) -And $definedType.IsInterface -ne $true))
+			{
+				continue;
+			}
+			
+			$definedTypeFullName = $definedType.FullName;
+			if($Literal)
+			{
+				if($CaseSensitive)
+				{
+					if($definedTypeFullName -cne $InputObject)
+					{
+						continue;
+					}
+				}
+				else
+				{
+					if($definedTypeFullName -ine $InputObject)
+					{
+						continue;
+					}
+				}
+			}
+			else
+			{
+				if($CaseSensitive)
+				{
+					if($definedTypeFullName -cnotmatch $InputObject)
+					{
+						continue;
+					}
+				}
+				else
+				{
+					if($definedTypeFullName -inotmatch $InputObject)
+					{
+						continue;
+					}
+				}
+			}
+			
+			if($IncludeProperties)
+			{
+				try
+				{
+					$obj = $definedType.GetProperties() | Select Name, PropertyType;
+					$null = $dataTypes.Add($obj);
+				}
+				catch
+				{
+					$null = $dataTypes.Add($definedTypeFullName);
+				}
+			}
+			else
+			{
+				$null = $dataTypes.Add($definedTypeFullName);
+			}
+			
+			if(!$IncludeConstructor)
+			{
+				continue;
+			}
+			$null = $constructors.Add((Get-Constructor $definedTypeFullName));
+		}
+	}
+	
+	Write-Output ($dataTypes | Sort);
+	if($IncludeConstructor -And (0 -lt $constructors.Count))
+	{
+		Write-Output ($constructors);
 	}
 }
-foreach($Object in $InputObject)
-{
-	if(!$PSCmdlet.ShouldProcess($Object))
-	{
-		continue;
-	}
-	$IsValid = (Get-AuthenticodeSignature $Object | Select Status).Status -eq 'Valid';
-	if(!$IsValid -Or $Force)
-	{
-		if($CounterSign)
-		{
-			Set-AuthenticodeSignature $Object -Certificate $cert -TimestampServer $TimestampServer -Confirm:$false;
-		}
-		else
-		{
-			Set-AuthenticodeSignature $Object -Certificate $cert -Confirm:$false;
-		}
-	}
-}
 
-} # function
+if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-DataType; } 
 
-if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; } 
-
-# 
-# Copyright 2014-2015 d-fens GmbH
-# 
+#
+# Copyright 2012-2016 d-fens GmbH
+#
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
-# 
+#
 # http://www.apache.org/licenses/LICENSE-2.0
-# 
+#
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-# 
+#
 
 # SIG # Begin signature block
 # MIIXDwYJKoZIhvcNAQcCoIIXADCCFvwCAQExCzAJBgUrDgMCGgUAMGkGCisGAQQB
 # gjcCAQSgWzBZMDQGCisGAQQBgjcCAR4wJgIDAQAABBAfzDtgWUsITrck0sYpfvNR
-# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUN9HDMBGpK67sLq2QvgRfdsWI
-# w7KgghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
+# AgEAAgEAAgEAAgEAAgEAMCEwCQYFKw4DAhoFAAQUaqZY78veQAeH65y1zz2Akl72
+# YWugghHCMIIEFDCCAvygAwIBAgILBAAAAAABL07hUtcwDQYJKoZIhvcNAQEFBQAw
 # VzELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExEDAOBgNV
 # BAsTB1Jvb3QgQ0ExGzAZBgNVBAMTEkdsb2JhbFNpZ24gUm9vdCBDQTAeFw0xMTA0
 # MTMxMDAwMDBaFw0yODAxMjgxMjAwMDBaMFIxCzAJBgNVBAYTAkJFMRkwFwYDVQQK
@@ -225,26 +380,26 @@ if($MyInvocation.ScriptName) { Export-ModuleMember -Function Update-Signature; }
 # MDAuBgNVBAMTJ0dsb2JhbFNpZ24gQ29kZVNpZ25pbmcgQ0EgLSBTSEEyNTYgLSBH
 # MgISESENFrJbjBGW0/5XyYYR5rrZMAkGBSsOAwIaBQCgeDAYBgorBgEEAYI3AgEM
 # MQowCKACgAChAoAAMBkGCSqGSIb3DQEJAzEMBgorBgEEAYI3AgEEMBwGCisGAQQB
-# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBQz2f4d9idT71bI
-# ViZDmKMaPVCDTzANBgkqhkiG9w0BAQEFAASCAQCbBSBzn5fDDKY+kk6N2gIFlkP2
-# QDdPAzboeCgsgKowwCXXxlPJo+wjjSO1ijyD0YP1RYL3VgLCFUxREUz95DYjTcS7
-# YmVEY0MogwAXlwj5f15rt/xKDJHftIm11AojWOc3Yz40qPULNtaxYasMw6OvX/gb
-# gIUApV05+Sxr9DLRz8N5az54NCQwDEaCbMiKeqn8sQsTywD/KuV6r6TVQhnNiKD5
-# 0RrOZsxcjNmcCybPI3b7ceFCh+HlxSlJ2YdXtDOGD4FvlzTctR1pTWdvfUvF4I1s
-# RxV+52to01GFEBARJIGB0WhecxuSOCffgfLLbqFWMmmoWTtp1N496gFMxJ5coYIC
+# gjcCAQsxDjAMBgorBgEEAYI3AgEVMCMGCSqGSIb3DQEJBDEWBBRRQECBw3NsEYwU
+# CPoUlQ/U7tDRezANBgkqhkiG9w0BAQEFAASCAQCl6M0+JzXB7SCJVb5mBKgjbsVr
+# cDfExW4ozUMbnHW2Th/b2QB9dTUHmiYGbo3QYBsqkX28d/hP3XcmgA5w/vhe5mrm
+# j0YGG/CH7V30X7aS9LbYGJNzEGrE1LgTyuuCTwtL+9lBbs22EcWFcWaAN6es9MjN
+# MUjL0QA0qQZ5qNJGlyztF4MpQIxvG1GGzWy5aGkOV6CwZOAbXGsJdqUbgZkabcSD
+# MC5+ELPz8/eVFaEqS74aRZb9VrXjL1h5Ul9pYPu87QMk8NvDXdwD+UpvDIEp2uVE
+# Pgkdh400klQBKaLkLc1TUIEAi63bscSxlwQRKt9UJJNVrGJnD5n++WAhKlQfoYIC
 # ojCCAp4GCSqGSIb3DQEJBjGCAo8wggKLAgEBMGgwUjELMAkGA1UEBhMCQkUxGTAX
 # BgNVBAoTEEdsb2JhbFNpZ24gbnYtc2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGlt
 # ZXN0YW1waW5nIENBIC0gRzICEhEh1pmnZJc+8fhCfukZzFNBFDAJBgUrDgMCGgUA
 # oIH9MBgGCSqGSIb3DQEJAzELBgkqhkiG9w0BBwEwHAYJKoZIhvcNAQkFMQ8XDTE2
-# MDcyMzEwMTExMlowIwYJKoZIhvcNAQkEMRYEFP8PyVTMdySkkeXF5I2OCVtoak11
+# MDcyMzEwMTEwNFowIwYJKoZIhvcNAQkEMRYEFOEO7dWfYojCjC/HYO60OV9W3iBK
 # MIGdBgsqhkiG9w0BCRACDDGBjTCBijCBhzCBhAQUY7gvq2H1g5CWlQULACScUCkz
 # 7HkwbDBWpFQwUjELMAkGA1UEBhMCQkUxGTAXBgNVBAoTEEdsb2JhbFNpZ24gbnYt
 # c2ExKDAmBgNVBAMTH0dsb2JhbFNpZ24gVGltZXN0YW1waW5nIENBIC0gRzICEhEh
-# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQCCEWIEX+9AFfktW+4i
-# KHi8e3by7RwhpqpjYQTaXoddaOBh0hJn/IwWk1LK5vOhoMVgbdzGPXSLmYjScdn6
-# 6EMaxjn4neFOvNQOYhbEHqnQyURxP/t3avjn8VY8nUsodBhtTYWlJTstsXjJBtFQ
-# JVH4ykzztKQMjIJbXATixIAnw+0Iq4oD25/w+QCOno+AsuaCnB6PvEzcVe4ehuAG
-# oXt1K3ZJ2mCm0Ph7OUFgyQWPPiD1i1YtzaE5/au9uCZ05loXN/hMZsqKlFYNMJUp
-# hGJdzhgyKZCdrthlVsUjNlKfUpacGdClO47VrMajXegilrKBHu/AwA0Rf/DF2yau
-# jQLM
+# 1pmnZJc+8fhCfukZzFNBFDANBgkqhkiG9w0BAQEFAASCAQBSsjuamGbZL94nJy/4
+# qmUPW2O1lhOLNhsaLWZZDqr3qJ0lPNyrUNwq66uv7vu0SyXrKIlRcbKCOVFMa5oH
+# vp2T1rxNlK99+mWEwNZAz+IewRkgc0AOwz5nrgoam5sEYjRfgMrdedws6SC7Tvms
+# bTtDKjjsLt0zCwBITw4xZvTvnn8yn56V7wMShajZDgepRyVZNvHiLLg4jDSaMfrP
+# JycCasDbTcm2JqIjiJfCKZOWtTTPZmPHf7Mxk9/E99RIVd6eZ6fMMjYpa8+E+wdw
+# t7gpHch+9FYgGClwnBpWgF2mSczpwhg6aRHeEfKFyxg7YyluMFVvOj5Y/DHFdnyf
+# Nxpf
 # SIG # End signature block
