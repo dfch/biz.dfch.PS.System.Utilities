@@ -194,6 +194,11 @@ PARAM
 	[Parameter(Mandatory = $false)]
 	[Alias('base')]
 	[switch] $BaseType = $false
+	,
+	# Specifies an AssemblyName to limit search scope
+	[Parameter(Mandatory = $false)]
+	[Alias('Assembly')]
+	[string] $AssemblyName
 )
 	$dataTypes = New-Object System.Collections.ArrayList;
 	$constructors = New-Object System.Collections.ArrayList;
@@ -201,14 +206,22 @@ PARAM
 	$assemblies = [System.AppDomain]::CurrentDomain.GetAssemblies();
 	foreach($assembly in $assemblies)
 	{
+		# only look in matching assembly if specified
+		if($AssemblyName -And ($assembly.Modules.Name -notmatch $AssemblyName) )
+		{
+			continue;
+		}
+		
 		foreach($definedType in $assembly.DefinedTypes)
 		{
+			# only filter public and nested classes, skip interfaces
 			if(!(($definedType.IsPublic -eq $true -Or $definedType.IsNestedPublic -eq $true) -And $definedType.IsInterface -ne $true))
 			{
 				continue;
 			}
 			
 			$definedTypeFullName = $definedType.FullName;
+			# swap base type into type name to enable search
 			if($BaseType)
 			{
 				$definedTypeFullName = $definedType.BaseType.FullName;
@@ -248,8 +261,10 @@ PARAM
 				}
 			}
 			
+			# swap original type name back (because of BaseType switch)
 			$definedTypeFullName = $definedType.FullName;
 
+			# data type goes into 1st list (a real list)
 			if($IncludeProperties)
 			{
 				try
@@ -267,6 +282,7 @@ PARAM
 				$null = $dataTypes.Add($definedTypeFullName);
 			}
 			
+			# constructor information goes into 2nd list (a list of constructor display strings)
 			if(!$IncludeConstructor)
 			{
 				continue;

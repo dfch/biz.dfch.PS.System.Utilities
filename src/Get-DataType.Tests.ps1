@@ -186,7 +186,7 @@ Describe -Tags "Get-DataType.Tests" "Get-DataType.Tests" {
 	
 	Context "MatchByBaseType" {
 
-		It "GettingInvalidDataTypeWithRegexCase-ReturnsEmptyList" -Test {
+		It "GettingValidBaseType-ReturnsList" -Test {
 
 			# Arrange
 
@@ -198,6 +198,35 @@ Describe -Tags "Get-DataType.Tests" "Get-DataType.Tests" {
 			$result.Count -gt 1 | Should Be $true;
 			$result -contains 'System.UInt64' | Should Be $true;
 		}
+	}
+	
+	Context "MatchByAssemblyName" {
+
+		It "GettingValidDataTypeInSpecifiedAssembly-ReturnsType" -Test {
+
+			# Arrange
+			$name = 'System.UInt64';
+
+			# Act 
+			$result = Get-DataType $name -AssemblyName mscorlib
+
+			# Assert
+			$result | Should Not Be $null;
+			$result | Should Be $name;
+		}
+
+		It "GettingInvalidDataTypeInSpecifiedAssembly-ReturnsType" -Test {
+
+			# Arrange
+			$name = 'System.UInt64';
+
+			# Act 
+			$result = Get-DataType $name -AssemblyName 'invalid-assembly-name'
+
+			# Assert
+			$result | Should Be $null;
+		}
+
 	}
 }
 
