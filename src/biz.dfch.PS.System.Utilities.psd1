@@ -6,7 +6,7 @@
 RootModule = 'biz.dfch.PS.System.Utilities.psm1'
 
 # Version number of this module.
-ModuleVersion = '1.1.1.20160706'
+ModuleVersion = '2.0.0.20160723'
 
 # ID used to uniquely identify this module
 GUID = 'aaab9f3e-e544-4827-9db8-44bade441fc5'
@@ -127,6 +127,8 @@ NestedModules = @(
 	'Invoke-WithRetry.ps1'
 	,
 	'Invoke-GenericMethod.ps1'
+	,
+	'Get-DataType.ps1'
 )
 
 # Functions to export from this module
