@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>biz.dfch.PS.System.Utilities</id>
-        <version>2.0.1</version>
+        <version>2.1.0</version>
         <title>biz.dfch.PS.System.Utilities</title>
         <authors>d-fens GmbH</authors>
         <owners>Ronald Rink</owners>
@@ -26,49 +26,13 @@ See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utili
         <releaseNotes>20160723
 # NOTES
 
-Beginning with this release we will follow the [semver](http://semver.org) convention strictly. This means (amon others) that every breaking change in behaviour of a single Cmdlet will lead to a major version increment of the whole module.
-
-# BREAKING CHANGES
-
-* ConvertFrom-CmdletHelp
-  * renamed `ExcludeDefaultCmdletPrefix` to `IncludeDefaultCmdletPrefix` to better represent the logic behind its use (as a default parameter)
-  * logic stays the same: by default the resulting commands from module do *NOT* include the module prefix
-
-# BUGFIXES
-
-* ConvertFrom-CmdletHelp
-  * fixed conversion error in Cmdlets from -Module parameter
-  * added better exception handling not found cmdlets
+* biz.dfch.PS.System.Logging
+  * updated requirement on dependent package version to `1.4.1` (was `1.1.4`)
 
 # FEATURES
 
 * Get-DataType
-  * added Cmdlet to display available .NET data types and its constructors
-
-* Get-DataType
-
-  * added Get-DataType Cmdlet to return type information from loaded assemblies
-
-* Get-Constructor
-
-  * changed output from Get-Constructor to display full qualified class name instead of only class name
-
-* Invoke-WithRetry
-  * updated Invoke-WithRetry to throw the last exception upon exceeded retries
-  * re-released the Cmdlet due to a versioning error in the last release (1.1.1)
-
-* Invoke-GenericMethod
-  * added Invoke-GenericMethod Cmdlet to facilitate invocation of generic methods
-  * re-released the Cmdlet due to a versioning error in the last release (1.1.1)
-
-* Set-SslSecurityPolicy
-  * deprecated the TrustAllCertificates switch (default is now 'false')
-  * removed positional parameters
-  * changed delegate for CertificateCallback to inline C# code to remove problem with async PowerShell threads on missing default runspaces
-  * added whatif/confirm message
-  * formatting
-  * added inline help
-  * re-released the Cmdlet due to a versioning error in the last release (1.1.1)
+  * added -BaseType switch to support filtering by BaseType
 
 * installation base path is '$env:ProgramFiles\WindowsPowerShell\Modules' and can be manually set as input parameter
 </releaseNotes>
@@ -76,7 +40,7 @@ Beginning with this release we will follow the [semver](http://semver.org) conve
         <language>en-US</language>
         <tags>PowerShell dfch</tags>
         <dependencies>
-            <dependency id="biz.dfch.PS.System.Logging" version="1.1.4" />
+            <dependency id="biz.dfch.PS.System.Logging" version="1.4.1" />
         </dependencies>
     </metadata>
     <files>
