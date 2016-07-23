@@ -1,21 +1,32 @@
-function Get-Constructor ([type]$type, [Switch]$FullName) {
-    foreach ($c in $type.GetConstructors()) {
-        $type.Name + "("
-        foreach ($p in $c.GetParameters()) {
-             if ($fullName) {
-                  "`t{0} {1}," -f $p.ParameterType.FullName, $p.Name 
-             } else {
-                  "`t{0} {1}," -f $p.ParameterType.Name, $p.Name 
-             } # if
-        } # foreach
-        ")"
-    } # foreach
-} # Get-Constructor
+function Get-Constructor {
+PARAM
+(
+	[type] $Type
+	, 
+	[switch] $FullName
+)
+	foreach ($c in $Type.GetConstructors()) 
+	{
+		"{0}(" -f $Type.FullName;
+		foreach ($p in $c.GetParameters()) 
+		{
+			if ($fullName)
+			{
+                  "`t{0} {1}," -f $p.ParameterType.FullName, $p.Name;
+			}
+			else
+			{
+                  "`t{0} {1}," -f $p.ParameterType.Name, $p.Name;
+			}
+		}
+		")"
+    }
+} # function
 
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function Get-Constructor; } 
 
 #
-# Copyright 2012-2015 d-fens GmbH
+# Copyright 2012-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
