@@ -88,6 +88,7 @@ Describe -Tags "Get-DataType.Tests" "Get-DataType.Tests" {
 		}
 
 	}
+	
 	Context "Test-WithMultipleDataTypes" {
 
 		It "GettingValidDataType-ReturnsList" {
@@ -182,6 +183,22 @@ Describe -Tags "Get-DataType.Tests" "Get-DataType.Tests" {
 			$result | Should Be $null
 		}
     }
+	
+	Context "MatchByBaseType" {
+
+		It "GettingInvalidDataTypeWithRegexCase-ReturnsEmptyList" -Test {
+
+			# Arrange
+
+			# Act 
+			$result = Get-DataType 'System.ValueType' -case -literal -base
+
+			# Assert
+			$result | Should Not Be $null;
+			$result.Count -gt 1 | Should Be $true;
+			$result -contains 'System.UInt64' | Should Be $true;
+		}
+	}
 }
 
 #

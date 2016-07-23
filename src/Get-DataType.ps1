@@ -136,6 +136,18 @@ Uri(
         Uri relativeUri,
 )
 
+.EXAMPLE
+# Searches for all data types that derive from 
+# System.ValueType
+PS > Get-DataType System.ValueType -base
+System.Enum
+System.Guid
+System.Int16
+System.Int32
+System.Int64
+System.IntPtr
+...
+
 .LINK
 Online Version: http://dfch.biz/biz/dfch/PS/System/Utilities/Get-DataType/
 
@@ -176,6 +188,12 @@ PARAM
 	[Parameter(Mandatory = $false)]
 	[Alias('prop')]
 	[switch] $IncludeProperties = $false
+	,
+	# Specifies that InputObject contains the BaseType of the data types 
+	# to return
+	[Parameter(Mandatory = $false)]
+	[Alias('base')]
+	[switch] $BaseType = $false
 )
 	$dataTypes = New-Object System.Collections.ArrayList;
 	$constructors = New-Object System.Collections.ArrayList;
@@ -191,6 +209,10 @@ PARAM
 			}
 			
 			$definedTypeFullName = $definedType.FullName;
+			if($BaseType)
+			{
+				$definedTypeFullName = $definedType.BaseType.FullName;
+			}
 			if($Literal)
 			{
 				if($CaseSensitive)
@@ -226,6 +248,8 @@ PARAM
 				}
 			}
 			
+			$definedTypeFullName = $definedType.FullName;
+
 			if($IncludeProperties)
 			{
 				try
