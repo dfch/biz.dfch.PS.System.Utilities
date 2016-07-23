@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>biz.dfch.PS.System.Utilities</id>
-        <version>2.1.0</version>
+        <version>2.2.0</version>
         <title>biz.dfch.PS.System.Utilities</title>
         <authors>d-fens GmbH</authors>
         <owners>Ronald Rink</owners>
@@ -24,15 +24,10 @@ You can download this module via [NuGet](http://nuget.org) with [Install-Package
 See [d-fens WebSite](http://d-fens.ch/2014/10/15/module-biz-dfch-ps-system-utilities/) or check the [Wiki](https://github.com/dfch/biz.dfch.PS.System.Utilities/wiki) for further description and examples on how to use the module.</description>
         <summary>This PowerShell module contains Cmdlets to perform various actions and utilties/convenience functions such as string conversion and formatting.</summary>
         <releaseNotes>20160723
-# NOTES
-
-* biz.dfch.PS.System.Logging
-  * updated requirement on dependent package version to `1.4.1` (was `1.1.4`)
-
 # FEATURES
 
 * Get-DataType
-  * added -BaseType switch to support filtering by BaseType
+  * added AssemblyName switch to limit search scope to specific assemblies
 
 * installation base path is '$env:ProgramFiles\WindowsPowerShell\Modules' and can be manually set as input parameter
 </releaseNotes>
