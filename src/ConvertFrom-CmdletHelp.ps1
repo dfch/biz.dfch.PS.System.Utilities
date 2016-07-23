@@ -67,7 +67,6 @@ See module manifest for required software versions and dependencies at: http://d
 
 PARAM 
 (
-	[ValidateScript( { Get-Command($_); } )]
 	[Parameter(Mandatory = $true, ValueFromPipeline = $true, Position = 0, ParameterSetName = 'command')]
 	[ValidateNotNullOrEmpty()]
 	[Alias("CommandName")]
@@ -88,8 +87,8 @@ PARAM
 	[string] $Path = $PWD
 	,
 	[Parameter(Mandatory = $false, ParameterSetName = 'module')]
-	[Alias("Exclude")]
-	[switch] $ExcludeDefaultCommandPrefix = $true
+	[Alias("Include")]
+	[switch] $IncludeDefaultCommandPrefix = $false
 )
 
 BEGIN
@@ -114,36 +113,18 @@ BEGIN
 	
 	if($PSCmdlet.ParameterSetName -eq 'module')
 	{
-		$InputObject = Get-Command -Module $ModuleName;
-		if($ExcludeDefaultCommandPrefix)
+		$module = Get-Module $ModuleName -ListAvailable | Sort -Property Version -Descending | Select -First 1;
+		Contract-Assert (!!$module);
+		$commands = Get-Command -Module $module
+		Contract-Assert (!!$module);
+
+		$DefaultCommandPrefixWithLeadingDash = '-{0}' -f $module.Prefix;
+
+		Remove-Variable InputObject;
+		$InputObject = @();
+		foreach($command in $commands)
 		{
-			foreach($PSModulePath in $ENV:PSModulePath.Split(';')) 
-			{ 
-				$PSModulePathFull = Join-Path -Path $PSModulePath -ChildPath $ModuleName;
-				if( !(Test-Path -Path ($PSModulePathFull)) ) 
-				{ 
-					continue;
-				}
-				$Manifest = Join-Path -Path $PSModulePathFull -ChildPath ('{0}.psd1' -f $ModuleName);
-				if( Test-Path -Path ($Manifest) ) 
-				{ 
-					try
-					{
-						$DefaultCommandPrefix =  ( (Get-Content (Get-Item $Manifest) -Raw) | iex ).DefaultCommandPrefix;
-					}
-					catch
-					{
-						# N/A
-					}
-					if(!$DefaultCommandPrefix)
-					{
-						Write-Warning ("No 'DefaultCommandPrefix' found in Manifest '{0}'." -f $Manifest);
-					}
-					break;
-				}
-			}
-			$PSModulePathFull = $null;
-			$Manifest = $null;
+			$InputObject += $command;
 		}
 	}
 }
@@ -154,8 +135,23 @@ PROCESS
 	{
 		if($PSCmdlet.ShouldProcess($Object))
 		{
+			if($Object -is [System.Management.Automation.FunctionInfo] -Or $Object -is [System.Management.Automation.CmdletInfo])
+			{
+				$Object = $Object.Name
+			}
+			
 			$helpFormatted = @();
-			foreach($line in ((help $Object -Full))) 
+			try
+			{
+				$helpFull = help $Object -Full -ErrorAction:Stop;
+			}
+			catch
+			{
+				Write-Warning ("Cmdlet '{0}' could not retrieve help. Skipping ..." -f $Object);
+				continue;
+			}
+
+			foreach($line in $helpFull) 
 			{ 
 				if( ![string]::IsNullOrWhiteSpace($line) -and $line -ceq $line.ToUpper() ) 
 				{
@@ -180,18 +176,19 @@ PROCESS
 				{ 
 					if(0 -ge $r.Count)
 					{
-						Write-Warning ("Cmdlet '{0}' has no content [{1}]. Skipping ..." -f $Object.Name, $r.Count);
+						Write-Warning ("Cmdlet '{0}' has no content [{1}]. Skipping ..." -f $Object, $r.Count);
 					}
 					else 
 					{
 						$OutputParameter = $null; 
-						if($ExcludeDefaultCommandPrefix)
+						if(!$IncludeDefaultCommandPrefix)
 						{
-							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object.Name.Replace($DefaultCommandPrefix, $null))) -Encoding Default; 
+							$fileName = ("{0}.md" -f $Object.Replace($DefaultCommandPrefixWithLeadingDash, '-'))
+							$r | Out-File (Join-Path -Path $Path -ChildPath $fileName) -Encoding Default; 
 						}
 						else
 						{
-							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object.Name)) -Encoding Default; 
+							$r | Out-File (Join-Path -Path $Path -ChildPath ("{0}.md" -f $Object)) -Encoding Default; 
 						}
 					}
 				}
@@ -212,7 +209,7 @@ END
 if($MyInvocation.ScriptName) { Export-ModuleMember -Function ConvertFrom-CmdletHelp; }
 
 #
-# Copyright 2014-2015 d-fens GmbH
+# Copyright 2014-2016 d-fens GmbH
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
